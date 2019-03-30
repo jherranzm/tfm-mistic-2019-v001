@@ -16,10 +16,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
 }
 
 dependencies {
@@ -42,21 +38,12 @@ dependencies {
     // apache Santuario
     //# https://mvnrepository.com/artifact/org.apache.santuario/xmlsec
     // AGPBI: {"kind":"error","text":"Default interface methods are only supported starting with Android N (--min-api 24): javax.xml.stream.events.Characters org.apache.xml.security.stax.ext.stax.XMLSecEvent.asCharacters()","sources":[{}],"tool":"D8"}
-    // Es necessita sourceCompatibility JavaVersion.VERSION_1_8
+    //
     //implementation 'org.apache.santuario:xmlsec:2.1.2'
-
-    // Només arriba a SHA1
-    //implementation 'org.apache.santuario:xmlsec:1.4.7'
-
-    // Només arriba a SHA1, no troba el SHA-256
-    //implementation 'org.apache.santuario:xmlsec:1.5.8'
-
-    // Només arriba a SHA1, no troba el SHA-256
-    implementation 'org.apache.santuario:xmlsec:2.1.2'
+    implementation 'org.apache.santuario:xmlsec:1.4.7'
 
     //
     implementation 'es.gob.afirma:afirma-core:1.6.2'
     implementation 'es.gob.afirma:afirma-crypto-core-xml:1.6.2'
     implementation 'es.gob.afirma:afirma-crypto-xades:1.6.2'
-    implementation 'es.gob.afirma:afirma-crypto-validation:1.6.2'
 }

@@ -3,65 +3,50 @@ package com.example.apptestvalidationandroid44;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-//import android.util.Base64;
 import android.util.Base64;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
-import org.apache.xml.security.Init;
-import org.apache.xml.security.c14n.Canonicalizer;
-import org.apache.xml.security.exceptions.XMLSecurityException;
-import org.apache.xml.security.transforms.Transforms;
+import org.apache.commons.io.IOUtils;
+import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.utils.Constants;
-import org.apache.xml.security.utils.ElementProxy;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
-
-import java.security.Key;
 import java.security.KeyStore;
+import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.KeyStore.PrivateKeyEntry;
 import java.security.Provider;
-import java.security.PublicKey;
+import java.security.Provider.Service;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Set;
 import java.util.Properties;
-
-import java.security.Provider.Service;
-
-import org.apache.commons.io.IOUtils;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.xml.security.signature.XMLSignature;
-
 import es.gob.afirma.core.signers.AOSignConstants;
 import es.gob.afirma.core.signers.AOSigner;
 import es.gob.afirma.signers.xades.AOFacturaESigner;
+
+//import android.util.Base64;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -113,17 +98,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         String message = "Nothing";
         try {
-            CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "SC");
+            CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
 
             InputStream isServerCrt = this.getResources().openRawResource(R.raw.server);
+            InputStream isServerKey = this.getResources().openRawResource(R.raw.serverkey);
 
-            InputStream isSignedInvoice = this.getResources().openRawResource(R.raw.invoice_990001_xml_signed);
-            Document doc = getDocument(isSignedInvoice);
-            isSignedInvoice.close();
-
-            isSignedInvoice = this.getResources().openRawResource(R.raw.invoice_990001_xml_signed);
-            byte[] baInvoiceSigned = IOUtils.toByteArray(isSignedInvoice);
-            isSignedInvoice.close();
+            InputStream isSignedInvoice = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
 
             X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
 
@@ -132,24 +112,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             char[] keystorePassword = PKCS12_PASSWORD.toCharArray();
             char[] keyPassword = PKCS12_PASSWORD.toCharArray();
 
-            //message += CR_LF + "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]";
+            KeyStore keystore = KeyStore.getInstance(PKCS_12, "BC");
+            keystore.load(isServerKey, keystorePassword);
+            isServerKey.close();
 
-            //isSignedInvoice = this.getResources().openRawResource(R.raw.invoice_990001_xml_signed);
+            PrivateKey key = (PrivateKey) keystore.getKey("Server", keyPassword);
+            if(key == null) {
+                Log.e(getLocalClassName(),"ERROR NO hay key!");
+            };
+            Log.i("", "key.getAlgorithm : " + key.getAlgorithm());
 
-            message += CR_LF + "Root Element : ["+doc.getDocumentElement().getTagName()+"]";
+            Provider provider = keystore.getProvider();
+
+            message = "Provider : [" +provider.getName()+"] : [" +provider.getInfo()+"]";
+
+            byte[] baInvoiceSigned = IOUtils.toByteArray(isSignedInvoice);
+
+            message += CR_LF + "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]";
+
+
+            isSignedInvoice = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
+
+            Document doc = getDocument(isSignedInvoice);
             NodeList nl = doc.getElementsByTagNameNS(Constants.SignatureSpecNS, "Signature");
             if (nl.getLength() == 0) {
                 throw new Exception("No XML Digital Signature Found, document is discarded");
             }
 
             Element sigElement = (Element) nl.item(0);
-            message += CR_LF + "sigElement : ["+sigElement.getTagName()+"]";
-
             XMLSignature signature = new XMLSignature(sigElement, "");
 
             boolean valid = signature.checkSignatureValue(certificate.getPublicKey());
-
-            //message += CR_LF + new String(signature.getSignatureValue());
 
             if(valid){
                 message += CR_LF + "La firma es válida!";
@@ -205,12 +198,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             PrivateKeyEntry pke = (PrivateKeyEntry) keystore.getEntry("Server", new KeyStore.PasswordProtection(PKCS12_PASSWORD.toCharArray()));
 
+
+
             message += CR_LF + "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]";
 
 
             final AOSigner signer = new AOFacturaESigner();
 
-             Log.i("APP", "************* Fin!");
+            final byte[] result = signer.sign(
+                    baInvoiceSigned,
+                    AOSignConstants.SIGN_ALGORITHM_SHA256WITHRSA,
+                    key,
+                    pke.getCertificateChain(),
+                    new Properties()
+            );
 
 
         }catch (Exception e) {
@@ -253,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             Provider provider = keystore.getProvider();
 
-            //getInfoOverProvider(provider);
+            //getInfoOverProviders(provider);
             getInfoOverAllProviders();
 
             String inputText = editText.getText().toString();
@@ -279,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
             InputStream isInvoice = this.getResources().openRawResource(R.raw.invoice990001);
-            InputStream isInvoiceSigned = this.getResources().openRawResource(R.raw.invoice_990001_xml_signed);
+            InputStream isInvoiceSigned = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
 
 
             byte[] baInvoiceSigned = IOUtils.toByteArray(isInvoiceSigned);
@@ -321,7 +322,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivity(intent);
     }
 
-    private void getInfoOverProvider(Provider provider) {
+    private void getInfoOverProviders(Provider provider) {
+        for (Provider p : Security.getProviders()) {
+
+            Log.i(getLocalClassName(),"Provider:["+p.getName()+"] ["+p.getInfo()+"]");
+        }
+
         Log.i(getLocalClassName(),"provider.getName(): ["+provider.getName()+"]");
         Log.i(getLocalClassName(),"provider.getInfo(): ["+provider.getInfo()+"]");
 
@@ -333,16 +339,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Set<String> algorithms = Security.getAlgorithms("Algorithm");
         for(String s : algorithms){
             Log.i("Algorithm","algorithm: ["+s+"]");
-        }
-    }
-
-    private void getAlgorithmsAvailableByProvider(Provider provider, String service) {
-        Log.i(getLocalClassName(),"provider.getName(): ["+provider.getName()+"]");
-        Log.i(getLocalClassName(),"provider.getInfo(): ["+provider.getInfo()+"]");
-
-        Set<String> algorithms = Security.getAlgorithms(service);
-        for(String s : algorithms){
-            Log.i(service,"algorithm: ["+s+"]");
         }
     }
 
@@ -388,6 +384,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             editText2.setText("Ups... error en GetDataFromUrlTask " + e.getMessage());
         }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
