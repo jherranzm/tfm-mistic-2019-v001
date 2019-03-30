@@ -1,8 +1,13 @@
 package com.example.apptestvalidationandroid44;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
@@ -21,6 +26,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -84,8 +92,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
-
-
+        // 2019-03-30
+        // Check whether this app has write external storage permission or not.
+        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        // If do not grant write external storage permission.
+        if(writeExternalStoragePermission!= PackageManager.PERMISSION_GRANTED)
+        {
+            // Request user to grant write external storage permission.
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
     }
 
     @Override
@@ -103,7 +118,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             InputStream isServerCrt = this.getResources().openRawResource(R.raw.server);
             InputStream isServerKey = this.getResources().openRawResource(R.raw.serverkey);
 
-            InputStream isSignedInvoice = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
+            //InputStream isSignedInvoice = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
+
+            File sdcard = Environment.getExternalStorageDirectory();
+            File file = new File(sdcard,"Download/invoice_990001_xml_20190329_2020707_xml.xsig");
+            if(!file.exists()){
+                throw new FileNotFoundException();
+            }
+
+            InputStream isSignedInvoice = new FileInputStream(file);
 
             X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
 
@@ -433,6 +456,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         return doc;
     }
+
 
     static {
         Security.insertProviderAt(new org.spongycastle.jce.provider.BouncyCastleProvider(), 1);
