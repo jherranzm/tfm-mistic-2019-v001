@@ -44,11 +44,14 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
 
 import es.gob.afirma.core.signers.AOSignConstants;
 import es.gob.afirma.core.signers.AOSigner;
@@ -77,14 +80,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         setContentView(R.layout.activity_main);
 
-        editText = (EditText) findViewById(R.id.editText);
-        editText2 = (EditText) findViewById(R.id.editText2);
-        urlEditText = (EditText) findViewById(R.id.urlEditText);
+        editText = findViewById(R.id.editText);
+        editText2 = findViewById(R.id.editText2);
+        urlEditText = findViewById(R.id.urlEditText);
 
         editText2.setText("Looking for...");
 
         //Get the ID of button that will perform the network call
-        Button btn =  (Button) findViewById(R.id.button);
+        Button btn =  findViewById(R.id.button);
         assert btn != null;
 
         String url ="https://www.google.com";
@@ -111,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void verifySignedInvoice(View v){
         Intent intent = new Intent(this, DisplayMessageActivity.class);
 
-        String message = "Nothing";
+        String message;
         try {
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
 
@@ -142,8 +145,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             PrivateKey key = (PrivateKey) keystore.getKey("Server", keyPassword);
             if(key == null) {
                 Log.e(getLocalClassName(),"ERROR NO hay key!");
-            };
+                throw new Exception("ERROR no hay Key!");
+            }
             Log.i("", "key.getAlgorithm : " + key.getAlgorithm());
+
 
             Provider provider = keystore.getProvider();
 
@@ -157,15 +162,55 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             isSignedInvoice = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
 
             Document doc = getDocument(isSignedInvoice);
-            NodeList nl = doc.getElementsByTagNameNS(Constants.SignatureSpecNS, "Signature");
-            if (nl.getLength() == 0) {
-                throw new Exception("No XML Digital Signature Found, document is discarded");
-            }
 
-            Element sigElement = (Element) nl.item(0);
-            XMLSignature signature = new XMLSignature(sigElement, "");
+            message += CR_LF + "root : " + doc.getDocumentElement().getTagName();
 
-            boolean valid = signature.checkSignatureValue(certificate.getPublicKey());
+            XPathFactory xpathFactory = XPathFactory.newInstance();
+            XPath xpath = xpathFactory.newXPath();
+
+            xpath.setNamespaceContext(new javax.xml.namespace.NamespaceContext() {
+
+                @SuppressWarnings("rawtypes")
+                @Override
+                public java.util.Iterator getPrefixes(final String namespaceURI) {
+                    return Collections.singleton("fe").iterator();
+                }
+
+                @Override
+                public String getPrefix(final String namespaceURI) {
+                    return "fe";
+                }
+
+                @Override
+                public String getNamespaceURI(final String prefix) {
+                    return "http://www.facturae.es/Facturae/2014/v3.2.1/Facturae";
+                }
+            });
+
+            //String responseStatus = xpath.evaluate("//*[local-name()='SchemaVersion']/text()", doc); // Funciona!
+            //String responseStatus = xpath.evaluate("//*[local-name()='TotalAmount']/text()", doc); // Funciona!
+            //String responseStatus = xpath.evaluate("//fe:Facturae/FileHeader/SchemaVersion/text()", doc); // Funciona!
+            String cifVendedor = xpath.evaluate("//fe:Facturae/Parties/SellerParty/TaxIdentification/TaxIdentificationNumber/text()", doc);
+            System.out.println("cifVendedor -> " + cifVendedor);
+            message += CR_LF + "CIF Vendedor : [" + cifVendedor + "]";
+
+            String nombreVendedor = xpath.evaluate("//fe:Facturae/Parties/SellerParty/LegalEntity/CorporateName/text()", doc);
+            System.out.println("nombreVendedor -> " + nombreVendedor);
+            message += CR_LF + "Nombre Vendedor : [" + nombreVendedor + "]";
+
+            String numeroFacturas = xpath.evaluate("count(//fe:Facturae/Invoices)", doc);
+            System.out.println("numeroFacturas -> " + numeroFacturas);
+            message += CR_LF + "Número facturas : [" + numeroFacturas + "]";
+
+            String numeroFactura = xpath.evaluate("//fe:Facturae/Invoices/Invoice/InvoiceHeader/InvoiceNumber/text()", doc);
+            System.out.println("numeroFactura -> " + numeroFactura);
+            message += CR_LF + "Número factura : [" + numeroFactura + "]";
+
+            String importeFactura = xpath.evaluate("//fe:Facturae/Invoices/Invoice/InvoiceTotals/InvoiceTotal/text()", doc);
+            System.out.println("importeFactura -> " + importeFactura);
+            message += CR_LF + "Importe factura : [" + importeFactura + "]";
+
+            boolean valid = isValid(certificate, doc);
 
             if(valid){
                 message += CR_LF + "La firma es válida!";
@@ -182,11 +227,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivity(intent);
     }
 
+    private boolean isValid(X509Certificate certificate, Document doc) throws Exception {
+        NodeList nl = doc.getElementsByTagNameNS(Constants.SignatureSpecNS, "Signature");
+        if (nl.getLength() == 0) {
+            throw new Exception("No XML Digital Signature Found, document is discarded");
+        }
+
+        Element sigElement = (Element) nl.item(0);
+        XMLSignature signature = new XMLSignature(sigElement, "");
+
+        return signature.checkSignatureValue(certificate.getPublicKey());
+    }
+
     public void signInvoice(View v){
 
         Intent intent = new Intent(this, DisplayMessageActivity.class);
 
-        String message = "Nothing";
+        String message;
 
         try {
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
@@ -212,7 +269,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             PrivateKey key = (PrivateKey) keystore.getKey("Server", keyPassword);
             if(key == null) {
                 Log.e(getLocalClassName(),"ERROR NO hay key!");
-            };
+                throw new Exception("ERROR no hay Key!");
+            }
             Log.i("", "key.getAlgorithm : " + key.getAlgorithm());
 
             Provider provider = keystore.getProvider();
@@ -251,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void sendMessage(View view) {
         Intent intent = new Intent(this, DisplayMessageActivity.class);
 
-        String message = "Nothing";
+        String message ="";
         try {
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
 
@@ -272,7 +330,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             PrivateKey key = (PrivateKey) keystore.getKey("Server", keyPassword);
             if(key == null) {
                 Log.e(getLocalClassName(),"ERROR NO hay key!");
-            };
+                throw new Exception("ERROR no hay Key!");
+            }
             Log.i("", "key.getAlgorithm : " + key.getAlgorithm());
 
             Provider provider = keystore.getProvider();
@@ -289,17 +348,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // Codifiquem el text en Base64 per poder-lo enviar
             byte[] messageEncryptedEncodedB64 = Base64.encode(messageEncrypted,Base64.DEFAULT);//.encode(message.getBytes());
             Log.i(getLocalClassName(),"messageEncryptedEncodedB64 : [" + new String(messageEncryptedEncodedB64) + "]");
-            message = new String(messageEncryptedEncodedB64);
+            //message = new String(messageEncryptedEncodedB64);
 
             // Decodifiquem el text de Base64
             byte[] messageEncryptedDecodedB64 = Base64.decode(message, Base64.DEFAULT);
             Log.i(getLocalClassName(),"messageEncryptedDecodedB64 : [" + new String(messageEncryptedDecodedB64) + "]");
-            message = new String(messageEncryptedDecodedB64);
+            //message = new String(messageEncryptedDecodedB64);
 
             // Desencriptem el text
             byte[] messageDecodedB64Decrypted = Decryptor.decryptData(messageEncryptedDecodedB64, key);
             Log.i(getLocalClassName(),"messageDecodedB64Decrypted : [" + new String(messageDecodedB64Decrypted) + "]");
-            message = inputText + "**:**" + new String(messageDecodedB64Decrypted);
+            //message = inputText + "**:**" + new String(messageDecodedB64Decrypted);
 
 
             InputStream isInvoice = this.getResources().openRawResource(R.raw.invoice990001);
@@ -376,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Set<Service> serviceList = provider.getServices();
             for (Service service : serviceList)
             {
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 sb.append(provider.getName());
                 sb.append(";");
                 sb.append(provider.getInfo());
