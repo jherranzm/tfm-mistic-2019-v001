@@ -21,16 +21,21 @@ import android.widget.EditText;
 import org.apache.commons.io.IOUtils;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.utils.Constants;
+import org.jibx.runtime.BindingDirectory;
+import org.jibx.runtime.IBindingFactory;
+import org.jibx.runtime.IUnmarshallingContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
@@ -50,14 +55,21 @@ import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
+import es.facturae.facturae.v3.facturae.Facturae;
 import es.gob.afirma.core.signers.AOSignConstants;
 import es.gob.afirma.core.signers.AOSigner;
 import es.gob.afirma.signers.xades.AOFacturaESigner;
 
 //import android.util.Base64;
+
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -217,6 +229,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }else{
                 message += CR_LF + "ERROR : La firma NO es válida!";
             }
+
+            Document document = removeSignature(doc);
+
+            //message += CR_LF + documentToString(document);
+            message += CR_LF + getInfoFromFactura(documentToString(document));
 
         }catch (Exception e) {
             e.printStackTrace();
@@ -516,6 +533,70 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return doc;
     }
 
+    private Document removeSignature(Document document){
+
+        XPathFactory xpf = XPathFactory.newInstance();
+        XPath xpath = xpf.newXPath();
+
+        xpath.setNamespaceContext(new javax.xml.namespace.NamespaceContext() {
+
+            @SuppressWarnings("rawtypes")
+            @Override
+            public java.util.Iterator getPrefixes(final String namespaceURI) {
+                return Collections.singleton("fe").iterator();
+            }
+
+            @Override
+            public String getPrefix(final String namespaceURI) {
+                return "fe";
+            }
+
+            @Override
+            public String getNamespaceURI(final String prefix) {
+                return "http://www.facturae.es/Facturae/2014/v3.2.1/Facturae";
+            }
+        });
+
+        NodeList list = document.getElementsByTagNameNS(Constants.SignatureSpecNS, "Signature");
+        list.item(0).getParentNode().removeChild(list.item(0));
+
+        return document;
+    }
+
+    private String documentToString(Document doc) {
+        try {
+            StringWriter sw = new StringWriter();
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer transformer = tf.newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+            transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+            //transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+
+            transformer.transform(new DOMSource(doc), new StreamResult(sw));
+            return sw.toString();
+        } catch (Exception ex) {
+            throw new RuntimeException("Error converting to String", ex);
+        }
+    }
+
+    private String getInfoFromFactura(String factura){
+        String res = "";
+        try
+        {
+            IBindingFactory bfact = BindingDirectory.getFactory(Facturae.class);
+            IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
+
+            Facturae facturae = (Facturae)uctx.unmarshalDocument(new ByteArrayInputStream(factura.getBytes()), null);
+            res += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
+            res += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getLegalEntity().getCorporateName());
+            res += CR_LF + String.format("Factura         : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
+            res += CR_LF + String.format("Importe factura : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
 
     static {
         Security.insertProviderAt(new org.spongycastle.jce.provider.BouncyCastleProvider(), 1);
