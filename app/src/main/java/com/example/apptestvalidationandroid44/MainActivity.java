@@ -592,6 +592,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             res += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getLegalEntity().getCorporateName());
             res += CR_LF + String.format("Factura         : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
             res += CR_LF + String.format("Importe factura : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+            res += CR_LF + String.format("Impuestos       : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
         }catch (Exception e) {
             e.printStackTrace();
         }
