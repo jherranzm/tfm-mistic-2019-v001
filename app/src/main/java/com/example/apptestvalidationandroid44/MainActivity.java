@@ -81,15 +81,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public static final String EXTRA_MESSAGE = "com.example.appsecond.MESSAGE";
 
-    public static final String PKCS_12 = "PKCS12";
-    public final static String PKCS12_PASSWORD = "Th2S5p2rStr4ngP1ss";
-    public final static String CR_LF = "\n";
+    private static final String PKCS_12 = "PKCS12";
+    private final static String PKCS12_PASSWORD = "Th2S5p2rStr4ngP1ss";
+    private final static String CR_LF = "\n";
 
 
-    public EditText editText;
-    public EditText editText2;
-    public EditText urlEditText;
-    public InputMethodManager imm;
+    private EditText editText;
+    private EditText editText2;
+    private EditText urlEditText;
+    private InputMethodManager imm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,8 +101,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editText = findViewById(R.id.editText);
         editText2 = findViewById(R.id.editText2);
         urlEditText = findViewById(R.id.urlEditText);
-
-        editText2.setText("Looking for...");
 
         //Get the ID of button that will perform the network call
         Button btn =  findViewById(R.id.button);
@@ -189,23 +187,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             xpath.setNamespaceContext(new FacturaeNamespaceContext());
 
             String cifVendedor = xpath.evaluate("//fe:Facturae/Parties/SellerParty/TaxIdentification/TaxIdentificationNumber/text()", doc);
-            System.out.println("cifVendedor -> " + cifVendedor);
+            Log.i("", "cifVendedor -> " + cifVendedor);
             message += CR_LF + "CIF Vendedor : [" + cifVendedor + "]";
 
             String nombreVendedor = xpath.evaluate("//fe:Facturae/Parties/SellerParty/LegalEntity/CorporateName/text()", doc);
-            System.out.println("nombreVendedor -> " + nombreVendedor);
+            Log.i("", "nombreVendedor -> " + nombreVendedor);
             message += CR_LF + "Nombre Vendedor : [" + nombreVendedor + "]";
 
             String numeroFacturas = xpath.evaluate("count(//fe:Facturae/Invoices)", doc);
-            System.out.println("numeroFacturas -> " + numeroFacturas);
+            Log.i("", "numeroFacturas -> " + numeroFacturas);
             message += CR_LF + "Número facturas : [" + numeroFacturas + "]";
 
             String numeroFactura = xpath.evaluate("//fe:Facturae/Invoices/Invoice/InvoiceHeader/InvoiceNumber/text()", doc);
-            System.out.println("numeroFactura -> " + numeroFactura);
+            Log.i("", "numeroFactura -> " + numeroFactura);
             message += CR_LF + "Número factura : [" + numeroFactura + "]";
 
             String importeFactura = xpath.evaluate("//fe:Facturae/Invoices/Invoice/InvoiceTotals/InvoiceTotal/text()", doc);
-            System.out.println("importeFactura -> " + importeFactura);
+            Log.i("", "importeFactura -> " + importeFactura);
             message += CR_LF + "Importe factura : [" + importeFactura + "]";
 
             boolean valid = isValid(certificate, doc);
@@ -397,7 +395,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Provider provider = keystore.getProvider();
 
             //getInfoOverProviders(provider);
-            getInfoOverAllProviders();
+            //getInfoOverAllProviders();
 
             String inputText = editText.getText().toString();
 
@@ -411,7 +409,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //message = new String(messageEncryptedEncodedB64);
 
             // Decodifiquem el text de Base64
-            byte[] messageEncryptedDecodedB64 = Base64.decode(message, Base64.DEFAULT);
+            byte[] messageEncryptedDecodedB64 = Base64.decode(messageEncryptedEncodedB64, Base64.DEFAULT);
             Log.i(getLocalClassName(),"messageEncryptedDecodedB64 : [" + new String(messageEncryptedDecodedB64) + "]");
             //message = new String(messageEncryptedDecodedB64);
 
@@ -549,7 +547,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
-    protected Document getDocument(InputStream isDocument) {
+    private Document getDocument(InputStream isDocument) {
         Document doc = null;
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);

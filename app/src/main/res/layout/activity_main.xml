@@ -11,12 +11,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="256dp"
-        android:layout_marginLeft="256dp"
         android:layout_marginTop="72dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
         android:onClick="sendMessage"
-        android:text="Click"
+        android:text="@string/click"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/editText"
@@ -31,7 +29,7 @@
         android:ems="10"
         android:inputType="textPersonName"
         android:selectAllOnFocus="true"
-        android:text="Name"
+        android:text="@string/name"
         app:layout_constraintEnd_toStartOf="@+id/button"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -59,6 +57,7 @@
         android:layout_marginBottom="8dp"
         android:ems="10"
         android:inputType="textMultiLine"
+        android:text="@string/looking_for"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -69,9 +68,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:onClick="getURL"
-        android:text="Get Title"
+        android:text="@string/get_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button" />
 
@@ -80,13 +78,11 @@
         android:layout_width="263dp"
         android:layout_height="43dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:ems="10"
         android:inputType="textUri"
-        android:text="URL"
+        android:text="@string/url"
         app:layout_constraintEnd_toStartOf="@+id/getTitleURLButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editText" />
@@ -98,23 +94,10 @@
         android:layout_marginStart="84dp"
         android:layout_marginTop="284dp"
         android:onClick="verifySignedInvoice"
-        android:text="Verify Signature"
+        android:text="@string/verify_signature"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         tools:clickable="false" />
 
-    <Button
-        android:id="@+id/buttonSignXMLFile"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="420dp"
-        android:layout_marginEnd="8dp"
-        android:onClick="signInvoice"
-        android:text="Sign XML File"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
 </android.support.constraint.ConstraintLayout>
