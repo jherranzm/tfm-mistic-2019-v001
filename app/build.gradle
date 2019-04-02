@@ -52,4 +52,6 @@ dependencies {
 
     implementation 'edu.uoc.mistic.tfm.jherranzm:jbix-facturae:0.0.2'
 
+    implementation 'commons-lang:commons-lang:2.6'
+
 }

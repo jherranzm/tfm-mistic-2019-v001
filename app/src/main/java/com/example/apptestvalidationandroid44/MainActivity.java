@@ -18,6 +18,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.util.FacturaeNamespaceContext;
+import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.util.RandomStringGenerator;
+import com.example.apptestvalidationandroid44.crypto.AsimmetricDecryptor;
+import com.example.apptestvalidationandroid44.crypto.AsimmetricEncryptor;
+import com.example.apptestvalidationandroid44.crypto.SimmetricDecryptor;
+import com.example.apptestvalidationandroid44.crypto.SimmetricEncryptor;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.utils.Constants;
@@ -49,7 +56,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
@@ -180,28 +186,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             XPathFactory xpathFactory = XPathFactory.newInstance();
             XPath xpath = xpathFactory.newXPath();
 
-            xpath.setNamespaceContext(new javax.xml.namespace.NamespaceContext() {
+            xpath.setNamespaceContext(new FacturaeNamespaceContext());
 
-                @SuppressWarnings("rawtypes")
-                @Override
-                public java.util.Iterator getPrefixes(final String namespaceURI) {
-                    return Collections.singleton("fe").iterator();
-                }
-
-                @Override
-                public String getPrefix(final String namespaceURI) {
-                    return "fe";
-                }
-
-                @Override
-                public String getNamespaceURI(final String prefix) {
-                    return "http://www.facturae.es/Facturae/2014/v3.2.1/Facturae";
-                }
-            });
-
-            //String responseStatus = xpath.evaluate("//*[local-name()='SchemaVersion']/text()", doc); // Funciona!
-            //String responseStatus = xpath.evaluate("//*[local-name()='TotalAmount']/text()", doc); // Funciona!
-            //String responseStatus = xpath.evaluate("//fe:Facturae/FileHeader/SchemaVersion/text()", doc); // Funciona!
             String cifVendedor = xpath.evaluate("//fe:Facturae/Parties/SellerParty/TaxIdentification/TaxIdentificationNumber/text()", doc);
             System.out.println("cifVendedor -> " + cifVendedor);
             message += CR_LF + "CIF Vendedor : [" + cifVendedor + "]";
@@ -225,15 +211,72 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             boolean valid = isValid(certificate, doc);
 
             if(valid){
+                message += CR_LF;
                 message += CR_LF + "La firma es válida!";
             }else{
+                message += CR_LF;
                 message += CR_LF + "ERROR : La firma NO es válida!";
             }
 
             Document document = removeSignature(doc);
 
-            //message += CR_LF + documentToString(document);
-            message += CR_LF + getInfoFromFactura(documentToString(document));
+            Facturae facturae = getFacturaeFromFactura(documentToString(document));
+
+            message += CR_LF;
+            message += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
+            message += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getLegalEntity().getCorporateName());
+            message += CR_LF + String.format("Factura         : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
+            message += CR_LF + String.format("Import  factura : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+            message += CR_LF + String.format("Impostos        : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
+            message += CR_LF + String.format("Data            : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
+
+
+            Log.i("Enmascarament", "Inici...");
+            RandomStringGenerator rsg = new RandomStringGenerator();
+
+            String iv = rsg.getRandomString(16);
+            Log.i("Enmascarament", "iv : ["+iv+"]");
+            String simKey = rsg.getRandomString(16);
+            Log.i("Enmascarament", "simKey : ["+simKey+"]");
+
+            SimmetricEncryptor simEnc = new SimmetricEncryptor();
+            simEnc.setIv(iv);
+            simEnc.setKey(simKey);
+
+            String sellerEncripted = simEnc.encrypt(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
+            String totalEncripted  = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+            String dataEncripted   = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
+
+            message += CR_LF;
+            message += CR_LF + String.format("sellerEncripted : [%s]", sellerEncripted);
+            message += CR_LF + String.format("totalEncripted  : [%s]", totalEncripted);
+            message += CR_LF + String.format("dataEncripted   : [%s]", dataEncripted);
+
+            // Encriptació amb clau pública de iv i simKey
+            byte[] ivBytesEnc = AsimmetricEncryptor.encryptData(iv.getBytes(), certificate);
+            String ivStringEnc = es.gob.afirma.core.misc.Base64.encode(ivBytesEnc);
+            byte[] simKeyBytesEnc = AsimmetricEncryptor.encryptData(simKey.getBytes(), certificate);
+            String simKeyStringEnc = es.gob.afirma.core.misc.Base64.encode(simKeyBytesEnc);
+
+            message += CR_LF;
+            message += CR_LF + String.format("ivStringEnc      : [%s]", ivStringEnc);
+            message += CR_LF + String.format("simKeyStringEnc  : [%s]", simKeyStringEnc);
+            Log.i("Enmascarament", String.format("ivStringEnc      : [%d][%s]", ivStringEnc.length(), ivStringEnc));
+            Log.i("Enmascarament", String.format("simKeyStringEnc  : [%d][%s]", simKeyStringEnc.length(), simKeyStringEnc));
+
+
+            SimmetricDecryptor simDec = new SimmetricDecryptor();
+            simDec.setIv(iv);
+            simDec.setKey(simKey);
+
+            String sellerDecripted = simDec.decrypt(sellerEncripted);
+            String totalDecripted  = simDec.decrypt(totalEncripted);
+            String dataDecripted   = simDec.decrypt(dataEncripted);
+
+            message += CR_LF;
+            message += CR_LF + String.format("sellerDecripted : [%s]", sellerDecripted);
+            message += CR_LF + String.format("totalDecripted  : [%s]", totalDecripted);
+            message += CR_LF + String.format("dataDecripted   : [%s]", dataDecripted);
 
         }catch (Exception e) {
             e.printStackTrace();
@@ -359,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String inputText = editText.getText().toString();
 
             // Encriptem el text
-            byte[] messageEncrypted = Encryptor.encryptData(inputText.getBytes(), certificate);
+            byte[] messageEncrypted = AsimmetricEncryptor.encryptData(inputText.getBytes(), certificate);
             Log.i(getLocalClassName(),"messageEncrypted : [" + new String(messageEncrypted) + "]");
 
             // Codifiquem el text en Base64 per poder-lo enviar
@@ -373,7 +416,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //message = new String(messageEncryptedDecodedB64);
 
             // Desencriptem el text
-            byte[] messageDecodedB64Decrypted = Decryptor.decryptData(messageEncryptedDecodedB64, key);
+            byte[] messageDecodedB64Decrypted = AsimmetricDecryptor.decryptData(messageEncryptedDecodedB64, key);
             Log.i(getLocalClassName(),"messageDecodedB64Decrypted : [" + new String(messageDecodedB64Decrypted) + "]");
             //message = inputText + "**:**" + new String(messageDecodedB64Decrypted);
 
@@ -384,8 +427,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             byte[] baInvoiceSigned = IOUtils.toByteArray(isInvoiceSigned);
             byte[] fileContent = IOUtils.toByteArray(isInvoice);
-            byte[] fileContentEncrypted = Encryptor.encryptData(fileContent, certificate);
-            byte[] fileContentEncryptedDecrypted = Decryptor.decryptData(fileContentEncrypted, key);
+            byte[] fileContentEncrypted = AsimmetricEncryptor.encryptData(fileContent, certificate);
+            byte[] fileContentEncryptedDecrypted = AsimmetricDecryptor.decryptData(fileContentEncrypted, key);
 
             message = inputText + "**:**" + new String(messageDecodedB64Decrypted);
             message +="\n**:**["+fileContentEncryptedDecrypted.length+"]";
@@ -484,7 +527,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -538,24 +580,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         XPathFactory xpf = XPathFactory.newInstance();
         XPath xpath = xpf.newXPath();
 
-        xpath.setNamespaceContext(new javax.xml.namespace.NamespaceContext() {
-
-            @SuppressWarnings("rawtypes")
-            @Override
-            public java.util.Iterator getPrefixes(final String namespaceURI) {
-                return Collections.singleton("fe").iterator();
-            }
-
-            @Override
-            public String getPrefix(final String namespaceURI) {
-                return "fe";
-            }
-
-            @Override
-            public String getNamespaceURI(final String prefix) {
-                return "http://www.facturae.es/Facturae/2014/v3.2.1/Facturae";
-            }
-        });
+        xpath.setNamespaceContext(new FacturaeNamespaceContext());
 
         NodeList list = document.getElementsByTagNameNS(Constants.SignatureSpecNS, "Signature");
         list.item(0).getParentNode().removeChild(list.item(0));
@@ -597,6 +622,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         }
         return res;
+    }
+
+    private Facturae getFacturaeFromFactura(String factura){
+        String res = "";
+        Facturae facturae;
+        try
+        {
+            IBindingFactory bfact = BindingDirectory.getFactory(Facturae.class);
+            IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
+
+            return (Facturae)uctx.unmarshalDocument(new ByteArrayInputStream(factura.getBytes()), null);
+         }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     static {

@@ -1,4 +1,4 @@
-package com.example.apptestvalidationandroid44;
+package com.example.apptestvalidationandroid44.crypto;
 
 import org.spongycastle.cms.CMSAlgorithm;
 import org.spongycastle.cms.CMSEnvelopedData;
@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
-public class Encryptor {
+public class AsimmetricEncryptor {
     public static byte[] encryptData(byte[] data, X509Certificate encryptionCertificate)
             throws CertificateEncodingException, CMSException, IOException {
 
@@ -25,7 +25,7 @@ public class Encryptor {
             JceKeyTransRecipientInfoGenerator jceKey = new JceKeyTransRecipientInfoGenerator(encryptionCertificate);
             cmsEnvelopedDataGenerator.addRecipientInfoGenerator(jceKey);
             CMSTypedData msg = new CMSProcessableByteArray(data);
-            OutputEncryptor encryptor = new JceCMSContentEncryptorBuilder(CMSAlgorithm.AES128_CBC).setProvider("BC").build();
+            OutputEncryptor encryptor = new JceCMSContentEncryptorBuilder(CMSAlgorithm.AES256_CBC).setProvider("BC").build();
             CMSEnvelopedData cmsEnvelopedData = cmsEnvelopedDataGenerator.generate(msg,encryptor);
             encryptedData = cmsEnvelopedData.getEncoded();
         }

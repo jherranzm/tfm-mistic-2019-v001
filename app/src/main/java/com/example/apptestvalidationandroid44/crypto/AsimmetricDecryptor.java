@@ -1,4 +1,4 @@
-package com.example.apptestvalidationandroid44;
+package com.example.apptestvalidationandroid44.crypto;
 
 import org.spongycastle.cms.CMSEnvelopedData;
 import org.spongycastle.cms.CMSException;
@@ -10,7 +10,7 @@ import org.spongycastle.cms.jcajce.JceKeyTransRecipient;
 import java.security.PrivateKey;
 import java.util.Collection;
 
-public class Decryptor {
+public class AsimmetricDecryptor {
 
      public static byte[] decryptData(byte[] encryptedData, PrivateKey decryptionKey) throws CMSException {
 
