@@ -10,7 +10,7 @@ import org.spongycastle.cms.jcajce.JceKeyTransRecipient;
 import java.security.PrivateKey;
 import java.util.Collection;
 
-public class AsimmetricDecryptor {
+public class AsymmetricDecryptor {
 
      public static byte[] decryptData(byte[] encryptedData, PrivateKey decryptionKey) throws CMSException {
 

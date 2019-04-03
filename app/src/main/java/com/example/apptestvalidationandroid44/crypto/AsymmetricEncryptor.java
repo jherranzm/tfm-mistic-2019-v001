@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
-public class AsimmetricEncryptor {
+public class AsymmetricEncryptor {
     public static byte[] encryptData(byte[] data, X509Certificate encryptionCertificate)
             throws CertificateEncodingException, CMSException, IOException {
 

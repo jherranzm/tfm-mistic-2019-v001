@@ -17,13 +17,15 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.util.FacturaeNamespaceContext;
 import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.util.RandomStringGenerator;
-import com.example.apptestvalidationandroid44.crypto.AsimmetricDecryptor;
-import com.example.apptestvalidationandroid44.crypto.AsimmetricEncryptor;
-import com.example.apptestvalidationandroid44.crypto.SimmetricDecryptor;
-import com.example.apptestvalidationandroid44.crypto.SimmetricEncryptor;
+import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.util.UIDGenerator;
+import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
+import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
+import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
+import com.example.apptestvalidationandroid44.crypto.SymmetricEncryptor;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.xml.security.signature.XMLSignature;
@@ -91,6 +93,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText urlEditText;
     private InputMethodManager imm;
 
+    private static final String TAG = "MAIN_ACTIVITY";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -124,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        editText.getText().clear(); //or you can use editText.setText("");
+        editText.getText().clear();
     }
 
     public void verifySignedInvoice(View v){
@@ -163,7 +167,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.e(getLocalClassName(),"ERROR NO hay key!");
                 throw new Exception("ERROR no hay Key!");
             }
-            Log.i("", "key.getAlgorithm : " + key.getAlgorithm());
+            Log.i(TAG, "key.getAlgorithm : " + key.getAlgorithm());
+            Toast.makeText(this.getApplicationContext(), "key.getAlgorithm : " + key.getAlgorithm(), Toast.LENGTH_SHORT);
 
 
             Provider provider = keystore.getProvider();
@@ -180,31 +185,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Document doc = getDocument(isSignedInvoice);
 
             message += CR_LF + "root : " + doc.getDocumentElement().getTagName();
-
-            XPathFactory xpathFactory = XPathFactory.newInstance();
-            XPath xpath = xpathFactory.newXPath();
-
-            xpath.setNamespaceContext(new FacturaeNamespaceContext());
-
-            String cifVendedor = xpath.evaluate("//fe:Facturae/Parties/SellerParty/TaxIdentification/TaxIdentificationNumber/text()", doc);
-            Log.i("", "cifVendedor -> " + cifVendedor);
-            message += CR_LF + "CIF Vendedor : [" + cifVendedor + "]";
-
-            String nombreVendedor = xpath.evaluate("//fe:Facturae/Parties/SellerParty/LegalEntity/CorporateName/text()", doc);
-            Log.i("", "nombreVendedor -> " + nombreVendedor);
-            message += CR_LF + "Nombre Vendedor : [" + nombreVendedor + "]";
-
-            String numeroFacturas = xpath.evaluate("count(//fe:Facturae/Invoices)", doc);
-            Log.i("", "numeroFacturas -> " + numeroFacturas);
-            message += CR_LF + "Número facturas : [" + numeroFacturas + "]";
-
-            String numeroFactura = xpath.evaluate("//fe:Facturae/Invoices/Invoice/InvoiceHeader/InvoiceNumber/text()", doc);
-            Log.i("", "numeroFactura -> " + numeroFactura);
-            message += CR_LF + "Número factura : [" + numeroFactura + "]";
-
-            String importeFactura = xpath.evaluate("//fe:Facturae/Invoices/Invoice/InvoiceTotals/InvoiceTotal/text()", doc);
-            Log.i("", "importeFactura -> " + importeFactura);
-            message += CR_LF + "Importe factura : [" + importeFactura + "]";
 
             boolean valid = isValid(certificate, doc);
 
@@ -229,21 +209,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             message += CR_LF + String.format("Data            : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
 
 
-            Log.i("Enmascarament", "Inici...");
+            Log.i(TAG, "Inici...");
             RandomStringGenerator rsg = new RandomStringGenerator();
 
             String iv = rsg.getRandomString(16);
-            Log.i("Enmascarament", "iv : ["+iv+"]");
+            Log.i(TAG, "iv : ["+iv+"]");
             String simKey = rsg.getRandomString(16);
-            Log.i("Enmascarament", "simKey : ["+simKey+"]");
+            Log.i(TAG, "simKey : ["+simKey+"]");
 
-            SimmetricEncryptor simEnc = new SimmetricEncryptor();
+            SymmetricEncryptor simEnc = new SymmetricEncryptor();
             simEnc.setIv(iv);
             simEnc.setKey(simKey);
 
             String sellerEncripted = simEnc.encrypt(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
             String totalEncripted  = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
             String dataEncripted   = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
+
+            StringBuffer sb = new StringBuffer();
+            sb.append(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
+            sb.append("|");
+            sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
+            sb.append("|");
+            sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+
+            Log.i(TAG, "UIDFacturaHash : ["+sb.toString()+"]");
+            String UIDFacturaHash = UIDGenerator.generate(sb.toString());
+            Log.i(TAG, "UIDFacturaHash : ["+UIDFacturaHash+"]");
 
             message += CR_LF;
             message += CR_LF + String.format("sellerEncripted : [%s]", sellerEncripted);
@@ -254,34 +245,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.i("Enmascarament", String.format("dataEncripted   : [%s]", dataEncripted));
 
             // Encriptació amb clau pública de iv i simKey
-            byte[] ivBytesEnc = AsimmetricEncryptor.encryptData(iv.getBytes(), certificate);
+            byte[] ivBytesEnc = AsymmetricEncryptor.encryptData(iv.getBytes(), certificate);
             String ivStringEnc = new String(Base64.encode(ivBytesEnc, Base64.DEFAULT), StandardCharsets.UTF_8);
-            byte[] simKeyBytesEnc = AsimmetricEncryptor.encryptData(simKey.getBytes(), certificate);
+            byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), certificate);
             String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.DEFAULT), StandardCharsets.UTF_8);
 
             message += CR_LF;
             //message += CR_LF + String.format("ivStringEnc      : [%s]", ivStringEnc);
             //message += CR_LF + String.format("simKeyStringEnc  : [%s]", simKeyStringEnc);
-            Log.i("Enmascarament", String.format("ivStringEnc      : [%d][%s]", ivStringEnc.length(), ivStringEnc));
-            Log.i("Enmascarament", String.format("simKeyStringEnc  : [%d][%s]", simKeyStringEnc.length(), simKeyStringEnc));
+            Log.i(TAG, String.format("ivStringEnc      : [%d][%s]", ivStringEnc.length(), ivStringEnc));
+            Log.i(TAG, String.format("simKeyStringEnc  : [%d][%s]", simKeyStringEnc.length(), simKeyStringEnc));
 
             // Desencriptació amb clau privada de iv i simKey
             byte[] ivBytesDec = Base64.decode(ivStringEnc, Base64.DEFAULT);
-            byte[] ivBytesEncDec = AsimmetricDecryptor.decryptData(ivBytesDec, key);
+            byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, key);
             String ivStringDec = new String(ivBytesEncDec);
 
             byte[] simKeyBytesDec = Base64.decode(simKeyStringEnc, Base64.DEFAULT);
-            byte[] simKeyBytesEncDec = AsimmetricDecryptor.decryptData(simKeyBytesDec, key);
+            byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, key);
             String simKeyStringDec = new String(simKeyBytesEncDec);
 
-            Log.i("Desenmascarament", "iv : ["+ivStringDec+"]");
-            Log.i("Desenmascarament", "simKey : ["+simKeyStringDec+"]");
+            Log.i(TAG, "iv : ["+ivStringDec+"]");
+            Log.i(TAG, "simKey : ["+simKeyStringDec+"]");
 
-            Log.i("Desenmascarament", "iv : ["+iv+"]["+ivStringDec+"]");
-            Log.i("Desenmascarament", "simKey : ["+simKey+"]["+simKeyStringDec+"]");
+            Log.i(TAG, "iv : ["+iv+"]["+ivStringDec+"]");
+            Log.i(TAG, "simKey : ["+simKey+"]["+simKeyStringDec+"]");
 
 
-            SimmetricDecryptor simDec = new SimmetricDecryptor();
+            SymmetricDecryptor simDec = new SymmetricDecryptor();
             simDec.setIv(ivStringDec);
             simDec.setKey(simKeyStringDec);
 
@@ -293,9 +284,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             message += CR_LF + String.format("sellerDecripted : [%s]", sellerDecripted);
             message += CR_LF + String.format("totalDecripted  : [%s]", totalDecripted);
             message += CR_LF + String.format("dataDecripted   : [%s]", dataDecripted);
-            Log.i("Desenmascarament", String.format("sellerDecripted : [%s]", sellerDecripted));
-            Log.i("Desenmascarament", String.format("totalDecripted  : [%s]", totalDecripted));
-            Log.i("Desenmascarament", String.format("dataDecripted   : [%s]", dataDecripted));
+            Log.i(TAG, String.format("sellerDecripted : [%s]", sellerDecripted));
+            Log.i(TAG, String.format("totalDecripted  : [%s]", totalDecripted));
+            Log.i(TAG, String.format("dataDecripted   : [%s]", dataDecripted));
 
 
         }catch (Exception e) {
@@ -412,7 +403,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.e(getLocalClassName(),"ERROR NO hay key!");
                 throw new Exception("ERROR no hay Key!");
             }
-            Log.i("", "key.getAlgorithm : " + key.getAlgorithm());
+            Log.i(TAG, "key.getAlgorithm : " + key.getAlgorithm());
 
             Provider provider = keystore.getProvider();
 
@@ -422,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String inputText = editText.getText().toString();
 
             // Encriptem el text
-            byte[] messageEncrypted = AsimmetricEncryptor.encryptData(inputText.getBytes(), certificate);
+            byte[] messageEncrypted = AsymmetricEncryptor.encryptData(inputText.getBytes(), certificate);
             Log.i(getLocalClassName(),"messageEncrypted : [" + new String(messageEncrypted) + "]");
 
             // Codifiquem el text en Base64 per poder-lo enviar
@@ -436,7 +427,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //message = new String(messageEncryptedDecodedB64);
 
             // Desencriptem el text
-            byte[] messageDecodedB64Decrypted = AsimmetricDecryptor.decryptData(messageEncryptedDecodedB64, key);
+            byte[] messageDecodedB64Decrypted = AsymmetricDecryptor.decryptData(messageEncryptedDecodedB64, key);
             Log.i(getLocalClassName(),"messageDecodedB64Decrypted : [" + new String(messageDecodedB64Decrypted) + "]");
             //message = inputText + "**:**" + new String(messageDecodedB64Decrypted);
 
@@ -447,8 +438,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             byte[] baInvoiceSigned = IOUtils.toByteArray(isInvoiceSigned);
             byte[] fileContent = IOUtils.toByteArray(isInvoice);
-            byte[] fileContentEncrypted = AsimmetricEncryptor.encryptData(fileContent, certificate);
-            byte[] fileContentEncryptedDecrypted = AsimmetricDecryptor.decryptData(fileContentEncrypted, key);
+            byte[] fileContentEncrypted = AsymmetricEncryptor.encryptData(fileContent, certificate);
+            byte[] fileContentEncryptedDecrypted = AsymmetricDecryptor.decryptData(fileContentEncrypted, key);
 
             message = inputText + "**:**" + new String(messageDecodedB64Decrypted);
             message +="\n**:**["+fileContentEncryptedDecrypted.length+"]";

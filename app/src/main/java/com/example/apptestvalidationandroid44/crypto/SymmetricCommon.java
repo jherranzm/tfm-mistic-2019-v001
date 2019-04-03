@@ -9,7 +9,7 @@ import java.security.spec.AlgorithmParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class SimmetricCommon {
+public class SymmetricCommon {
 
 	private String iv;
 	private String key;
