@@ -54,4 +54,7 @@ dependencies {
 
     implementation 'commons-lang:commons-lang:2.6'
 
+    // Base64 encode/decode
+    implementation 'commons-codec:commons-codec:1.11'
+
 }

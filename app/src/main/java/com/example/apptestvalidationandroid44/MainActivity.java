@@ -43,6 +43,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
@@ -74,7 +75,6 @@ import es.gob.afirma.core.signers.AOSignConstants;
 import es.gob.afirma.core.signers.AOSigner;
 import es.gob.afirma.signers.xades.AOFacturaESigner;
 
-//import android.util.Base64;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -249,23 +249,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             message += CR_LF + String.format("sellerEncripted : [%s]", sellerEncripted);
             message += CR_LF + String.format("totalEncripted  : [%s]", totalEncripted);
             message += CR_LF + String.format("dataEncripted   : [%s]", dataEncripted);
+            Log.i("Enmascarament", String.format("sellerEncripted : [%s]", sellerEncripted));
+            Log.i("Enmascarament", String.format("totalEncripted  : [%s]", totalEncripted));
+            Log.i("Enmascarament", String.format("dataEncripted   : [%s]", dataEncripted));
 
             // Encriptació amb clau pública de iv i simKey
             byte[] ivBytesEnc = AsimmetricEncryptor.encryptData(iv.getBytes(), certificate);
-            String ivStringEnc = es.gob.afirma.core.misc.Base64.encode(ivBytesEnc);
+            String ivStringEnc = new String(Base64.encode(ivBytesEnc, Base64.DEFAULT), StandardCharsets.UTF_8);
             byte[] simKeyBytesEnc = AsimmetricEncryptor.encryptData(simKey.getBytes(), certificate);
-            String simKeyStringEnc = es.gob.afirma.core.misc.Base64.encode(simKeyBytesEnc);
+            String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.DEFAULT), StandardCharsets.UTF_8);
 
             message += CR_LF;
-            message += CR_LF + String.format("ivStringEnc      : [%s]", ivStringEnc);
-            message += CR_LF + String.format("simKeyStringEnc  : [%s]", simKeyStringEnc);
+            //message += CR_LF + String.format("ivStringEnc      : [%s]", ivStringEnc);
+            //message += CR_LF + String.format("simKeyStringEnc  : [%s]", simKeyStringEnc);
             Log.i("Enmascarament", String.format("ivStringEnc      : [%d][%s]", ivStringEnc.length(), ivStringEnc));
             Log.i("Enmascarament", String.format("simKeyStringEnc  : [%d][%s]", simKeyStringEnc.length(), simKeyStringEnc));
 
+            // Desencriptació amb clau privada de iv i simKey
+            byte[] ivBytesDec = Base64.decode(ivStringEnc, Base64.DEFAULT);
+            byte[] ivBytesEncDec = AsimmetricDecryptor.decryptData(ivBytesDec, key);
+            String ivStringDec = new String(ivBytesEncDec);
+
+            byte[] simKeyBytesDec = Base64.decode(simKeyStringEnc, Base64.DEFAULT);
+            byte[] simKeyBytesEncDec = AsimmetricDecryptor.decryptData(simKeyBytesDec, key);
+            String simKeyStringDec = new String(simKeyBytesEncDec);
+
+            Log.i("Desenmascarament", "iv : ["+ivStringDec+"]");
+            Log.i("Desenmascarament", "simKey : ["+simKeyStringDec+"]");
+
+            Log.i("Desenmascarament", "iv : ["+iv+"]["+ivStringDec+"]");
+            Log.i("Desenmascarament", "simKey : ["+simKey+"]["+simKeyStringDec+"]");
+
 
             SimmetricDecryptor simDec = new SimmetricDecryptor();
-            simDec.setIv(iv);
-            simDec.setKey(simKey);
+            simDec.setIv(ivStringDec);
+            simDec.setKey(simKeyStringDec);
 
             String sellerDecripted = simDec.decrypt(sellerEncripted);
             String totalDecripted  = simDec.decrypt(totalEncripted);
@@ -275,6 +293,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             message += CR_LF + String.format("sellerDecripted : [%s]", sellerDecripted);
             message += CR_LF + String.format("totalDecripted  : [%s]", totalDecripted);
             message += CR_LF + String.format("dataDecripted   : [%s]", dataDecripted);
+            Log.i("Desenmascarament", String.format("sellerDecripted : [%s]", sellerDecripted));
+            Log.i("Desenmascarament", String.format("totalDecripted  : [%s]", totalDecripted));
+            Log.i("Desenmascarament", String.format("dataDecripted   : [%s]", dataDecripted));
+
 
         }catch (Exception e) {
             e.printStackTrace();
@@ -367,7 +389,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void sendMessage(View view) {
         Intent intent = new Intent(this, DisplayMessageActivity.class);
 
-        String message ="";
+        String message;
         try {
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
 
@@ -404,7 +426,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.i(getLocalClassName(),"messageEncrypted : [" + new String(messageEncrypted) + "]");
 
             // Codifiquem el text en Base64 per poder-lo enviar
-            byte[] messageEncryptedEncodedB64 = Base64.encode(messageEncrypted,Base64.DEFAULT);//.encode(message.getBytes());
+            byte[] messageEncryptedEncodedB64 = Base64.encode(messageEncrypted, Base64.DEFAULT);//.encode(message.getBytes());
             Log.i(getLocalClassName(),"messageEncryptedEncodedB64 : [" + new String(messageEncryptedEncodedB64) + "]");
             //message = new String(messageEncryptedEncodedB64);
 
@@ -521,7 +543,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             editText2.setText(res);
         } catch (Exception e) {
             Log.i("APP", "public void getURL() — get item number " + e.getMessage());
-            editText2.setText("Ups... error en GetDataFromUrlTask " + e.getMessage());
+            String res = "Ups... error en GetDataFromUrlTask " + e.getMessage();
+            editText2.setText(res);
         }
     }
 
