@@ -12,7 +12,7 @@ public class UIDGenerator {
             try {
                 MessageDigest md = MessageDigest.getInstance("SHA-256");
                 byte[] key = md.digest(str.getBytes(StandardCharsets.UTF_8));
-                return Base64.encodeToString(key, Base64.DEFAULT);
+                return Base64.encodeToString(key, Base64.NO_WRAP);
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             } catch (Exception e) {

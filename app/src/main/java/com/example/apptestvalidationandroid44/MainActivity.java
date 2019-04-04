@@ -1,11 +1,14 @@
 package com.example.apptestvalidationandroid44;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +22,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
+import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.model.Invoice;
 import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.util.FacturaeNamespaceContext;
 import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.util.RandomStringGenerator;
 import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.util.UIDGenerator;
@@ -33,6 +43,9 @@ import org.apache.xml.security.utils.Constants;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IUnmarshallingContext;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -81,6 +94,9 @@ import es.gob.afirma.signers.xades.AOFacturaESigner;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private Context mContext;
+    private Activity mActivity;
+
     public static final String EXTRA_MESSAGE = "com.example.appsecond.MESSAGE";
 
     private static final String PKCS_12 = "PKCS12";
@@ -91,7 +107,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText editText;
     private EditText editText2;
     private EditText urlEditText;
+    private Button getTitleURLButton;
     private InputMethodManager imm;
+    private ConstraintLayout mCLayout;
 
     private static final String TAG = "MAIN_ACTIVITY";
 
@@ -102,9 +120,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         setContentView(R.layout.activity_main);
 
+        // Get the application context
+        mContext = getApplicationContext();
+        mActivity = MainActivity.this;
+
+
         editText = findViewById(R.id.editText);
         editText2 = findViewById(R.id.editText2);
         urlEditText = findViewById(R.id.urlEditText);
+        getTitleURLButton = findViewById(R.id.getTitleURLButton);
 
         //Get the ID of button that will perform the network call
         Button btn =  findViewById(R.id.button);
@@ -124,6 +148,69 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // Request user to grant write external storage permission.
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
+
+
+        // Set a click listener for button widget
+        getTitleURLButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Empty the TextView
+                editText2.setText("");
+
+                // Initialize a new RequestQueue instance
+                RequestQueue requestQueue = Volley.newRequestQueue(mContext);
+
+                // Initialize a new JsonArrayRequest instance
+                JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+                        Request.Method.GET,
+                        urlEditText.getText().toString(),
+                        null,
+                        new Response.Listener<JSONArray>() {
+                            @Override
+                            public void onResponse(JSONArray response) {
+                                // Do something with response
+                                //mTextView.setText(response.toString());
+
+                                // Process the JSON
+                                try{
+                                    // Loop through the array elements
+                                    for(int i=0;i<response.length();i++){
+                                        // Get current json object
+                                        JSONObject student = response.getJSONObject(i);
+
+                                        // Get the current student (json object) data
+                                        String firstName = student.getString("id");
+                                        String lastName = student.getString("numFactura");
+
+
+                                        // Display the formatted json data in text view
+                                        editText2.append(firstName +" " + lastName);
+                                        editText2.append("\n\n");
+                                    }
+                                }catch (JSONException e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        },
+                        new Response.ErrorListener(){
+                            @Override
+                            public void onErrorResponse(VolleyError error){
+                                // Do something when error occurred
+                                Snackbar.make(
+                                        mCLayout,
+                                        "Error...",
+                                        Snackbar.LENGTH_LONG
+                                ).show();
+                            }
+                        }
+                );
+
+                // Add JsonArrayRequest to the RequestQueue
+                requestQueue.add(jsonArrayRequest);
+            }
+        });
+
+
     }
 
     @Override
@@ -168,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 throw new Exception("ERROR no hay Key!");
             }
             Log.i(TAG, "key.getAlgorithm : " + key.getAlgorithm());
-            Toast.makeText(this.getApplicationContext(), "key.getAlgorithm : " + key.getAlgorithm(), Toast.LENGTH_SHORT);
+            Toast.makeText(this.getApplicationContext(), "key.getAlgorithm : " + key.getAlgorithm(), Toast.LENGTH_SHORT).show();
 
 
             Provider provider = keystore.getProvider();
@@ -225,16 +312,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String totalEncripted  = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
             String dataEncripted   = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
 
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
             sb.append("|");
             sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
             sb.append("|");
             sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+            sb.append("|");
+            sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
 
             Log.i(TAG, "UIDFacturaHash : ["+sb.toString()+"]");
             String UIDFacturaHash = UIDGenerator.generate(sb.toString());
             Log.i(TAG, "UIDFacturaHash : ["+UIDFacturaHash+"]");
+
+            Invoice invoice = new Invoice(UIDFacturaHash
+                    , facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber()
+                    , facturae.getParties().getSellerParty().getLegalEntity().getCorporateName()
+                    , facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber()
+                    , facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal()
+                    , facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs()
+                    , facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate()
+                    );
+
+            Log.i(TAG, "invoice : ["+invoice.toString()+"]");
 
             message += CR_LF;
             message += CR_LF + String.format("sellerEncripted : [%s]", sellerEncripted);
@@ -506,16 +606,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Set<Service> serviceList = provider.getServices();
             for (Service service : serviceList)
             {
-                StringBuilder sb = new StringBuilder();
-                sb.append(provider.getName());
-                sb.append(";");
-                sb.append(provider.getInfo());
-                sb.append(";");
-                sb.append(service.getType());
-                sb.append(";");
-                sb.append(service.getAlgorithm());
-                sb.append(";");
-                Log.i("Providers",sb.toString());
+                String sb = provider.getName() +
+                        ";" +
+                        provider.getInfo() +
+                        ";" +
+                        service.getType() +
+                        ";" +
+                        service.getAlgorithm() +
+                        ";";
+                Log.i("Providers", sb);
             }
         }
     }
