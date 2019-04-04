@@ -1,14 +1,11 @@
 package com.example.apptestvalidationandroid44;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -60,20 +57,14 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
-import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.Provider;
-import java.security.Provider.Service;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Properties;
-import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -86,16 +77,13 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
 import es.facturae.facturae.v3.facturae.Facturae;
-import es.gob.afirma.core.signers.AOSignConstants;
-import es.gob.afirma.core.signers.AOSigner;
-import es.gob.afirma.signers.xades.AOFacturaESigner;
 
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Context mContext;
-    private Activity mActivity;
+    //private Activity mActivity;
 
     public static final String EXTRA_MESSAGE = "com.example.appsecond.MESSAGE";
 
@@ -107,11 +95,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText editText;
     private EditText editText2;
     private EditText urlEditText;
-    private Button getTitleURLButton;
     private InputMethodManager imm;
-    private ConstraintLayout mCLayout;
 
     private static final String TAG = "MAIN_ACTIVITY";
+
+    private X509Certificate certificate;
+    private PrivateKey key;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,13 +111,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Get the application context
         mContext = getApplicationContext();
-        mActivity = MainActivity.this;
+
+        // Security
+        try {
+            CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
+            InputStream isServerCrt = this.getResources().openRawResource(R.raw.server);
+            InputStream isServerKey = this.getResources().openRawResource(R.raw.serverkey);
+            certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
+
+            isServerCrt.close();
+
+            char[] keystorePassword = PKCS12_PASSWORD.toCharArray();
+            char[] keyPassword = PKCS12_PASSWORD.toCharArray();
+
+            KeyStore keystore = KeyStore.getInstance(PKCS_12, "BC");
+            keystore.load(isServerKey, keystorePassword);
+            isServerKey.close();
+
+            key = (PrivateKey) keystore.getKey("Server", keyPassword);
+            if(key == null) {
+                Log.e(getLocalClassName(),"ERROR NO hay key!");
+                throw new Exception("ERROR no hay Key!");
+            }
+
+        } catch (NoSuchAlgorithmException e) {
+            Log.e("ERROR", ""+e.getLocalizedMessage());
+            Toast.makeText(mContext, "ERROR : Algorithm " + e.getLocalizedMessage() , Toast.LENGTH_LONG).show();
+        } catch (UnrecoverableKeyException e) {
+            Log.e("ERROR", ""+e.getLocalizedMessage());
+            Toast.makeText(mContext, "ERROR : UnrecoverableKey " + e.getLocalizedMessage() , Toast.LENGTH_LONG).show();
+        } catch (KeyStoreException e) {
+            Log.e("ERROR", ""+e.getLocalizedMessage());
+            Toast.makeText(mContext, "ERROR : KeyStore " + e.getLocalizedMessage() , Toast.LENGTH_LONG).show();
+        }catch(Exception e){
+            Log.e("ERROR", ""+e.getLocalizedMessage());
+            Toast.makeText(mContext, "ERROR : genérico."+e.getLocalizedMessage() , Toast.LENGTH_LONG).show();
+        }
 
 
         editText = findViewById(R.id.editText);
         editText2 = findViewById(R.id.editText2);
         urlEditText = findViewById(R.id.urlEditText);
-        getTitleURLButton = findViewById(R.id.getTitleURLButton);
+        Button getTitleURLButton = findViewById(R.id.getTitleURLButton);
 
         //Get the ID of button that will perform the network call
         Button btn =  findViewById(R.id.button);
@@ -196,11 +220,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void onErrorResponse(VolleyError error){
                                 // Do something when error occurred
-                                Snackbar.make(
-                                        mCLayout,
-                                        "Error...",
-                                        Snackbar.LENGTH_LONG
-                                ).show();
+                                Toast.makeText(mContext, "ERROR : genérico."+error.getLocalizedMessage() , Toast.LENGTH_LONG).show();
                             }
                         }
                 );
@@ -223,12 +243,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         String message;
         try {
-            CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
 
-            InputStream isServerCrt = this.getResources().openRawResource(R.raw.server);
-            InputStream isServerKey = this.getResources().openRawResource(R.raw.serverkey);
-
-            //InputStream isSignedInvoice = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
 
             File sdcard = Environment.getExternalStorageDirectory();
             File file = new File(sdcard,"Download/invoice_990001_xml_20190329_2020707_xml.xsig");
@@ -238,29 +253,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             InputStream isSignedInvoice = new FileInputStream(file);
 
-            X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
-
-            isServerCrt.close();
-
-            char[] keystorePassword = PKCS12_PASSWORD.toCharArray();
-            char[] keyPassword = PKCS12_PASSWORD.toCharArray();
-
-            KeyStore keystore = KeyStore.getInstance(PKCS_12, "BC");
-            keystore.load(isServerKey, keystorePassword);
-            isServerKey.close();
-
-            PrivateKey key = (PrivateKey) keystore.getKey("Server", keyPassword);
-            if(key == null) {
-                Log.e(getLocalClassName(),"ERROR NO hay key!");
-                throw new Exception("ERROR no hay Key!");
-            }
             Log.i(TAG, "key.getAlgorithm : " + key.getAlgorithm());
             Toast.makeText(this.getApplicationContext(), "key.getAlgorithm : " + key.getAlgorithm(), Toast.LENGTH_SHORT).show();
 
 
-            Provider provider = keystore.getProvider();
+            //Provider provider = keystore.getProvider();
 
-            message = "Provider : [" +provider.getName()+"] : [" +provider.getInfo()+"]";
+            //message = "Provider : [" +provider.getName()+"] : [" +provider.getInfo()+"]";
+
+            message = "";
 
             byte[] baInvoiceSigned = IOUtils.toByteArray(isSignedInvoice);
 
@@ -288,6 +289,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Facturae facturae = getFacturaeFromFactura(documentToString(document));
 
             message += CR_LF;
+            assert facturae != null;
             message += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
             message += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getLegalEntity().getCorporateName());
             message += CR_LF + String.format("Factura         : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
@@ -410,71 +412,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return signature.checkSignatureValue(certificate.getPublicKey());
     }
 
-    public void signInvoice(View v){
-
-        Intent intent = new Intent(this, DisplayMessageActivity.class);
-
-        String message;
-
-        try {
-            CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
-
-            InputStream isServerCrt = this.getResources().openRawResource(R.raw.server);
-            InputStream isServerKey = this.getResources().openRawResource(R.raw.serverkey);
-
-            InputStream isInvoice = this.getResources().openRawResource(R.raw.invoice990001);
-            byte[] baInvoiceSigned = IOUtils.toByteArray(isInvoice);
-            isInvoice.close();
-
-            X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
-
-            isServerCrt.close();
-
-            char[] keystorePassword = PKCS12_PASSWORD.toCharArray();
-            char[] keyPassword = PKCS12_PASSWORD.toCharArray();
-
-            KeyStore keystore = KeyStore.getInstance(PKCS_12, "BC");
-            keystore.load(isServerKey, keystorePassword);
-            isServerKey.close();
-
-            PrivateKey key = (PrivateKey) keystore.getKey("Server", keyPassword);
-            if(key == null) {
-                Log.e(getLocalClassName(),"ERROR NO hay key!");
-                throw new Exception("ERROR no hay Key!");
-            }
-            Log.i("", "key.getAlgorithm : " + key.getAlgorithm());
-
-            Provider provider = keystore.getProvider();
-
-            message = "Provider : [" +provider.getName()+"] : [" +provider.getInfo()+"]";
-
-            PrivateKeyEntry pke = (PrivateKeyEntry) keystore.getEntry("Server", new KeyStore.PasswordProtection(PKCS12_PASSWORD.toCharArray()));
-
-
-
-            message += CR_LF + "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]";
-
-
-            final AOSigner signer = new AOFacturaESigner();
-
-            final byte[] result = signer.sign(
-                    baInvoiceSigned,
-                    AOSignConstants.SIGN_ALGORITHM_SHA256WITHRSA,
-                    key,
-                    pke.getCertificateChain(),
-                    new Properties()
-            );
-
-
-        }catch (Exception e) {
-            e.printStackTrace();
-            message = "Exception:" + e.getLocalizedMessage();
-        }
-
-        intent.putExtra(EXTRA_MESSAGE, message);
-        startActivity(intent);
-
-    }
 
     /** Called when the user taps the Send button */
     public void sendMessage(View view) {
@@ -482,30 +419,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         String message;
         try {
-            CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
-
-            InputStream isServerCrt = this.getResources().openRawResource(R.raw.server);
-            InputStream isServerKey = this.getResources().openRawResource(R.raw.serverkey);
-
-            X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
-
-            isServerCrt.close();
-
-            char[] keystorePassword = PKCS12_PASSWORD.toCharArray();
-            char[] keyPassword = PKCS12_PASSWORD.toCharArray();
-
-            KeyStore keystore = KeyStore.getInstance(PKCS_12, "BC");
-            keystore.load(isServerKey, keystorePassword);
-            isServerKey.close();
-
-            PrivateKey key = (PrivateKey) keystore.getKey("Server", keyPassword);
-            if(key == null) {
-                Log.e(getLocalClassName(),"ERROR NO hay key!");
-                throw new Exception("ERROR no hay Key!");
-            }
-            Log.i(TAG, "key.getAlgorithm : " + key.getAlgorithm());
-
-            Provider provider = keystore.getProvider();
+            //Provider provider = keystore.getProvider();
 
             //getInfoOverProviders(provider);
             //getInfoOverAllProviders();
@@ -533,10 +447,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
             InputStream isInvoice = this.getResources().openRawResource(R.raw.invoice990001);
-            InputStream isInvoiceSigned = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
+            //InputStream isInvoiceSigned = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
 
 
-            byte[] baInvoiceSigned = IOUtils.toByteArray(isInvoiceSigned);
             byte[] fileContent = IOUtils.toByteArray(isInvoice);
             byte[] fileContentEncrypted = AsymmetricEncryptor.encryptData(fileContent, certificate);
             byte[] fileContentEncryptedDecrypted = AsymmetricDecryptor.decryptData(fileContentEncrypted, key);
@@ -550,19 +463,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } catch (CertificateException e) {
             e.printStackTrace();
             message = e.getLocalizedMessage();
-        } catch (NoSuchProviderException e) {
-            e.printStackTrace();
-            message = e.getLocalizedMessage();
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-            message = e.getLocalizedMessage();
         } catch (IOException e) {
-            e.printStackTrace();
-            message = e.getLocalizedMessage();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            message = e.getLocalizedMessage();
-        } catch (UnrecoverableKeyException e) {
             e.printStackTrace();
             message = e.getLocalizedMessage();
         } catch (Exception e) {
@@ -575,49 +476,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivity(intent);
     }
 
-    private void getInfoOverProviders(Provider provider) {
-        for (Provider p : Security.getProviders()) {
-
-            Log.i(getLocalClassName(),"Provider:["+p.getName()+"] ["+p.getInfo()+"]");
-        }
-
-        Log.i(getLocalClassName(),"provider.getName(): ["+provider.getName()+"]");
-        Log.i(getLocalClassName(),"provider.getInfo(): ["+provider.getInfo()+"]");
-
-        Set<String> messageDigest = Security.getAlgorithms("MessageDigest");
-        for(String s : messageDigest){
-            Log.i("MessageDigest","messageDigest: ["+s+"]");
-        }
-
-        Set<String> algorithms = Security.getAlgorithms("Algorithm");
-        for(String s : algorithms){
-            Log.i("Algorithm","algorithm: ["+s+"]");
-        }
-    }
-
-    private void getInfoOverAllProviders(){
-        System.out.println("Availble Providers are:");
-        Provider [] providerList = Security.getProviders();
-        for (Provider provider : providerList)
-        {
-            System.out.println("Name: "  + provider.getName());
-            System.out.println("Information:\n" + provider.getInfo());
-
-            Set<Service> serviceList = provider.getServices();
-            for (Service service : serviceList)
-            {
-                String sb = provider.getName() +
-                        ";" +
-                        provider.getInfo() +
-                        ";" +
-                        service.getType() +
-                        ";" +
-                        service.getAlgorithm() +
-                        ";";
-                Log.i("Providers", sb);
-            }
-        }
-    }
 
     /** Called when the user taps the Send button */
     public void getURL(View view) {
@@ -716,28 +574,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private String getInfoFromFactura(String factura){
-        String res = "";
-        try
-        {
-            IBindingFactory bfact = BindingDirectory.getFactory(Facturae.class);
-            IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
-
-            Facturae facturae = (Facturae)uctx.unmarshalDocument(new ByteArrayInputStream(factura.getBytes()), null);
-            res += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
-            res += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getLegalEntity().getCorporateName());
-            res += CR_LF + String.format("Factura         : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
-            res += CR_LF + String.format("Importe factura : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
-            res += CR_LF + String.format("Impuestos       : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-        return res;
-    }
-
     private Facturae getFacturaeFromFactura(String factura){
-        String res = "";
-        Facturae facturae;
         try
         {
             IBindingFactory bfact = BindingDirectory.getFactory(Facturae.class);
