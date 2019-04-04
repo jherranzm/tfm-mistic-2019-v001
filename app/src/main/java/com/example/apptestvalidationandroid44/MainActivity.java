@@ -65,6 +65,8 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -149,13 +151,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
 
-        editText = findViewById(R.id.editText);
-        editText2 = findViewById(R.id.editText2);
-        urlEditText = findViewById(R.id.urlEditText);
-        Button getTitleURLButton = findViewById(R.id.getTitleURLButton);
+        editText = findViewById(R.id.editTextDataToEncrypt);
+        editText2 = findViewById(R.id.editTextResult);
+        urlEditText = findViewById(R.id.editTextURL);
+        Button getTitleURLButton = findViewById(R.id.buttonGetFacturasFromServer);
 
         //Get the ID of button that will perform the network call
-        Button btn =  findViewById(R.id.button);
+        Button btn =  findViewById(R.id.buttonEncrypt);
         assert btn != null;
 
         String url ="https://www.google.com";
@@ -390,6 +392,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.i(TAG, String.format("totalDecripted  : [%s]", totalDecripted));
             Log.i(TAG, String.format("dataDecripted   : [%s]", dataDecripted));
 
+            Map<String, String> params = new HashMap<>();
+            params.put("uidfactura", (UIDFacturaHash == null ? "---" : UIDFacturaHash));
+            params.put("seller", sellerEncripted);
+            params.put("total", totalEncripted);
+            params.put("data", dataEncripted);
+
+            PostDataToUrlTask getData = new PostDataToUrlTask(params);
+
+            try {
+                String url = urlEditText.getText().toString();
+                String res = getData.execute(url).get();
+                editText2.setText(res);
+            } catch (Exception e) {
+                Log.i("APP", "public void getURL() — get item number " + e.getMessage());
+                String res = "Ups... error en GetDataFromUrlTask " + e.getMessage();
+                editText2.setText(res);
+            }
 
         }catch (Exception e) {
             e.printStackTrace();
@@ -413,18 +432,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    /** Called when the user taps the Send button */
-    public void sendMessage(View view) {
+    public void onClickEncryptButton(View view) {
         Intent intent = new Intent(this, DisplayMessageActivity.class);
 
         String message;
         try {
-            //Provider provider = keystore.getProvider();
-
-            //getInfoOverProviders(provider);
-            //getInfoOverAllProviders();
-
             String inputText = editText.getText().toString();
+            Log.i(getLocalClassName(),"inputText : [" + inputText + "]");
 
             // Encriptem el text
             byte[] messageEncrypted = AsymmetricEncryptor.encryptData(inputText.getBytes(), certificate);
@@ -447,16 +461,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
             InputStream isInvoice = this.getResources().openRawResource(R.raw.invoice990001);
-            //InputStream isInvoiceSigned = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
+            Log.i(getLocalClassName(),"inputStreamInvoice ...");
 
 
             byte[] fileContent = IOUtils.toByteArray(isInvoice);
-            byte[] fileContentEncrypted = AsymmetricEncryptor.encryptData(fileContent, certificate);
-            byte[] fileContentEncryptedDecrypted = AsymmetricDecryptor.decryptData(fileContentEncrypted, key);
+            Log.i(getLocalClassName(),"inputStreamInvoice : fileContent.length " + fileContent.length);
 
-            message = inputText + "**:**" + new String(messageDecodedB64Decrypted);
-            message +="\n**:**["+fileContentEncryptedDecrypted.length+"]";
-            message +="\n**:**["+fileContent.length+"]";
+            byte[] fileContentEncrypted = AsymmetricEncryptor.encryptData(fileContent, certificate);
+            Log.i(getLocalClassName(),"inputStreamInvoice : fileContentEncrypted.length " + fileContentEncrypted.length);
+
+            byte[] fileContentEncryptedDecrypted = AsymmetricDecryptor.decryptData(fileContentEncrypted, key);
+            Log.i(getLocalClassName(),"inputStreamInvoice : fileContentEncryptedDecrypted.length " + fileContentEncryptedDecrypted.length);
+
+
+            message = CR_LF +"Text original : ["+inputText+"]";
+            message += CR_LF + "Text encriptat i desencriptat :  [" + new String(messageDecodedB64Decrypted) +"]";
+            message += CR_LF + "Longitud fitxer original :  [" + fileContent.length +"]";
+            message += CR_LF + "Longitud fitxer encriptat i desencriptat :  [" + fileContentEncryptedDecrypted.length +"]";
 
             isInvoice.close();
 
@@ -475,7 +496,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
     }
-
 
     /** Called when the user taps the Send button */
     public void getURL(View view) {

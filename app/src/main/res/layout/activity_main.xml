@@ -7,22 +7,22 @@
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/buttonEncrypt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="256dp"
         android:layout_marginTop="72dp"
         android:layout_marginEnd="16dp"
-        android:onClick="sendMessage"
+        android:onClick="onClickEncryptButton"
         android:text="@string/click"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/editText"
-        app:layout_constraintStart_toStartOf="@+id/editText"
+        app:layout_constraintStart_toEndOf="@+id/editTextDataToEncrypt"
+        app:layout_constraintStart_toStartOf="@+id/editTextDataToEncrypt"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <EditText
-        android:id="@+id/editText"
+        android:id="@+id/editTextDataToEncrypt"
         android:layout_width="248dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="72dp"
@@ -30,7 +30,9 @@
         android:inputType="textPersonName"
         android:selectAllOnFocus="true"
         android:text="@string/name"
-        app:layout_constraintEnd_toStartOf="@+id/button"
+        android:labelFor="@id/buttonEncrypt"
+        android:autofillHints="Data to encrypt"
+        app:layout_constraintEnd_toStartOf="@+id/buttonEncrypt"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
@@ -47,23 +49,26 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/editText2"
+        android:id="@+id/editTextResult"
         android:layout_width="368dp"
-        android:layout_height="189dp"
+        android:layout_height="283dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginBottom="8dp"
         android:ems="10"
         android:inputType="textMultiLine"
         android:text="@string/looking_for"
+        android:autofillHints="Text output"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.518"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintVertical_bias="0.961" />
 
     <Button
-        android:id="@+id/getTitleURLButton"
+        android:id="@+id/buttonGetFacturasFromServer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -71,10 +76,10 @@
         android:onClick="getURL"
         android:text="@string/get_title"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonEncrypt" />
 
     <EditText
-        android:id="@+id/urlEditText"
+        android:id="@+id/editTextURL"
         android:layout_width="263dp"
         android:layout_height="43dp"
         android:layout_marginStart="8dp"
@@ -83,9 +88,11 @@
         android:ems="10"
         android:inputType="textUri"
         android:text="@string/url"
-        app:layout_constraintEnd_toStartOf="@+id/getTitleURLButton"
+        android:autofillHints="URL to post verified invoices"
+        android:labelFor="@id/buttonGetFacturasFromServer"
+        app:layout_constraintEnd_toStartOf="@+id/buttonGetFacturasFromServer"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextDataToEncrypt" />
 
     <Button
         android:id="@+id/buttonVerifySignedInvoice"
