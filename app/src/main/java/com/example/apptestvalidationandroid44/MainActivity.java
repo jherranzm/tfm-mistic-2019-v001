@@ -259,18 +259,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this.getApplicationContext(), "key.getAlgorithm : " + key.getAlgorithm(), Toast.LENGTH_SHORT).show();
 
 
-            //Provider provider = keystore.getProvider();
-
-            //message = "Provider : [" +provider.getName()+"] : [" +provider.getInfo()+"]";
-
             message = "";
 
             byte[] baInvoiceSigned = IOUtils.toByteArray(isSignedInvoice);
 
             message += CR_LF + "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]";
-
-
-            //isSignedInvoice = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
 
             isSignedInvoice = new FileInputStream(file);
             Document doc = getDocument(isSignedInvoice);
@@ -315,8 +308,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             String taxIdentificationNumberEncrypted = simEnc.encrypt(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
             String invoiceNumberEncrypted = simEnc.encrypt(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
-            String totalEncrypted  = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+
+            // Versió inicial: No s'encripten els imports, ja que si no el sistema NO pot fer càlculs
+            String totalEncrypted  = ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal();
             String dataEncrypted   = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
+
+
             String signedInvoiceEncrypted   = simEnc.encrypt(baInvoiceSigned);
 
             StringBuilder sb = new StringBuilder();
@@ -350,7 +347,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             message += CR_LF + String.format("dataEncrypted   : [%s]", dataEncrypted);
             Log.i(TAG, String.format("taxIdentificationNumberEncrypted : [%d][%s]", taxIdentificationNumberEncrypted.length(), taxIdentificationNumberEncrypted));
             Log.i(TAG, String.format("invoiceNumberEncrypted : [%d][%s]", invoiceNumberEncrypted.length(), invoiceNumberEncrypted));
-            Log.i(TAG, String.format("totalEncrypted  : [%d][%s]", totalEncrypted.length(), totalEncrypted));
+            Log.i(TAG, String.format("totalEncrypted  : [%d]", totalEncrypted));
             Log.i(TAG, String.format("dataEncrypted   : [%d][%s]", dataEncrypted.length(), dataEncrypted));
             Log.i(TAG, String.format("signedInvoiceEncrypted   : [%d][%s]", signedInvoiceEncrypted.length(), signedInvoiceEncrypted));
 
@@ -387,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             simDec.setKey(simKeyStringDec);
 
             String sellerDecripted = simDec.decrypt(taxIdentificationNumberEncrypted);
-            String totalDecripted  = simDec.decrypt(totalEncrypted);
+            String totalDecripted  = totalEncrypted; //simDec.decrypt(totalEncrypted);
             String dataDecripted   = simDec.decrypt(dataEncrypted);
 
             message += CR_LF;
@@ -403,6 +400,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             params.put("seller", taxIdentificationNumberEncrypted);
             params.put("invoicenumber", invoiceNumberEncrypted);
             params.put("total", totalEncrypted);
+            params.put("totaltaxoutputs", ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
             params.put("data", dataEncrypted);
             params.put("file", signedInvoiceEncrypted);
             params.put("iv", ivStringEnc);
