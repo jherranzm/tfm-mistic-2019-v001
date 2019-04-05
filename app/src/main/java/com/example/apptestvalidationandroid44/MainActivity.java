@@ -270,8 +270,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             message += CR_LF + "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]";
 
 
-            isSignedInvoice = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
+            //isSignedInvoice = this.getResources().openRawResource(R.raw.invoice_990001_xml_20190329_2020707_xml);
 
+            isSignedInvoice = new FileInputStream(file);
             Document doc = getDocument(isSignedInvoice);
 
             message += CR_LF + "root : " + doc.getDocumentElement().getTagName();
@@ -312,9 +313,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             simEnc.setIv(iv);
             simEnc.setKey(simKey);
 
-            String sellerEncripted = simEnc.encrypt(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
-            String totalEncripted  = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
-            String dataEncripted   = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
+            String taxIdentificationNumberEncrypted = simEnc.encrypt(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
+            String invoiceNumberEncrypted = simEnc.encrypt(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
+            String totalEncrypted  = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+            String dataEncrypted   = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
+            String signedInvoiceEncrypted   = simEnc.encrypt(baInvoiceSigned);
 
             StringBuilder sb = new StringBuilder();
             sb.append(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
@@ -341,18 +344,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.i(TAG, "invoice : ["+invoice.toString()+"]");
 
             message += CR_LF;
-            message += CR_LF + String.format("sellerEncripted : [%s]", sellerEncripted);
-            message += CR_LF + String.format("totalEncripted  : [%s]", totalEncripted);
-            message += CR_LF + String.format("dataEncripted   : [%s]", dataEncripted);
-            Log.i("Enmascarament", String.format("sellerEncripted : [%s]", sellerEncripted));
-            Log.i("Enmascarament", String.format("totalEncripted  : [%s]", totalEncripted));
-            Log.i("Enmascarament", String.format("dataEncripted   : [%s]", dataEncripted));
+            message += CR_LF + String.format("taxIdentificationNumberEncrypted : [%s]", taxIdentificationNumberEncrypted);
+            message += CR_LF + String.format("invoiceNumberEncrypted : [%s]", invoiceNumberEncrypted);
+            message += CR_LF + String.format("totalEncrypted  : [%s]", totalEncrypted);
+            message += CR_LF + String.format("dataEncrypted   : [%s]", dataEncrypted);
+            Log.i(TAG, String.format("taxIdentificationNumberEncrypted : [%d][%s]", taxIdentificationNumberEncrypted.length(), taxIdentificationNumberEncrypted));
+            Log.i(TAG, String.format("invoiceNumberEncrypted : [%d][%s]", invoiceNumberEncrypted.length(), invoiceNumberEncrypted));
+            Log.i(TAG, String.format("totalEncrypted  : [%d][%s]", totalEncrypted.length(), totalEncrypted));
+            Log.i(TAG, String.format("dataEncrypted   : [%d][%s]", dataEncrypted.length(), dataEncrypted));
+            Log.i(TAG, String.format("signedInvoiceEncrypted   : [%d][%s]", signedInvoiceEncrypted.length(), signedInvoiceEncrypted));
 
             // Encriptació amb clau pública de iv i simKey
             byte[] ivBytesEnc = AsymmetricEncryptor.encryptData(iv.getBytes(), certificate);
-            String ivStringEnc = new String(Base64.encode(ivBytesEnc, Base64.DEFAULT), StandardCharsets.UTF_8);
+            String ivStringEnc = new String(Base64.encode(ivBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
             byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), certificate);
-            String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.DEFAULT), StandardCharsets.UTF_8);
+            String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
 
             message += CR_LF;
             //message += CR_LF + String.format("ivStringEnc      : [%s]", ivStringEnc);
@@ -361,11 +367,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.i(TAG, String.format("simKeyStringEnc  : [%d][%s]", simKeyStringEnc.length(), simKeyStringEnc));
 
             // Desencriptació amb clau privada de iv i simKey
-            byte[] ivBytesDec = Base64.decode(ivStringEnc, Base64.DEFAULT);
+            byte[] ivBytesDec = Base64.decode(ivStringEnc, Base64.NO_WRAP);
             byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, key);
             String ivStringDec = new String(ivBytesEncDec);
 
-            byte[] simKeyBytesDec = Base64.decode(simKeyStringEnc, Base64.DEFAULT);
+            byte[] simKeyBytesDec = Base64.decode(simKeyStringEnc, Base64.NO_WRAP);
             byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, key);
             String simKeyStringDec = new String(simKeyBytesEncDec);
 
@@ -380,9 +386,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             simDec.setIv(ivStringDec);
             simDec.setKey(simKeyStringDec);
 
-            String sellerDecripted = simDec.decrypt(sellerEncripted);
-            String totalDecripted  = simDec.decrypt(totalEncripted);
-            String dataDecripted   = simDec.decrypt(dataEncripted);
+            String sellerDecripted = simDec.decrypt(taxIdentificationNumberEncrypted);
+            String totalDecripted  = simDec.decrypt(totalEncrypted);
+            String dataDecripted   = simDec.decrypt(dataEncrypted);
 
             message += CR_LF;
             message += CR_LF + String.format("sellerDecripted : [%s]", sellerDecripted);
@@ -394,18 +400,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             Map<String, String> params = new HashMap<>();
             params.put("uidfactura", (UIDFacturaHash == null ? "---" : UIDFacturaHash));
-            params.put("seller", sellerEncripted);
-            params.put("total", totalEncripted);
-            params.put("data", dataEncripted);
+            params.put("seller", taxIdentificationNumberEncrypted);
+            params.put("invoicenumber", invoiceNumberEncrypted);
+            params.put("total", totalEncrypted);
+            params.put("data", dataEncrypted);
+            params.put("file", signedInvoiceEncrypted);
+            params.put("iv", ivStringEnc);
+            params.put("key", simKeyStringEnc);
 
             PostDataToUrlTask getData = new PostDataToUrlTask(params);
 
             try {
                 String url = urlEditText.getText().toString();
                 String res = getData.execute(url).get();
-                editText2.setText(res);
+                //editText2.setText(res);
+                message += CR_LF;
+                message += CR_LF + String.format("res : [%s]", res);
             } catch (Exception e) {
-                Log.i("APP", "public void getURL() — get item number " + e.getMessage());
+                Log.i(TAG, "public void getURL() — get item number " + e.getMessage());
                 String res = "Ups... error en GetDataFromUrlTask " + e.getMessage();
                 editText2.setText(res);
             }
@@ -445,12 +457,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.i(getLocalClassName(),"messageEncrypted : [" + new String(messageEncrypted) + "]");
 
             // Codifiquem el text en Base64 per poder-lo enviar
-            byte[] messageEncryptedEncodedB64 = Base64.encode(messageEncrypted, Base64.DEFAULT);//.encode(message.getBytes());
+            byte[] messageEncryptedEncodedB64 = Base64.encode(messageEncrypted, Base64.NO_WRAP);//.encode(message.getBytes());
             Log.i(getLocalClassName(),"messageEncryptedEncodedB64 : [" + new String(messageEncryptedEncodedB64) + "]");
             //message = new String(messageEncryptedEncodedB64);
 
             // Decodifiquem el text de Base64
-            byte[] messageEncryptedDecodedB64 = Base64.decode(messageEncryptedEncodedB64, Base64.DEFAULT);
+            byte[] messageEncryptedDecodedB64 = Base64.decode(messageEncryptedEncodedB64, Base64.NO_WRAP);
             Log.i(getLocalClassName(),"messageEncryptedDecodedB64 : [" + new String(messageEncryptedDecodedB64) + "]");
             //message = new String(messageEncryptedDecodedB64);
 
@@ -510,7 +522,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String res = getData.execute(url).get();
             editText2.setText(res);
         } catch (Exception e) {
-            Log.i("APP", "public void getURL() — get item number " + e.getMessage());
+            Log.i(TAG, "public void getURL() — get item number " + e.getMessage());
             String res = "Ups... error en GetDataFromUrlTask " + e.getMessage();
             editText2.setText(res);
         }
