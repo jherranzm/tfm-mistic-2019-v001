@@ -9,4 +9,8 @@
 
     <string name="url">http://10.0.2.2:8080/facturas</string>
     <string name="verify_signature">Verify Signature</string>
+
+
+    <string name="title_activity_show_uploaded_invoice">Show Uploaded Invoice</string>
+    <string name="goToUploadedInvoice">Go To Uploaded Invoice</string>
 </resources>

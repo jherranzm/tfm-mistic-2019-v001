@@ -43,6 +43,7 @@ import org.jibx.runtime.IUnmarshallingContext;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.spongycastle.cms.CMSException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -95,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private EditText editText;
-    private EditText editText2;
+    //private EditText editText2;
     private EditText urlEditText;
     private InputMethodManager imm;
 
@@ -152,16 +153,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         editText = findViewById(R.id.editTextDataToEncrypt);
-        editText2 = findViewById(R.id.editTextResult);
+        //editText2 = findViewById(R.id.editTextResult);
         urlEditText = findViewById(R.id.editTextURL);
         Button getTitleURLButton = findViewById(R.id.buttonGetFacturasFromServer);
+        Button goToShowUploadedInvoice = findViewById(R.id.buttonGoToShowUploadedInvoice);
 
         //Get the ID of button that will perform the network call
         Button btn =  findViewById(R.id.buttonEncrypt);
         assert btn != null;
 
-        String url ="https://www.google.com";
-        editText2.setText(url);
+        //String url ="https://www.google.com";
+        //editText2.setText(url);
 
         imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -181,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View view) {
                 // Empty the TextView
-                editText2.setText("");
+                //editText2.setText("");
 
                 // Initialize a new RequestQueue instance
                 RequestQueue requestQueue = Volley.newRequestQueue(mContext);
@@ -197,23 +199,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 // Do something with response
                                 //mTextView.setText(response.toString());
 
+                                String message = "";
+
+                                Log.i(TAG, response.toString());
+
                                 // Process the JSON
                                 try{
                                     // Loop through the array elements
                                     for(int i=0;i<response.length();i++){
                                         // Get current json object
-                                        JSONObject student = response.getJSONObject(i);
+                                        JSONObject factura = response.getJSONObject(i);
 
-                                        // Get the current student (json object) data
-                                        String firstName = student.getString("id");
-                                        String lastName = student.getString("numFactura");
+                                        // Get the current factura (json object) data
+                                        long id = factura.getLong("id");
+                                        String uid = factura.getString("uid");
+                                        String taxIdentificationNumber = factura.getString("taxIdentificationNumber");
+                                        String invoiceNumber = factura.getString("invoiceNumber");
+                                        String issueDate = factura.getString("issueDate");
+                                        double invoiceTotal = factura.getDouble("invoiceTotal");
 
+                                        String iv = factura.getString("iv");
+                                        String simKey = factura.getString("simKey");
 
-                                        // Display the formatted json data in text view
-                                        editText2.append(firstName +" " + lastName);
-                                        editText2.append("\n\n");
+                                        // Desencriptació amb clau privada de iv i simKey
+                                        byte[] ivBytesDec = Base64.decode(iv, Base64.NO_WRAP);
+                                        byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, key);
+                                        String ivStringDec = new String(ivBytesEncDec);
+
+                                        byte[] simKeyBytesDec = Base64.decode(simKey, Base64.NO_WRAP);
+                                        byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, key);
+                                        String simKeyStringDec = new String(simKeyBytesEncDec);
+
+                                        SymmetricDecryptor simDec = new SymmetricDecryptor();
+                                        simDec.setIv(ivStringDec);
+                                        simDec.setKey(simKeyStringDec);
+
+                                        String taxIdentificationNumberDecrypted = simDec.decrypt(taxIdentificationNumber);
+                                        String invoiceNumberDecrypted = simDec.decrypt(invoiceNumber);
+                                        String issueDateDecrypted = simDec.decrypt(issueDate);
+
+                                        message += "ID : " +id + CR_LF;
+                                        message += "CIF: " + taxIdentificationNumberDecrypted + CR_LF;
+                                        message += "Num.Factura: " + invoiceNumberDecrypted + CR_LF;
+                                        message += "Data Factura: " + issueDateDecrypted + CR_LF;
+                                        message += "Total Factura : " + invoiceTotal + CR_LF + CR_LF;
+
+                                        Intent intent = new Intent(mContext, DisplayMessageActivity.class);
+                                        intent.putExtra(EXTRA_MESSAGE, message);
+                                        startActivity(intent);
                                     }
                                 }catch (JSONException e){
+                                    e.printStackTrace();
+                                }catch (CMSException e){
                                     e.printStackTrace();
                                 }
                             }
@@ -232,6 +269,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+        goToShowUploadedInvoice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(mContext, ShowUploadedInvoiceActivity.class);
+                //intent.putExtra(EXTRA_MESSAGE, message);
+                startActivity(intent);
+            }
+        });
 
     }
 
@@ -347,7 +392,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             message += CR_LF + String.format("dataEncrypted   : [%s]", dataEncrypted);
             Log.i(TAG, String.format("taxIdentificationNumberEncrypted : [%d][%s]", taxIdentificationNumberEncrypted.length(), taxIdentificationNumberEncrypted));
             Log.i(TAG, String.format("invoiceNumberEncrypted : [%d][%s]", invoiceNumberEncrypted.length(), invoiceNumberEncrypted));
-            Log.i(TAG, String.format("totalEncrypted  : [%d]", totalEncrypted));
+            Log.i(TAG, String.format("totalEncrypted  : [%s]", totalEncrypted));
             Log.i(TAG, String.format("dataEncrypted   : [%d][%s]", dataEncrypted.length(), dataEncrypted));
             Log.i(TAG, String.format("signedInvoiceEncrypted   : [%d][%s]", signedInvoiceEncrypted.length(), signedInvoiceEncrypted));
 
@@ -383,17 +428,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             simDec.setIv(ivStringDec);
             simDec.setKey(simKeyStringDec);
 
-            String sellerDecripted = simDec.decrypt(taxIdentificationNumberEncrypted);
-            String totalDecripted  = totalEncrypted; //simDec.decrypt(totalEncrypted);
-            String dataDecripted   = simDec.decrypt(dataEncrypted);
+            String sellerDecrypted = simDec.decrypt(taxIdentificationNumberEncrypted);
+            String totalDecrypted  = totalEncrypted; //simDec.decrypt(totalEncrypted);
+            String dataDecrypted   = simDec.decrypt(dataEncrypted);
 
             message += CR_LF;
-            message += CR_LF + String.format("sellerDecripted : [%s]", sellerDecripted);
-            message += CR_LF + String.format("totalDecripted  : [%s]", totalDecripted);
-            message += CR_LF + String.format("dataDecripted   : [%s]", dataDecripted);
-            Log.i(TAG, String.format("sellerDecripted : [%s]", sellerDecripted));
-            Log.i(TAG, String.format("totalDecripted  : [%s]", totalDecripted));
-            Log.i(TAG, String.format("dataDecripted   : [%s]", dataDecripted));
+            message += CR_LF + String.format("sellerDecrypted : [%s]", sellerDecrypted);
+            message += CR_LF + String.format("totalDecrypted  : [%s]", totalDecrypted);
+            message += CR_LF + String.format("dataDecrypted   : [%s]", dataDecrypted);
+            Log.i(TAG, String.format("sellerDecrypted : [%s]", sellerDecrypted));
+            Log.i(TAG, String.format("totalDecrypted  : [%s]", totalDecrypted));
+            Log.i(TAG, String.format("dataDecrypted   : [%s]", dataDecrypted));
 
             Map<String, String> params = new HashMap<>();
             params.put("uidfactura", (UIDFacturaHash == null ? "---" : UIDFacturaHash));
@@ -416,8 +461,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 message += CR_LF + String.format("res : [%s]", res);
             } catch (Exception e) {
                 Log.i(TAG, "public void getURL() — get item number " + e.getMessage());
-                String res = "Ups... error en GetDataFromUrlTask " + e.getMessage();
-                editText2.setText(res);
+                //String res = "Ups... error en GetDataFromUrlTask " + e.getMessage();
+                //editText2.setText(res);
             }
 
         }catch (Exception e) {
@@ -513,16 +558,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Ocultar teclat...
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
-        GetDataFromUrlTask getData = new GetDataFromUrlTask();
+        //GetDataFromUrlTask getData = new GetDataFromUrlTask();
 
         try {
             String url = urlEditText.getText().toString();
-            String res = getData.execute(url).get();
-            editText2.setText(res);
+            Log.i(TAG, "getURL(): " + url);
+            //String res = getData.execute(url).get();
+            //editText2.setText(res);
         } catch (Exception e) {
             Log.i(TAG, "public void getURL() — get item number " + e.getMessage());
-            String res = "Ups... error en GetDataFromUrlTask " + e.getMessage();
-            editText2.setText(res);
+            //String res = "Ups... error en GetDataFromUrlTask " + e.getMessage();
+            //editText2.setText(res);
         }
     }
 

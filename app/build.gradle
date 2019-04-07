@@ -33,7 +33,8 @@ dependencies {
     //
     implementation 'com.madgag.spongycastle:core:1.58.0.0' // Core lightweight API
     implementation 'com.madgag.spongycastle:prov:1.58.0.0' // JCE provider (requires core)
-    implementation 'com.madgag.spongycastle:bcpkix-jdk15on:1.58.0.0' // PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs (requires prov)
+    implementation 'com.madgag.spongycastle:bcpkix-jdk15on:1.58.0.0'
+    // PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs (requires prov)
 
     // apache Santuario
     //# https://mvnrepository.com/artifact/org.apache.santuario/xmlsec
