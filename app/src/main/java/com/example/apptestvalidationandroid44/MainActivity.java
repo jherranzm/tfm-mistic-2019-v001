@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -87,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private Context mContext;
     //private Activity mActivity;
+    ProgressBar mProgressBar;
 
     public static final String EXTRA_MESSAGE = "com.example.appsecond.MESSAGE";
 
@@ -114,6 +116,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Get the application context
         mContext = getApplicationContext();
+        mProgressBar = findViewById(R.id.progressBar1);
+        mProgressBar.setVisibility(View.INVISIBLE);
 
         // Security
         try {
@@ -185,6 +189,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // Empty the TextView
                 //editText2.setText("");
 
+                mProgressBar.setVisibility(View.VISIBLE);
+
                 // Initialize a new RequestQueue instance
                 RequestQueue requestQueue = Volley.newRequestQueue(mContext);
 
@@ -197,8 +203,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void onResponse(JSONArray response) {
                                 // Do something with response
-                                //mTextView.setText(response.toString());
-
                                 String message = "";
 
                                 Log.i(TAG, response.toString());
@@ -244,6 +248,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         message += "Data Factura: " + issueDateDecrypted + CR_LF;
                                         message += "Total Factura : " + invoiceTotal + CR_LF + CR_LF;
 
+                                        mProgressBar.setVisibility(View.INVISIBLE);
+
                                         Intent intent = new Intent(mContext, DisplayMessageActivity.class);
                                         intent.putExtra(EXTRA_MESSAGE, message);
                                         startActivity(intent);
@@ -266,6 +272,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 // Add JsonArrayRequest to the RequestQueue
                 requestQueue.add(jsonArrayRequest);
+
+                //mProgressBar.setVisibility(View.GONE);
             }
         });
 
@@ -335,8 +343,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             message += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getLegalEntity().getCorporateName());
             message += CR_LF + String.format("Factura         : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
             message += CR_LF + String.format("Import  factura : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+            message += CR_LF + String.format("Import brut     : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount());
             message += CR_LF + String.format("Impostos        : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
             message += CR_LF + String.format("Data            : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
+
+            facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount();
 
 
             Log.i(TAG, "Inici...");
