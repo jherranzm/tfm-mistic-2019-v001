@@ -26,14 +26,21 @@ public class DisplayMessageActivity extends AppCompatActivity {
         String message = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
 
         ArrayList<Invoice> invoices = (ArrayList<Invoice>)intent.getSerializableExtra(MainActivity.INVOICE_LIST);
-        Log.i(TAG, "Número de factures rebudes: " + invoices.size());
-        String txtInvoices="";
-        for(int k = 0; k<invoices.size(); k++){
-            txtInvoices += invoices.get(k).getTaxIdentificationNumber() + CR_LF;
+        StringBuilder txtInvoices = new StringBuilder();
+        if(invoices == null){
+            // Do nothing
+            Log.i(TAG, "No se han recibido facturas...");
+        }else {
+            Log.i(TAG, "Número de factures rebudes: " + invoices.size());
+            for (int k = 0; k < invoices.size(); k++) {
+                txtInvoices.append(invoices.get(k).getTaxIdentificationNumber()).append(CR_LF);
+            }
         }
+
+        txtInvoices.append(message);
 
         // Capture the layout's TextView and set the string as its text
         TextView textView = findViewById(R.id.editText3);
-        textView.setText(txtInvoices+message);
+        textView.setText(txtInvoices.toString());
     }
 }

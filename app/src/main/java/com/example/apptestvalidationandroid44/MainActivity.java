@@ -202,28 +202,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void onResponse(JSONArray response) {
                                 // Do something with response
-                                String message = "";
 
                                 Log.i(TAG, response.toString());
 
                                 // Process the JSON
                                 try{
-                                    ArrayList<Invoice> invoices = new ArrayList<>();
+                                    ArrayList<Invoice> invoices;
 
                                     invoices = getInvoicesFromResponse(response);
 
+                                    StringBuilder message = new StringBuilder();
                                     for(Invoice invoice : invoices) {
-                                        message += "ID : " + invoice.getUid() + CR_LF;
-                                        message += "CIF: " + invoice.getTaxIdentificationNumber() + CR_LF;
-                                        message += "Num.Factura: " + invoice.getInvoiceNumber() + CR_LF;
-                                        message += "Data Factura: " + invoice.getIssueDate() + CR_LF;
-                                        message += "Total Factura : " + invoice.getInvoiceTotal() + CR_LF + CR_LF;
+                                        message.append("ID : ").append(invoice.getUid()).append(CR_LF);
+                                        message.append("CIF: ").append(invoice.getTaxIdentificationNumber()).append(CR_LF);
+                                        message.append("Num.Factura: ").append(invoice.getInvoiceNumber()).append(CR_LF);
+                                        message.append("Data Factura: ").append(invoice.getIssueDate()).append(CR_LF);
+                                        message.append("Total Factura : ").append(invoice.getInvoiceTotal()).append(CR_LF).append(CR_LF);
                                     }
 
                                     mProgressBar.setVisibility(View.INVISIBLE);
 
                                     Intent intent = new Intent(mContext, DisplayMessageActivity.class);
-                                    intent.putExtra(EXTRA_MESSAGE, message);
+                                    intent.putExtra(EXTRA_MESSAGE, message.toString());
                                     intent.putExtra(INVOICE_LIST, invoices);
                                     startActivity(intent);
 
@@ -265,28 +265,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void onResponse(JSONArray response) {
                                 // Do something with response
-                                String message = "";
 
                                 Log.i(TAG, response.toString());
 
                                 // Process the JSON
                                 try{
-                                    ArrayList<Invoice> invoices = new ArrayList<>();
+                                    ArrayList<Invoice> invoices;
 
                                     invoices = getInvoicesFromResponse(response);
 
+                                    StringBuilder message = new StringBuilder();
                                     for(Invoice invoice : invoices) {
-                                        message += "ID : " + invoice.getUid() + CR_LF;
-                                        message += "CIF: " + invoice.getTaxIdentificationNumber() + CR_LF;
-                                        message += "Num.Factura: " + invoice.getInvoiceNumber() + CR_LF;
-                                        message += "Data Factura: " + invoice.getIssueDate() + CR_LF;
-                                        message += "Total Factura : " + invoice.getInvoiceTotal() + CR_LF + CR_LF;
+                                        message.append("ID : ").append(invoice.getUid()).append(CR_LF);
+                                        message.append("CIF: ").append(invoice.getTaxIdentificationNumber()).append(CR_LF);
+                                        message.append("Num.Factura: ").append(invoice.getInvoiceNumber()).append(CR_LF);
+                                        message.append("Data Factura: ").append(invoice.getIssueDate()).append(CR_LF);
+                                        message.append("Total Factura : ").append(invoice.getInvoiceTotal()).append(CR_LF).append(CR_LF);
                                     }
 
                                     mProgressBar.setVisibility(View.INVISIBLE);
 
                                     Intent intent = new Intent(mContext, RecyclerViewActivity.class);
-                                    intent.putExtra(EXTRA_MESSAGE, message);
+                                    intent.putExtra(EXTRA_MESSAGE, message.toString());
                                     intent.putExtra(INVOICE_LIST, invoices);
                                     startActivity(intent);
 
@@ -334,174 +334,186 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             InputStream isSignedInvoice = new FileInputStream(file);
 
             Log.i(TAG, "key.getAlgorithm : " + key.getAlgorithm());
-            Toast.makeText(this.getApplicationContext(), "key.getAlgorithm : " + key.getAlgorithm(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, "key.getAlgorithm : " + key.getAlgorithm(), Toast.LENGTH_SHORT).show();
 
 
             message = "";
 
             byte[] baInvoiceSigned = IOUtils.toByteArray(isSignedInvoice);
 
-            message += CR_LF + "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]";
+            //message += CR_LF + "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]";
+            Toast.makeText(mContext, "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]", Toast.LENGTH_SHORT).show();
 
             isSignedInvoice = new FileInputStream(file);
             Document doc = getDocument(isSignedInvoice);
 
-            message += CR_LF + "root : " + doc.getDocumentElement().getTagName();
+            //message += CR_LF + "root : " + doc.getDocumentElement().getTagName();
+
+            Toast.makeText(mContext, "Documento factura procesado!", Toast.LENGTH_SHORT).show();
 
             boolean valid = isValid(certificate, doc);
 
-            if(valid){
-                message += CR_LF;
-                message += CR_LF + "La firma es válida!";
-            }else{
+            if(!valid){
                 message += CR_LF;
                 message += CR_LF + "ERROR : La firma NO es válida!";
-            }
+                Toast.makeText(mContext, "ERROR : La firma NO es válida!", Toast.LENGTH_LONG).show();
+            }else{
+                message += CR_LF;
+                message += CR_LF + "La firma es válida!";
+                Toast.makeText(mContext, "Documento factura válida!", Toast.LENGTH_SHORT).show();
 
-            Document document = removeSignature(doc);
+                Document document = removeSignature(doc);
 
-            Facturae facturae = getFacturaeFromFactura(documentToString(document));
+                Toast.makeText(mContext, "Firma eliminada!", Toast.LENGTH_SHORT).show();
 
-            message += CR_LF;
-            assert facturae != null;
-            message += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
-            message += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getLegalEntity().getCorporateName());
-            message += CR_LF + String.format("Factura         : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
-            message += CR_LF + String.format("Import  factura : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
-            message += CR_LF + String.format("Import brut     : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount());
-            message += CR_LF + String.format("Impostos        : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
-            message += CR_LF + String.format("Data            : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
+                Facturae facturae = getFacturaeFromFactura(documentToString(document));
 
-            facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount();
+                Toast.makeText(mContext, "Recuperando datos de factura...", Toast.LENGTH_SHORT).show();
 
-
-            Log.i(TAG, "Inici...");
-            RandomStringGenerator rsg = new RandomStringGenerator();
-
-            String iv = rsg.getRandomString(16);
-            Log.i(TAG, "iv : ["+iv+"]");
-            String simKey = rsg.getRandomString(16);
-            Log.i(TAG, "simKey : ["+simKey+"]");
-
-            SymmetricEncryptor simEnc = new SymmetricEncryptor();
-            simEnc.setIv(iv);
-            simEnc.setKey(simKey);
-
-            String taxIdentificationNumberEncrypted = simEnc.encrypt(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
-            String invoiceNumberEncrypted = simEnc.encrypt(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
-
-            // Versió inicial: No s'encripten els imports, ja que si no el sistema NO pot fer càlculs
-            String totalEncrypted  = ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal();
-            String dataEncrypted   = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
+                message += CR_LF;
+                assert facturae != null;
+                message += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
+                message += CR_LF + String.format("Seller          : [%s]", facturae.getParties().getSellerParty().getLegalEntity().getCorporateName());
+                message += CR_LF + String.format("Factura         : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
+                message += CR_LF + String.format("Import  factura : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+                message += CR_LF + String.format("Import brut     : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount());
+                message += CR_LF + String.format("Impostos        : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
+                message += CR_LF + String.format("Data            : [%s]", facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
 
 
-            String signedInvoiceEncrypted   = simEnc.encrypt(baInvoiceSigned);
+                Toast.makeText(mContext, "Encriptando datos de factura...", Toast.LENGTH_SHORT).show();
+                // Encriptación de los datos
+                Log.i(TAG, "Inici...");
+                RandomStringGenerator rsg = new RandomStringGenerator();
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
-            sb.append("|");
-            sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
-            sb.append("|");
-            sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
-            sb.append("|");
-            sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
+                String iv = rsg.getRandomString(16);
+                Log.i(TAG, "iv : ["+iv+"]");
+                String simKey = rsg.getRandomString(16);
+                Log.i(TAG, "simKey : ["+simKey+"]");
 
-            Log.i(TAG, "UIDFacturaHash : ["+sb.toString()+"]");
-            String UIDFacturaHash = UIDGenerator.generate(sb.toString());
-            Log.i(TAG, "UIDFacturaHash : ["+UIDFacturaHash+"]");
+                SymmetricEncryptor simEnc = new SymmetricEncryptor();
+                simEnc.setIv(iv);
+                simEnc.setKey(simKey);
 
-            Invoice invoice = new Invoice(UIDFacturaHash
-                    , facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber()
-                    , facturae.getParties().getSellerParty().getLegalEntity().getCorporateName()
-                    , facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber()
-                    , facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal()
-                    , facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs()
-                    , facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate()
-                    );
+                String taxIdentificationNumberEncrypted = simEnc.encrypt(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
+                String invoiceNumberEncrypted = simEnc.encrypt(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
 
-            Log.i(TAG, "invoice : ["+invoice.toString()+"]");
-
-            message += CR_LF;
-            message += CR_LF + String.format("taxIdentificationNumberEncrypted : [%s]", taxIdentificationNumberEncrypted);
-            message += CR_LF + String.format("invoiceNumberEncrypted : [%s]", invoiceNumberEncrypted);
-            message += CR_LF + String.format("totalEncrypted  : [%s]", totalEncrypted);
-            message += CR_LF + String.format("dataEncrypted   : [%s]", dataEncrypted);
-            Log.i(TAG, String.format("taxIdentificationNumberEncrypted : [%d][%s]", taxIdentificationNumberEncrypted.length(), taxIdentificationNumberEncrypted));
-            Log.i(TAG, String.format("invoiceNumberEncrypted : [%d][%s]", invoiceNumberEncrypted.length(), invoiceNumberEncrypted));
-            Log.i(TAG, String.format("totalEncrypted  : [%s]", totalEncrypted));
-            Log.i(TAG, String.format("dataEncrypted   : [%d][%s]", dataEncrypted.length(), dataEncrypted));
-            Log.i(TAG, String.format("signedInvoiceEncrypted   : [%d][%s]", signedInvoiceEncrypted.length(), signedInvoiceEncrypted));
-
-            // Encriptació amb clau pública de iv i simKey
-            byte[] ivBytesEnc = AsymmetricEncryptor.encryptData(iv.getBytes(), certificate);
-            String ivStringEnc = new String(Base64.encode(ivBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
-            byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), certificate);
-            String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
-
-            message += CR_LF;
-            //message += CR_LF + String.format("ivStringEnc      : [%s]", ivStringEnc);
-            //message += CR_LF + String.format("simKeyStringEnc  : [%s]", simKeyStringEnc);
-            Log.i(TAG, String.format("ivStringEnc      : [%d][%s]", ivStringEnc.length(), ivStringEnc));
-            Log.i(TAG, String.format("simKeyStringEnc  : [%d][%s]", simKeyStringEnc.length(), simKeyStringEnc));
-
-            // Desencriptació amb clau privada de iv i simKey
-            byte[] ivBytesDec = Base64.decode(ivStringEnc, Base64.NO_WRAP);
-            byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, key);
-            String ivStringDec = new String(ivBytesEncDec);
-
-            byte[] simKeyBytesDec = Base64.decode(simKeyStringEnc, Base64.NO_WRAP);
-            byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, key);
-            String simKeyStringDec = new String(simKeyBytesEncDec);
-
-            Log.i(TAG, "iv : ["+ivStringDec+"]");
-            Log.i(TAG, "simKey : ["+simKeyStringDec+"]");
-
-            Log.i(TAG, "iv : ["+iv+"]["+ivStringDec+"]");
-            Log.i(TAG, "simKey : ["+simKey+"]["+simKeyStringDec+"]");
+                // Versió inicial: No s'encripten els imports, ja que si no el sistema NO pot fer càlculs
+                String totalEncrypted  = ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal();
+                String dataEncrypted   = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
 
 
-            SymmetricDecryptor simDec = new SymmetricDecryptor();
-            simDec.setIv(ivStringDec);
-            simDec.setKey(simKeyStringDec);
+                String signedInvoiceEncrypted   = simEnc.encrypt(baInvoiceSigned);
 
-            String sellerDecrypted = simDec.decrypt(taxIdentificationNumberEncrypted);
-            String totalDecrypted  = totalEncrypted; //simDec.decrypt(totalEncrypted);
-            String dataDecrypted   = simDec.decrypt(dataEncrypted);
+                StringBuilder sb = new StringBuilder();
+                sb.append(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
+                sb.append("|");
+                sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
+                sb.append("|");
+                sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+                sb.append("|");
+                sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
 
-            message += CR_LF;
-            message += CR_LF + String.format("sellerDecrypted : [%s]", sellerDecrypted);
-            message += CR_LF + String.format("totalDecrypted  : [%s]", totalDecrypted);
-            message += CR_LF + String.format("dataDecrypted   : [%s]", dataDecrypted);
-            Log.i(TAG, String.format("sellerDecrypted : [%s]", sellerDecrypted));
-            Log.i(TAG, String.format("totalDecrypted  : [%s]", totalDecrypted));
-            Log.i(TAG, String.format("dataDecrypted   : [%s]", dataDecrypted));
+                Log.i(TAG, "UIDFacturaHash : ["+sb.toString()+"]");
+                String UIDFacturaHash = UIDGenerator.generate(sb.toString());
+                Log.i(TAG, "UIDFacturaHash : ["+UIDFacturaHash+"]");
 
-            Map<String, String> params = new HashMap<>();
-            params.put("uidfactura", (UIDFacturaHash == null ? "---" : UIDFacturaHash));
-            params.put("seller", taxIdentificationNumberEncrypted);
-            params.put("invoicenumber", invoiceNumberEncrypted);
-            params.put("total", totalEncrypted);
-            params.put("totaltaxoutputs", ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
-            params.put("data", dataEncrypted);
-            params.put("file", signedInvoiceEncrypted);
-            params.put("iv", ivStringEnc);
-            params.put("key", simKeyStringEnc);
+                Invoice invoice = new Invoice(
+                        UIDFacturaHash
+                        , facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber()
+                        , facturae.getParties().getSellerParty().getLegalEntity().getCorporateName()
+                        , facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber()
+                        , facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal()
+                        , facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs()
+                        , facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate()
+                );
 
-            PostDataToUrlTask getData = new PostDataToUrlTask(params);
+                Log.i(TAG, "invoice : ["+invoice.toString()+"]");
 
-            try {
+//                message += CR_LF;
+//                message += CR_LF + String.format("taxIdentificationNumberEncrypted : [%s]", taxIdentificationNumberEncrypted);
+//                message += CR_LF + String.format("invoiceNumberEncrypted : [%s]", invoiceNumberEncrypted);
+//                message += CR_LF + String.format("totalEncrypted  : [%s]", totalEncrypted);
+//                message += CR_LF + String.format("dataEncrypted   : [%s]", dataEncrypted);
+//                Log.i(TAG, String.format("taxIdentificationNumberEncrypted : [%d][%s]", taxIdentificationNumberEncrypted.length(), taxIdentificationNumberEncrypted));
+//                Log.i(TAG, String.format("invoiceNumberEncrypted : [%d][%s]", invoiceNumberEncrypted.length(), invoiceNumberEncrypted));
+//                Log.i(TAG, String.format("totalEncrypted  : [%s]", totalEncrypted));
+//                Log.i(TAG, String.format("dataEncrypted   : [%d][%s]", dataEncrypted.length(), dataEncrypted));
+//                Log.i(TAG, String.format("signedInvoiceEncrypted   : [%d][%s]", signedInvoiceEncrypted.length(), signedInvoiceEncrypted));
+
+                // Encriptació amb clau pública de iv i simKey
+                byte[] ivBytesEnc = AsymmetricEncryptor.encryptData(iv.getBytes(), certificate);
+                String ivStringEnc = new String(Base64.encode(ivBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
+                byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), certificate);
+                String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
+
+                message += CR_LF;
+                //message += CR_LF + String.format("ivStringEnc      : [%s]", ivStringEnc);
+                //message += CR_LF + String.format("simKeyStringEnc  : [%s]", simKeyStringEnc);
+//                Log.i(TAG, String.format("ivStringEnc      : [%d][%s]", ivStringEnc.length(), ivStringEnc));
+//                Log.i(TAG, String.format("simKeyStringEnc  : [%d][%s]", simKeyStringEnc.length(), simKeyStringEnc));
+
+                // Desencriptació amb clau privada de iv i simKey
+                byte[] ivBytesDec = Base64.decode(ivStringEnc, Base64.NO_WRAP);
+                byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, key);
+                String ivStringDec = new String(ivBytesEncDec);
+
+                byte[] simKeyBytesDec = Base64.decode(simKeyStringEnc, Base64.NO_WRAP);
+                byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, key);
+                String simKeyStringDec = new String(simKeyBytesEncDec);
+
+                Log.i(TAG, "iv : ["+ivStringDec+"]");
+                Log.i(TAG, "simKey : ["+simKeyStringDec+"]");
+
+                Log.i(TAG, "iv : ["+iv+"]["+ivStringDec+"]");
+                Log.i(TAG, "simKey : ["+simKey+"]["+simKeyStringDec+"]");
+
+
+                SymmetricDecryptor simDec = new SymmetricDecryptor();
+                simDec.setIv(ivStringDec);
+                simDec.setKey(simKeyStringDec);
+
+                String sellerDecrypted = simDec.decrypt(taxIdentificationNumberEncrypted);
+                String totalDecrypted  = totalEncrypted; //simDec.decrypt(totalEncrypted);
+                String dataDecrypted   = simDec.decrypt(dataEncrypted);
+
+//                message += CR_LF;
+//                message += CR_LF + String.format("sellerDecrypted : [%s]", sellerDecrypted);
+//                message += CR_LF + String.format("totalDecrypted  : [%s]", totalDecrypted);
+//                message += CR_LF + String.format("dataDecrypted   : [%s]", dataDecrypted);
+//                Log.i(TAG, String.format("sellerDecrypted : [%s]", sellerDecrypted));
+//                Log.i(TAG, String.format("totalDecrypted  : [%s]", totalDecrypted));
+//                Log.i(TAG, String.format("dataDecrypted   : [%s]", dataDecrypted));
+
+                Map<String, String> params = new HashMap<>();
+                params.put("uidfactura", (UIDFacturaHash == null ? "---" : UIDFacturaHash));
+                params.put("seller", taxIdentificationNumberEncrypted);
+                params.put("invoicenumber", invoiceNumberEncrypted);
+                params.put("total", totalEncrypted);
+                params.put("totaltaxoutputs", ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
+                params.put("totalgrossamount", ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount());
+                params.put("data", dataEncrypted);
+                params.put("file", signedInvoiceEncrypted);
+                params.put("iv", ivStringEnc);
+                params.put("key", simKeyStringEnc);
+
+                PostDataToUrlTask getData = new PostDataToUrlTask(params);
+
                 String url = urlEditText.getText().toString();
                 String res = getData.execute(url).get();
-                //editText2.setText(res);
-                message += CR_LF;
-                message += CR_LF + String.format("res : [%s]", res);
-            } catch (Exception e) {
-                Log.i(TAG, "public void getURL() — get item number " + e.getMessage());
-                //String res = "Ups... error en GetDataFromUrlTask " + e.getMessage();
-                //editText2.setText(res);
-            }
+
+                if (getData.getResponseCode() == 400){
+                    message += CR_LF + String.format("res : [%s]", res);
+                }else if (getData.getResponseCode() == 409){
+                    message += CR_LF + String.format("ALERTA: La factura ya está registrada en el sistema! [%s]", res);
+                }
+
+                Log.i(TAG, "Respuesta del Servidor : ["+res+"]");
+
+            } // if(valid)
 
         }catch (Exception e) {
+            Log.e(TAG, "ERROR: " + e.getMessage());
             e.printStackTrace();
             message = "Exception:" + e.getLocalizedMessage();
         }

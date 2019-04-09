@@ -18,8 +18,13 @@ import java.util.Map;
 
 public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
 
+    private static String LOG_TAG = "PostDataToUrlTask";
+
     // This is the JSON body of the post
     private JSONObject postData;
+
+
+    private int responseCode;
 
     // This is a constructor that allows you to pass in the JSON body
     PostDataToUrlTask(Map<String, String> postData) {
@@ -41,7 +46,7 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
             String server_response;
 
             url = new URL(params[0]);
-            Log.v("POST URL : ", url.toString());
+            Log.i(LOG_TAG, "POST URL : " +url.toString());
             urlConnection = (HttpURLConnection) url.openConnection();
 
             urlConnection.setDoInput(true);
@@ -56,15 +61,26 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
                 OutputStreamWriter writer = new OutputStreamWriter(urlConnection.getOutputStream());
                 writer.write(postData.toString());
                 writer.flush();
-                Log.v("POST DATA : ", postData.toString());
+                writer.close();
+                Log.i(LOG_TAG, "POST DATA : " + postData.toString());
             }
 
 
-            int responseCode = urlConnection.getResponseCode();
+            responseCode = urlConnection.getResponseCode();
+
+            Log.i(LOG_TAG, "Código de respuesta del servidor : ["+responseCode+"]");
 
             if(responseCode == HttpURLConnection.HTTP_OK){
                 server_response = readStream(urlConnection.getInputStream());
-                Log.v("Respuesta servidor: ", server_response);
+                Log.i(LOG_TAG, "Respuesta servidor: " + server_response);
+                urlConnection.disconnect();
+
+                return server_response;
+            }else if(responseCode == HttpURLConnection.HTTP_CONFLICT){
+                server_response = readStream(urlConnection.getErrorStream());
+                Log.i(LOG_TAG, "Factura ya registrada en el sistema!");
+                Log.i(LOG_TAG, "Respuesta servidor: " + server_response);
+                urlConnection.disconnect();
                 return server_response;
             }
 
@@ -110,4 +126,15 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
         }
         return response.toString();
     }
+
+
+    public int getResponseCode() {
+        return responseCode;
+    }
+
+    public void setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
+    }
+
+
 }
