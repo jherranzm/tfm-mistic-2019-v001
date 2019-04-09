@@ -26,14 +26,14 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.model.Invoice;
-import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.util.FacturaeNamespaceContext;
-import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.util.RandomStringGenerator;
-import com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.util.UIDGenerator;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricEncryptor;
+import com.example.apptestvalidationandroid44.model.Invoice;
+import com.example.apptestvalidationandroid44.util.FacturaeNamespaceContext;
+import com.example.apptestvalidationandroid44.util.RandomStringGenerator;
+import com.example.apptestvalidationandroid44.util.UIDGenerator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.xml.security.signature.XMLSignature;
@@ -42,9 +42,7 @@ import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IUnmarshallingContext;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.spongycastle.cms.CMSException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -67,6 +65,8 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -90,7 +90,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //private Activity mActivity;
     ProgressBar mProgressBar;
 
-    public static final String EXTRA_MESSAGE = "com.example.appsecond.MESSAGE";
+    public static final String EXTRA_MESSAGE = "com.example.apptestvalidationandroid44.MESSAGE";
+    public static final String INVOICE_LIST = "com.example.apptestvalidationandroid44.INVOICE_LIST";
 
     private static final String PKCS_12 = "PKCS12";
     private final static String PKCS12_PASSWORD = "Th2S5p2rStr4ngP1ss";
@@ -186,8 +187,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getTitleURLButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Empty the TextView
-                //editText2.setText("");
 
                 mProgressBar.setVisibility(View.VISIBLE);
 
@@ -209,54 +208,90 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                 // Process the JSON
                                 try{
-                                    // Loop through the array elements
-                                    for(int i=0;i<response.length();i++){
-                                        // Get current json object
-                                        JSONObject factura = response.getJSONObject(i);
+                                    ArrayList<Invoice> invoices = new ArrayList<>();
 
-                                        // Get the current factura (json object) data
-                                        long id = factura.getLong("id");
-                                        String uid = factura.getString("uid");
-                                        String taxIdentificationNumber = factura.getString("taxIdentificationNumber");
-                                        String invoiceNumber = factura.getString("invoiceNumber");
-                                        String issueDate = factura.getString("issueDate");
-                                        double invoiceTotal = factura.getDouble("invoiceTotal");
+                                    invoices = getInvoicesFromResponse(response);
 
-                                        String iv = factura.getString("iv");
-                                        String simKey = factura.getString("simKey");
-
-                                        // Desencriptació amb clau privada de iv i simKey
-                                        byte[] ivBytesDec = Base64.decode(iv, Base64.NO_WRAP);
-                                        byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, key);
-                                        String ivStringDec = new String(ivBytesEncDec);
-
-                                        byte[] simKeyBytesDec = Base64.decode(simKey, Base64.NO_WRAP);
-                                        byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, key);
-                                        String simKeyStringDec = new String(simKeyBytesEncDec);
-
-                                        SymmetricDecryptor simDec = new SymmetricDecryptor();
-                                        simDec.setIv(ivStringDec);
-                                        simDec.setKey(simKeyStringDec);
-
-                                        String taxIdentificationNumberDecrypted = simDec.decrypt(taxIdentificationNumber);
-                                        String invoiceNumberDecrypted = simDec.decrypt(invoiceNumber);
-                                        String issueDateDecrypted = simDec.decrypt(issueDate);
-
-                                        message += "ID : " +id + CR_LF;
-                                        message += "CIF: " + taxIdentificationNumberDecrypted + CR_LF;
-                                        message += "Num.Factura: " + invoiceNumberDecrypted + CR_LF;
-                                        message += "Data Factura: " + issueDateDecrypted + CR_LF;
-                                        message += "Total Factura : " + invoiceTotal + CR_LF + CR_LF;
-
-                                        mProgressBar.setVisibility(View.INVISIBLE);
-
-                                        Intent intent = new Intent(mContext, DisplayMessageActivity.class);
-                                        intent.putExtra(EXTRA_MESSAGE, message);
-                                        startActivity(intent);
+                                    for(Invoice invoice : invoices) {
+                                        message += "ID : " + invoice.getUid() + CR_LF;
+                                        message += "CIF: " + invoice.getTaxIdentificationNumber() + CR_LF;
+                                        message += "Num.Factura: " + invoice.getInvoiceNumber() + CR_LF;
+                                        message += "Data Factura: " + invoice.getIssueDate() + CR_LF;
+                                        message += "Total Factura : " + invoice.getInvoiceTotal() + CR_LF + CR_LF;
                                     }
-                                }catch (JSONException e){
+
+                                    mProgressBar.setVisibility(View.INVISIBLE);
+
+                                    Intent intent = new Intent(mContext, DisplayMessageActivity.class);
+                                    intent.putExtra(EXTRA_MESSAGE, message);
+                                    intent.putExtra(INVOICE_LIST, invoices);
+                                    startActivity(intent);
+
+                                }catch (Exception e){
                                     e.printStackTrace();
-                                }catch (CMSException e){
+                                }
+                            }
+                        },
+                        new Response.ErrorListener(){
+                            @Override
+                            public void onErrorResponse(VolleyError error){
+                                // Do something when error occurred
+                                Toast.makeText(mContext, "ERROR : genérico."+error.getLocalizedMessage() , Toast.LENGTH_LONG).show();
+                            }
+                        }
+                );
+
+                // Add JsonArrayRequest to the RequestQueue
+                requestQueue.add(jsonArrayRequest);
+            }
+        });
+
+        goToShowUploadedInvoice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+
+                mProgressBar.setVisibility(View.VISIBLE);
+
+                // Initialize a new RequestQueue instance
+                RequestQueue requestQueue = Volley.newRequestQueue(mContext);
+
+                // Initialize a new JsonArrayRequest instance
+                JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+                        Request.Method.GET,
+                        urlEditText.getText().toString(),
+                        null,
+                        new Response.Listener<JSONArray>() {
+                            @Override
+                            public void onResponse(JSONArray response) {
+                                // Do something with response
+                                String message = "";
+
+                                Log.i(TAG, response.toString());
+
+                                // Process the JSON
+                                try{
+                                    ArrayList<Invoice> invoices = new ArrayList<>();
+
+                                    invoices = getInvoicesFromResponse(response);
+
+                                    for(Invoice invoice : invoices) {
+                                        message += "ID : " + invoice.getUid() + CR_LF;
+                                        message += "CIF: " + invoice.getTaxIdentificationNumber() + CR_LF;
+                                        message += "Num.Factura: " + invoice.getInvoiceNumber() + CR_LF;
+                                        message += "Data Factura: " + invoice.getIssueDate() + CR_LF;
+                                        message += "Total Factura : " + invoice.getInvoiceTotal() + CR_LF + CR_LF;
+                                    }
+
+                                    mProgressBar.setVisibility(View.INVISIBLE);
+
+                                    Intent intent = new Intent(mContext, RecyclerViewActivity.class);
+                                    intent.putExtra(EXTRA_MESSAGE, message);
+                                    intent.putExtra(INVOICE_LIST, invoices);
+                                    startActivity(intent);
+
+
+                                }catch (Exception e){
                                     e.printStackTrace();
                                 }
                             }
@@ -273,16 +308,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // Add JsonArrayRequest to the RequestQueue
                 requestQueue.add(jsonArrayRequest);
 
-                //mProgressBar.setVisibility(View.GONE);
-            }
-        });
-
-        goToShowUploadedInvoice.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(mContext, ShowUploadedInvoiceActivity.class);
-                //intent.putExtra(EXTRA_MESSAGE, message);
-                startActivity(intent);
             }
         });
 
@@ -672,6 +697,69 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         }
         return null;
+    }
+
+
+    private ArrayList<Invoice> getInvoicesFromResponse(JSONArray response){
+        ArrayList<Invoice> invoices = new ArrayList<>();
+
+        try{
+            // Loop through the array elements
+            for(int i=0;i<response.length();i++){
+                // Get current json object
+                JSONObject factura = response.getJSONObject(i);
+
+                // Get the current factura (json object) data
+                long id = factura.getLong("id");
+                String uid = factura.getString("uid");
+                String taxIdentificationNumber = factura.getString("taxIdentificationNumber");
+                String invoiceNumber = factura.getString("invoiceNumber");
+                String issueDate = factura.getString("issueDate");
+                double invoiceTotal = factura.getDouble("invoiceTotal");
+                double totalTaxOutputs = factura.getDouble("totalTaxOutputs");
+
+                String iv = factura.getString("iv");
+                String simKey = factura.getString("simKey");
+
+                // Desencriptació amb clau privada de iv i simKey
+                byte[] ivBytesDec = Base64.decode(iv, Base64.NO_WRAP);
+                byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, key);
+                String ivStringDec = new String(ivBytesEncDec);
+
+                byte[] simKeyBytesDec = Base64.decode(simKey, Base64.NO_WRAP);
+                byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, key);
+                String simKeyStringDec = new String(simKeyBytesEncDec);
+
+                SymmetricDecryptor simDec = new SymmetricDecryptor();
+                simDec.setIv(ivStringDec);
+                simDec.setKey(simKeyStringDec);
+
+                String taxIdentificationNumberDecrypted = simDec.decrypt(taxIdentificationNumber);
+                String invoiceNumberDecrypted = simDec.decrypt(invoiceNumber);
+                String issueDateDecrypted = simDec.decrypt(issueDate);
+
+                Invoice invoice = new Invoice(uid
+                        , taxIdentificationNumberDecrypted
+                        , ""
+                        , invoiceNumberDecrypted
+                        , invoiceTotal
+                        , totalTaxOutputs
+                        , new SimpleDateFormat("yyyy-MM-dd").parse(issueDateDecrypted)
+                );
+
+                Log.i(TAG, "invoice : ["+invoice.toString()+"]");
+                invoices.add(invoice);
+
+
+
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return invoices;
+
     }
 
     static {

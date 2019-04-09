@@ -1,4 +1,4 @@
-package com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.util;
+package com.example.apptestvalidationandroid44.util;
 
 import org.apache.commons.lang.RandomStringUtils;
 

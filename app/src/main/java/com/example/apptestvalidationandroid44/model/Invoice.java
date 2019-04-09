@@ -1,6 +1,8 @@
-package com.example.apptestvalidationandroid44.com.example.apptestvalidationandroid44.model;
+package com.example.apptestvalidationandroid44.model;
 
-public class Invoice {
+import java.io.Serializable;
+
+public class Invoice implements Serializable {
 
     private String uid;
     private String taxIdentificationNumber;
@@ -8,7 +10,9 @@ public class Invoice {
     private String invoiceNumber;
     private Double invoiceTotal;
     private Double totalTaxOutputs;
-    private java.sql.Date issueDate;
+    private java.util.Date issueDate;
+
+    public Invoice(){}
 
     public Invoice(String uid
             , String taxIdentificationNumber
@@ -16,7 +20,7 @@ public class Invoice {
             , String invoiceNumber
             , Double invoiceTotal
             , Double totalTaxOutputs
-            , java.sql.Date issueDate) {
+            , java.util.Date issueDate) {
         this.uid = uid;
         this.taxIdentificationNumber = taxIdentificationNumber;
         this.corporateName = corporateName;
@@ -74,11 +78,11 @@ public class Invoice {
         this.totalTaxOutputs = totalTaxOutputs;
     }
 
-    public java.sql.Date getIssueDate() {
+    public java.util.Date getIssueDate() {
         return issueDate;
     }
 
-    public void setIssueDate(java.sql.Date issueDate) {
+    public void setIssueDate(java.util.Date issueDate) {
         this.issueDate = issueDate;
     }
 
