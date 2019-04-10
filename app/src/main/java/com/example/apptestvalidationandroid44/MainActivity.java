@@ -68,6 +68,7 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -311,6 +312,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+        //File sdcard = Environment.getExternalStorageDirectory();
+        String root_sd = Environment.getExternalStorageDirectory().toString();
+        File file = new File( root_sd + "/Download" ) ;
+        File list[] = file.listFiles();
+        List<String> myList = new ArrayList<>();
+
+        for( int i=0; i< list.length; i++)
+        {
+            myList.add( list[i].getName() );
+            //Log.i(TAG, list[i].getAbsoluteFile().getAbsolutePath());
+            Log.i(TAG, list[i].getName());
+        }
+
     }
 
     @Override
@@ -326,7 +340,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
             File sdcard = Environment.getExternalStorageDirectory();
-            File file = new File(sdcard,"Download/invoice_990001_xml_20190329_2020707_xml.xsig");
+            //File file = new File(sdcard,"Download/invoice_990001_xml_20190329_2020707_xml.xsig");
+            //File file = new File(sdcard,"Download/invoice_990002_xml_20190329_2020915_xml.xsig");
+            //File file = new File(sdcard,"Download/invoice_990003_xml_20190329_2020102_xml.xsig");
+            //File file = new File(sdcard,"Download/invoice_990004_xml_20190329_2020276_xml.xsig");
+            File file = new File(sdcard,"Download/invoice_990005_xml_20190329_2020430_xml.xsig");
             if(!file.exists()){
                 throw new FileNotFoundException();
             }

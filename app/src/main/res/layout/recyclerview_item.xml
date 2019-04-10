@@ -6,7 +6,7 @@
               android:orientation="vertical">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/textViewTaxItentificationNumber"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -15,11 +15,38 @@
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/textViewInvoiceNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingTop="5dp"
+        android:text="Large Text"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    <TextView
+        android:id="@+id/textViewTotalAmount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingBottom="5dp"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:text="Small Text"
         android:textAppearance="?android:attr/textAppearanceSmall"/>
+
+    <TextView
+        android:id="@+id/textViewTotalTaxOutputs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:text="TextView"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/textViewIssueDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:text="TextView"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 </LinearLayout>

@@ -9,26 +9,33 @@ import android.widget.TextView;
 
 import com.example.apptestvalidationandroid44.model.Invoice;
 
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.List;
 
 public class MyRecyclerViewAdapter extends RecyclerView
         .Adapter<MyRecyclerViewAdapter
         .DataObjectHolder> {
     private static String LOG_TAG = "MyRecyclerViewAdapter";
-    //private ArrayList<DataObject> mDataset;
-    private ArrayList<Invoice> mDataset;
+    private List<Invoice> mDataset;
     private static MyClickListener myClickListener;
+    private SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View
             .OnClickListener {
-        TextView label;
-        TextView dateTime;
+        TextView taxItentificationNumber;
+        TextView invoiceNumber;
+        TextView totalAmount;
+        TextView totalTaxOutputs;
+        TextView issueDate;
 
         public DataObjectHolder(View itemView) {
             super(itemView);
-            label = itemView.findViewById(R.id.textView);
-            dateTime = itemView.findViewById(R.id.textView2);
+            taxItentificationNumber = itemView.findViewById(R.id.textViewTaxItentificationNumber);
+            invoiceNumber = itemView.findViewById(R.id.textViewInvoiceNumber);
+            totalAmount = itemView.findViewById(R.id.textViewTotalAmount);
+            totalTaxOutputs = itemView.findViewById(R.id.textViewTotalTaxOutputs);
+            issueDate = itemView.findViewById(R.id.textViewIssueDate);
             Log.i(LOG_TAG, "Adding Listener");
             itemView.setOnClickListener(this);
         }
@@ -44,7 +51,7 @@ public class MyRecyclerViewAdapter extends RecyclerView
     }
 
     //public MyRecyclerViewAdapter(ArrayList<DataObject> myDataset) {mDataset = myDataset; }
-    public MyRecyclerViewAdapter(ArrayList<Invoice> myDataset) {mDataset = myDataset; }
+    public MyRecyclerViewAdapter(List<Invoice> myDataset) {mDataset = myDataset; }
 
     @Override
     public DataObjectHolder onCreateViewHolder(ViewGroup parent,
@@ -58,8 +65,11 @@ public class MyRecyclerViewAdapter extends RecyclerView
 
     @Override
     public void onBindViewHolder(DataObjectHolder holder, int position) {
-        holder.label.setText(mDataset.get(position).getInvoiceNumber());
-        holder.dateTime.setText(mDataset.get(position).getInvoiceTotal().toString());
+        holder.taxItentificationNumber.setText(String.format("TIN: %s", mDataset.get(position).getTaxIdentificationNumber()));
+        holder.invoiceNumber.setText(String.format("Invoice: %s", mDataset.get(position).getInvoiceNumber()));
+        holder.totalAmount.setText(String.format("Total: %f", mDataset.get(position).getInvoiceTotal()));
+        holder.totalTaxOutputs.setText(String.format("Taxes: %f", mDataset.get(position).getTotalTaxOutputs()));
+        holder.issueDate.setText(String.format("Date: %s", DATE_FORMAT.format(mDataset.get(position).getIssueDate())));
     }
 
     public void addItem(Invoice dataObj, int index) {
