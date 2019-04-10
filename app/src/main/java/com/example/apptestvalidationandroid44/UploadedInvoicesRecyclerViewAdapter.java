@@ -12,26 +12,26 @@ import com.example.apptestvalidationandroid44.model.Invoice;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-public class MyRecyclerViewAdapter extends RecyclerView
-        .Adapter<MyRecyclerViewAdapter
+public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
+        .Adapter<UploadedInvoicesRecyclerViewAdapter
         .DataObjectHolder> {
-    private static String LOG_TAG = "MyRecyclerViewAdapter";
+    private final static String LOG_TAG = "UploadedInvoicesRVA";
     private List<Invoice> mDataset;
-    private static MyClickListener myClickListener;
+    private static UploadedInvoicesClickListener myClickListener;
     private SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View
             .OnClickListener {
-        TextView taxItentificationNumber;
+        TextView taxIdentificationNumber;
         TextView invoiceNumber;
         TextView totalAmount;
         TextView totalTaxOutputs;
         TextView issueDate;
 
-        public DataObjectHolder(View itemView) {
+        DataObjectHolder(View itemView) {
             super(itemView);
-            taxItentificationNumber = itemView.findViewById(R.id.textViewTaxItentificationNumber);
+            taxIdentificationNumber = itemView.findViewById(R.id.textViewTaxItentificationNumber);
             invoiceNumber = itemView.findViewById(R.id.textViewInvoiceNumber);
             totalAmount = itemView.findViewById(R.id.textViewTotalAmount);
             totalTaxOutputs = itemView.findViewById(R.id.textViewTotalTaxOutputs);
@@ -46,12 +46,13 @@ public class MyRecyclerViewAdapter extends RecyclerView
         }
     }
 
-    public void setOnItemClickListener(MyClickListener myClickListener) {
-        MyRecyclerViewAdapter.myClickListener = myClickListener;
+    void setOnItemClickListener(UploadedInvoicesClickListener myClickListener) {
+        UploadedInvoicesRecyclerViewAdapter.myClickListener = myClickListener;
     }
 
-    //public MyRecyclerViewAdapter(ArrayList<DataObject> myDataset) {mDataset = myDataset; }
-    public MyRecyclerViewAdapter(List<Invoice> myDataset) {mDataset = myDataset; }
+    UploadedInvoicesRecyclerViewAdapter(List<Invoice> myDataset) {
+        mDataset = myDataset;
+    }
 
     @Override
     public DataObjectHolder onCreateViewHolder(ViewGroup parent,
@@ -65,7 +66,7 @@ public class MyRecyclerViewAdapter extends RecyclerView
 
     @Override
     public void onBindViewHolder(DataObjectHolder holder, int position) {
-        holder.taxItentificationNumber.setText(String.format("TIN: %s", mDataset.get(position).getTaxIdentificationNumber()));
+        holder.taxIdentificationNumber.setText(String.format("TIN: %s", mDataset.get(position).getTaxIdentificationNumber()));
         holder.invoiceNumber.setText(String.format("Invoice: %s", mDataset.get(position).getInvoiceNumber()));
         holder.totalAmount.setText(String.format("Total: %f", mDataset.get(position).getInvoiceTotal()));
         holder.totalTaxOutputs.setText(String.format("Taxes: %f", mDataset.get(position).getTotalTaxOutputs()));
@@ -87,7 +88,7 @@ public class MyRecyclerViewAdapter extends RecyclerView
         return mDataset.size();
     }
 
-    public interface MyClickListener {
+    public interface UploadedInvoicesClickListener {
         void onItemClick(int position, View v);
     }
 }

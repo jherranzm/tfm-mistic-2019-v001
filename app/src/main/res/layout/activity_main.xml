@@ -20,10 +20,10 @@
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.602"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintVertical_bias="0.03" />
+        app:layout_constraintVertical_bias="0.556" />
 
     <Button
         android:id="@+id/buttonEncrypt"
@@ -50,7 +50,6 @@
         android:selectAllOnFocus="true"
         android:text="@string/name"
         android:labelFor="@id/buttonEncrypt"
-        android:autofillHints="Data to encrypt"
         app:layout_constraintEnd_toStartOf="@+id/buttonEncrypt"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -59,7 +58,7 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="409dp"
-        android:layout_height="64dp"
+        android:layout_height="13dp"
         android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
@@ -69,20 +68,9 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:title="TestTitle" />
 
-    <Button
-        android:id="@+id/buttonGetFacturasFromServer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="8dp"
-        android:onClick="getURL"
-        android:text="@string/get_title"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonEncrypt" />
-
     <EditText
         android:id="@+id/editTextURL"
-        android:layout_width="263dp"
+        android:layout_width="326dp"
         android:layout_height="43dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="24dp"
@@ -90,9 +78,7 @@
         android:ems="10"
         android:inputType="textUri"
         android:text="@string/url"
-        android:autofillHints="URL to post verified invoices"
-        android:labelFor="@id/buttonGetFacturasFromServer"
-        app:layout_constraintEnd_toStartOf="@+id/buttonGetFacturasFromServer"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextDataToEncrypt" />
 
@@ -100,10 +86,13 @@
         android:id="@+id/buttonVerifySignedInvoice"
         android:layout_width="243dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="84dp"
-        android:layout_marginTop="284dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="420dp"
+        android:layout_marginEnd="8dp"
         android:onClick="verifySignedInvoice"
         android:text="@string/verify_signature"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.552"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         tools:clickable="false" />
@@ -111,18 +100,32 @@
     <Button
         android:id="@+id/buttonGoToShowUploadedInvoice"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="444dp"
+        android:layout_marginTop="32dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:text="@string/showUploadedInvoiceSampleText"
+        android:text="@string/showUploadedInvoices"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.534"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.34" />
+
+    <Button
+        android:id="@+id/buttonShowLocalInvoices"
+        android:layout_width="179dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/showLocalInvoices"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
 
 </android.support.constraint.ConstraintLayout>

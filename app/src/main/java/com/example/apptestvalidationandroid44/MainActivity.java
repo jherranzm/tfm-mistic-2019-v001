@@ -30,6 +30,7 @@ import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricEncryptor;
+import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.Invoice;
 import com.example.apptestvalidationandroid44.util.FacturaeNamespaceContext;
 import com.example.apptestvalidationandroid44.util.RandomStringGenerator;
@@ -68,7 +69,7 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -85,24 +86,24 @@ import es.facturae.facturae.v3.facturae.Facturae;
 
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity
+        extends AppCompatActivity{
 
     private Context mContext;
-    //private Activity mActivity;
-    ProgressBar mProgressBar;
+    private ProgressBar mProgressBar;
 
     public static final String EXTRA_MESSAGE = "com.example.apptestvalidationandroid44.MESSAGE";
     public static final String INVOICE_LIST = "com.example.apptestvalidationandroid44.INVOICE_LIST";
+    public static final String FILE_LIST = "com.example.apptestvalidationandroid44.FILE_LIST";
 
     private static final String PKCS_12 = "PKCS12";
-    private final static String PKCS12_PASSWORD = "Th2S5p2rStr4ngP1ss";
-    private final static String CR_LF = "\n";
+    private static final String PKCS12_PASSWORD = "Th2S5p2rStr4ngP1ss";
+    private static final String CR_LF = "\n";
 
 
     private EditText editText;
-    //private EditText editText2;
     private EditText urlEditText;
-    private InputMethodManager imm;
+    InputMethodManager imm;
 
     private static final String TAG = "MAIN_ACTIVITY";
 
@@ -121,6 +122,121 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mProgressBar = findViewById(R.id.progressBar1);
         mProgressBar.setVisibility(View.INVISIBLE);
 
+        manageSecurity();
+
+        editText = findViewById(R.id.editTextDataToEncrypt);
+        urlEditText = findViewById(R.id.editTextURL);
+
+        Button goToShowUploadedInvoices = findViewById(R.id.buttonGoToShowUploadedInvoice);
+        Button goToShowLocalInvoices = findViewById(R.id.buttonShowLocalInvoices);
+        Button btn =  findViewById(R.id.buttonEncrypt);
+        assert btn != null;
+
+        imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        // 2019-03-30
+        // Check whether this app has write external storage permission or not.
+        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        // If do not grant write external storage permission.
+        if(writeExternalStoragePermission!= PackageManager.PERMISSION_GRANTED)
+        {
+            // Request user to grant write external storage permission.
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
+
+
+
+        goToShowUploadedInvoices.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                mProgressBar.setVisibility(View.VISIBLE);
+
+                // Initialize a new RequestQueue instance
+                RequestQueue requestQueue = Volley.newRequestQueue(mContext);
+
+                // Initialize a new JsonArrayRequest instance
+                JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+                        Request.Method.GET,
+                        urlEditText.getText().toString(),
+                        null,
+                        new Response.Listener<JSONArray>() {
+                            @Override
+                            public void onResponse(JSONArray response) {
+                                // Do something with response
+
+                                Log.i(TAG, response.toString());
+
+                                // Process the JSON
+                                try{
+                                    ArrayList<Invoice> invoices;
+
+                                    invoices = getInvoicesFromResponse(response);
+
+                                    StringBuilder message = new StringBuilder();
+                                    for(Invoice invoice : invoices) {
+                                        message.append("ID : ").append(invoice.getUid()).append(CR_LF);
+                                        message.append("CIF: ").append(invoice.getTaxIdentificationNumber()).append(CR_LF);
+                                        message.append("Num.Factura: ").append(invoice.getInvoiceNumber()).append(CR_LF);
+                                        message.append("Data Factura: ").append(invoice.getIssueDate()).append(CR_LF);
+                                        message.append("Total Factura : ").append(invoice.getInvoiceTotal()).append(CR_LF).append(CR_LF);
+                                    }
+
+                                    mProgressBar.setVisibility(View.INVISIBLE);
+
+                                    Intent intent = new Intent(mContext, UploadedInvoicesRecyclerViewActivity.class);
+                                    intent.putExtra(EXTRA_MESSAGE, message.toString());
+                                    intent.putExtra(INVOICE_LIST, invoices);
+                                    startActivity(intent);
+
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        },
+                        new Response.ErrorListener(){
+                            @Override
+                            public void onErrorResponse(VolleyError error){
+                                // Do something when error occurred
+                                Toast.makeText(mContext, "ERROR : genérico."+error.getLocalizedMessage() , Toast.LENGTH_LONG).show();
+                            }
+                        }
+                );
+
+                // Add JsonArrayRequest to the RequestQueue
+                requestQueue.add(jsonArrayRequest);
+
+            }
+        });
+
+        goToShowLocalInvoices.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mProgressBar.setVisibility(View.VISIBLE);
+
+                String root_sd = Environment.getExternalStorageDirectory().toString();
+                File file = new File( root_sd + "/Download" ) ;
+                File list[] = file.listFiles();
+
+                ArrayList<FileDataObject> signedInvoices = new ArrayList<>();
+
+                for (File f : list) {
+                    Log.i(TAG, f.getName());
+                    FileDataObject obj = new FileDataObject();
+                    obj.setFileName(f.getName());
+                    signedInvoices.add(obj);
+                }
+
+                Intent intent = new Intent(mContext, LocalInvoicesRecyclerViewActivity.class);
+                intent.putExtra(FILE_LIST, signedInvoices);
+                startActivity(intent);
+
+                mProgressBar.setVisibility(View.INVISIBLE);
+            }
+        });
+    }
+
+    private void manageSecurity() {
         // Security
         try {
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
@@ -156,180 +272,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.e("ERROR", ""+e.getLocalizedMessage());
             Toast.makeText(mContext, "ERROR : genérico."+e.getLocalizedMessage() , Toast.LENGTH_LONG).show();
         }
-
-
-        editText = findViewById(R.id.editTextDataToEncrypt);
-        //editText2 = findViewById(R.id.editTextResult);
-        urlEditText = findViewById(R.id.editTextURL);
-        Button getTitleURLButton = findViewById(R.id.buttonGetFacturasFromServer);
-        Button goToShowUploadedInvoice = findViewById(R.id.buttonGoToShowUploadedInvoice);
-
-        //Get the ID of button that will perform the network call
-        Button btn =  findViewById(R.id.buttonEncrypt);
-        assert btn != null;
-
-        //String url ="https://www.google.com";
-        //editText2.setText(url);
-
-        imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-
-        // 2019-03-30
-        // Check whether this app has write external storage permission or not.
-        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        // If do not grant write external storage permission.
-        if(writeExternalStoragePermission!= PackageManager.PERMISSION_GRANTED)
-        {
-            // Request user to grant write external storage permission.
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-        }
-
-
-        // Set a click listener for button widget
-        getTitleURLButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                mProgressBar.setVisibility(View.VISIBLE);
-
-                // Initialize a new RequestQueue instance
-                RequestQueue requestQueue = Volley.newRequestQueue(mContext);
-
-                // Initialize a new JsonArrayRequest instance
-                JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
-                        Request.Method.GET,
-                        urlEditText.getText().toString(),
-                        null,
-                        new Response.Listener<JSONArray>() {
-                            @Override
-                            public void onResponse(JSONArray response) {
-                                // Do something with response
-
-                                Log.i(TAG, response.toString());
-
-                                // Process the JSON
-                                try{
-                                    ArrayList<Invoice> invoices;
-
-                                    invoices = getInvoicesFromResponse(response);
-
-                                    StringBuilder message = new StringBuilder();
-                                    for(Invoice invoice : invoices) {
-                                        message.append("ID : ").append(invoice.getUid()).append(CR_LF);
-                                        message.append("CIF: ").append(invoice.getTaxIdentificationNumber()).append(CR_LF);
-                                        message.append("Num.Factura: ").append(invoice.getInvoiceNumber()).append(CR_LF);
-                                        message.append("Data Factura: ").append(invoice.getIssueDate()).append(CR_LF);
-                                        message.append("Total Factura : ").append(invoice.getInvoiceTotal()).append(CR_LF).append(CR_LF);
-                                    }
-
-                                    mProgressBar.setVisibility(View.INVISIBLE);
-
-                                    Intent intent = new Intent(mContext, DisplayMessageActivity.class);
-                                    intent.putExtra(EXTRA_MESSAGE, message.toString());
-                                    intent.putExtra(INVOICE_LIST, invoices);
-                                    startActivity(intent);
-
-                                }catch (Exception e){
-                                    e.printStackTrace();
-                                }
-                            }
-                        },
-                        new Response.ErrorListener(){
-                            @Override
-                            public void onErrorResponse(VolleyError error){
-                                // Do something when error occurred
-                                Toast.makeText(mContext, "ERROR : genérico."+error.getLocalizedMessage() , Toast.LENGTH_LONG).show();
-                            }
-                        }
-                );
-
-                // Add JsonArrayRequest to the RequestQueue
-                requestQueue.add(jsonArrayRequest);
-            }
-        });
-
-        goToShowUploadedInvoice.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-
-                mProgressBar.setVisibility(View.VISIBLE);
-
-                // Initialize a new RequestQueue instance
-                RequestQueue requestQueue = Volley.newRequestQueue(mContext);
-
-                // Initialize a new JsonArrayRequest instance
-                JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
-                        Request.Method.GET,
-                        urlEditText.getText().toString(),
-                        null,
-                        new Response.Listener<JSONArray>() {
-                            @Override
-                            public void onResponse(JSONArray response) {
-                                // Do something with response
-
-                                Log.i(TAG, response.toString());
-
-                                // Process the JSON
-                                try{
-                                    ArrayList<Invoice> invoices;
-
-                                    invoices = getInvoicesFromResponse(response);
-
-                                    StringBuilder message = new StringBuilder();
-                                    for(Invoice invoice : invoices) {
-                                        message.append("ID : ").append(invoice.getUid()).append(CR_LF);
-                                        message.append("CIF: ").append(invoice.getTaxIdentificationNumber()).append(CR_LF);
-                                        message.append("Num.Factura: ").append(invoice.getInvoiceNumber()).append(CR_LF);
-                                        message.append("Data Factura: ").append(invoice.getIssueDate()).append(CR_LF);
-                                        message.append("Total Factura : ").append(invoice.getInvoiceTotal()).append(CR_LF).append(CR_LF);
-                                    }
-
-                                    mProgressBar.setVisibility(View.INVISIBLE);
-
-                                    Intent intent = new Intent(mContext, RecyclerViewActivity.class);
-                                    intent.putExtra(EXTRA_MESSAGE, message.toString());
-                                    intent.putExtra(INVOICE_LIST, invoices);
-                                    startActivity(intent);
-
-
-                                }catch (Exception e){
-                                    e.printStackTrace();
-                                }
-                            }
-                        },
-                        new Response.ErrorListener(){
-                            @Override
-                            public void onErrorResponse(VolleyError error){
-                                // Do something when error occurred
-                                Toast.makeText(mContext, "ERROR : genérico."+error.getLocalizedMessage() , Toast.LENGTH_LONG).show();
-                            }
-                        }
-                );
-
-                // Add JsonArrayRequest to the RequestQueue
-                requestQueue.add(jsonArrayRequest);
-
-            }
-        });
-
-        //File sdcard = Environment.getExternalStorageDirectory();
-        String root_sd = Environment.getExternalStorageDirectory().toString();
-        File file = new File( root_sd + "/Download" ) ;
-        File list[] = file.listFiles();
-        List<String> myList = new ArrayList<>();
-
-        for( int i=0; i< list.length; i++)
-        {
-            myList.add( list[i].getName() );
-            //Log.i(TAG, list[i].getAbsoluteFile().getAbsolutePath());
-            Log.i(TAG, list[i].getName());
-        }
-
-    }
-
-    @Override
-    public void onClick(View v) {
-        editText.getText().clear();
     }
 
     public void verifySignedInvoice(View v){
@@ -337,8 +279,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         String message;
         try {
-
-
             File sdcard = Environment.getExternalStorageDirectory();
             //File file = new File(sdcard,"Download/invoice_990001_xml_20190329_2020707_xml.xsig");
             //File file = new File(sdcard,"Download/invoice_990002_xml_20190329_2020915_xml.xsig");
@@ -349,23 +289,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 throw new FileNotFoundException();
             }
 
+            Toast.makeText(mContext, "Cargando el fichero firmado...", Toast.LENGTH_SHORT).show();
             InputStream isSignedInvoice = new FileInputStream(file);
-
-            Log.i(TAG, "key.getAlgorithm : " + key.getAlgorithm());
-            Toast.makeText(mContext, "key.getAlgorithm : " + key.getAlgorithm(), Toast.LENGTH_SHORT).show();
-
 
             message = "";
 
             byte[] baInvoiceSigned = IOUtils.toByteArray(isSignedInvoice);
-
-            //message += CR_LF + "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]";
             Toast.makeText(mContext, "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]", Toast.LENGTH_SHORT).show();
 
             isSignedInvoice = new FileInputStream(file);
             Document doc = getDocument(isSignedInvoice);
-
-            //message += CR_LF + "root : " + doc.getDocumentElement().getTagName();
 
             Toast.makeText(mContext, "Documento factura procesado!", Toast.LENGTH_SHORT).show();
 
@@ -448,60 +381,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 Log.i(TAG, "invoice : ["+invoice.toString()+"]");
 
-//                message += CR_LF;
-//                message += CR_LF + String.format("taxIdentificationNumberEncrypted : [%s]", taxIdentificationNumberEncrypted);
-//                message += CR_LF + String.format("invoiceNumberEncrypted : [%s]", invoiceNumberEncrypted);
-//                message += CR_LF + String.format("totalEncrypted  : [%s]", totalEncrypted);
-//                message += CR_LF + String.format("dataEncrypted   : [%s]", dataEncrypted);
-//                Log.i(TAG, String.format("taxIdentificationNumberEncrypted : [%d][%s]", taxIdentificationNumberEncrypted.length(), taxIdentificationNumberEncrypted));
-//                Log.i(TAG, String.format("invoiceNumberEncrypted : [%d][%s]", invoiceNumberEncrypted.length(), invoiceNumberEncrypted));
-//                Log.i(TAG, String.format("totalEncrypted  : [%s]", totalEncrypted));
-//                Log.i(TAG, String.format("dataEncrypted   : [%d][%s]", dataEncrypted.length(), dataEncrypted));
-//                Log.i(TAG, String.format("signedInvoiceEncrypted   : [%d][%s]", signedInvoiceEncrypted.length(), signedInvoiceEncrypted));
-
                 // Encriptació amb clau pública de iv i simKey
                 byte[] ivBytesEnc = AsymmetricEncryptor.encryptData(iv.getBytes(), certificate);
                 String ivStringEnc = new String(Base64.encode(ivBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
                 byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), certificate);
                 String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
 
-                message += CR_LF;
-                //message += CR_LF + String.format("ivStringEnc      : [%s]", ivStringEnc);
-                //message += CR_LF + String.format("simKeyStringEnc  : [%s]", simKeyStringEnc);
-//                Log.i(TAG, String.format("ivStringEnc      : [%d][%s]", ivStringEnc.length(), ivStringEnc));
-//                Log.i(TAG, String.format("simKeyStringEnc  : [%d][%s]", simKeyStringEnc.length(), simKeyStringEnc));
-
-                // Desencriptació amb clau privada de iv i simKey
-                byte[] ivBytesDec = Base64.decode(ivStringEnc, Base64.NO_WRAP);
-                byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, key);
-                String ivStringDec = new String(ivBytesEncDec);
-
-                byte[] simKeyBytesDec = Base64.decode(simKeyStringEnc, Base64.NO_WRAP);
-                byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, key);
-                String simKeyStringDec = new String(simKeyBytesEncDec);
-
-                Log.i(TAG, "iv : ["+ivStringDec+"]");
-                Log.i(TAG, "simKey : ["+simKeyStringDec+"]");
-
-                Log.i(TAG, "iv : ["+iv+"]["+ivStringDec+"]");
-                Log.i(TAG, "simKey : ["+simKey+"]["+simKeyStringDec+"]");
-
-
-                SymmetricDecryptor simDec = new SymmetricDecryptor();
-                simDec.setIv(ivStringDec);
-                simDec.setKey(simKeyStringDec);
-
-                String sellerDecrypted = simDec.decrypt(taxIdentificationNumberEncrypted);
-                String totalDecrypted  = totalEncrypted; //simDec.decrypt(totalEncrypted);
-                String dataDecrypted   = simDec.decrypt(dataEncrypted);
-
-//                message += CR_LF;
-//                message += CR_LF + String.format("sellerDecrypted : [%s]", sellerDecrypted);
-//                message += CR_LF + String.format("totalDecrypted  : [%s]", totalDecrypted);
-//                message += CR_LF + String.format("dataDecrypted   : [%s]", dataDecrypted);
-//                Log.i(TAG, String.format("sellerDecrypted : [%s]", sellerDecrypted));
-//                Log.i(TAG, String.format("totalDecrypted  : [%s]", totalDecrypted));
-//                Log.i(TAG, String.format("dataDecrypted   : [%s]", dataDecrypted));
 
                 Map<String, String> params = new HashMap<>();
                 params.put("uidfactura", (UIDFacturaHash == null ? "---" : UIDFacturaHash));
@@ -523,7 +408,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (getData.getResponseCode() == 400){
                     message += CR_LF + String.format("res : [%s]", res);
                 }else if (getData.getResponseCode() == 409){
-                    message += CR_LF + String.format("ALERTA: La factura ya está registrada en el sistema! [%s]", res);
+                    message += CR_LF + String.format("ALERTA: La factura ya está registrada en el sistema! %s", "");
                 }
 
                 Log.i(TAG, "Respuesta del Servidor : ["+res+"]");
@@ -551,7 +436,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         return signature.checkSignatureValue(certificate.getPublicKey());
     }
-
 
     public void onClickEncryptButton(View view) {
         Intent intent = new Intent(this, DisplayMessageActivity.class);
@@ -613,32 +497,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             message = "Exception:" + e.getLocalizedMessage();
         }
 
-        //String message = editText.getText().toString();
         intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
     }
 
-    /** Called when the user taps the Send button */
-    public void getURL(View view) {
-
-        // Ocultar teclat...
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-
-        //GetDataFromUrlTask getData = new GetDataFromUrlTask();
-
-        try {
-            String url = urlEditText.getText().toString();
-            Log.i(TAG, "getURL(): " + url);
-            //String res = getData.execute(url).get();
-            //editText2.setText(res);
-        } catch (Exception e) {
-            Log.i(TAG, "public void getURL() — get item number " + e.getMessage());
-            //String res = "Ups... error en GetDataFromUrlTask " + e.getMessage();
-            //editText2.setText(res);
-        }
-    }
-
-    @Override
+     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -729,7 +592,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return null;
     }
 
-
     private ArrayList<Invoice> getInvoicesFromResponse(JSONArray response){
         ArrayList<Invoice> invoices = new ArrayList<>();
 
@@ -740,7 +602,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 JSONObject factura = response.getJSONObject(i);
 
                 // Get the current factura (json object) data
-                long id = factura.getLong("id");
+                //long id = factura.getLong("id");
                 String uid = factura.getString("uid");
                 String taxIdentificationNumber = factura.getString("taxIdentificationNumber");
                 String invoiceNumber = factura.getString("invoiceNumber");
@@ -774,7 +636,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         , invoiceNumberDecrypted
                         , invoiceTotal
                         , totalTaxOutputs
-                        , new SimpleDateFormat("yyyy-MM-dd").parse(issueDateDecrypted)
+                        , new SimpleDateFormat("yyyy-MM-dd", new Locale("ES-es")).parse(issueDateDecrypted)
                 );
 
                 Log.i(TAG, "invoice : ["+invoice.toString()+"]");

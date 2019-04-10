@@ -10,36 +10,34 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.apptestvalidationandroid44.model.Invoice;
+import com.example.apptestvalidationandroid44.model.FileDataObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
-//import com.example.apptestvalidationandroid44.model.Invoice;
-
-
-public class RecyclerViewActivity extends AppCompatActivity {
+public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
     private Context mContext;
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    private static String LOG_TAG = "RecyclerViewActivity";
+    private static String LOG_TAG = "LocalInvoicesRVA";
 
-    private List<Invoice> invoices;
+    private List<FileDataObject> signedInvoices;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_recycler_view);
+        setContentView(R.layout.local_invoices_recycler_view);
 
         mContext = getApplicationContext();
-        mRecyclerView = findViewById(R.id.my_recycler_view);
+        mRecyclerView = findViewById(R.id.local_invoices_rv);
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        invoices = (ArrayList<Invoice>)getIntent().getSerializableExtra(MainActivity.INVOICE_LIST);
-        mAdapter = new MyRecyclerViewAdapter(invoices);
+        signedInvoices = (ArrayList<FileDataObject>)getIntent().getSerializableExtra(MainActivity.FILE_LIST);
+        mAdapter = new LocalInvoicesRecyclerViewAdapter(signedInvoices);
 
         mRecyclerView.setAdapter(mAdapter);
         RecyclerView.ItemDecoration itemDecoration =
@@ -56,12 +54,12 @@ public class RecyclerViewActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        ((MyRecyclerViewAdapter) mAdapter).setOnItemClickListener(
-                new MyRecyclerViewAdapter.MyClickListener() {
+        ((LocalInvoicesRecyclerViewAdapter) mAdapter).setOnItemClickListener(
+                new LocalInvoicesRecyclerViewAdapter.LocalInvoicesClickListener() {
                     @Override
                     public void onItemClick(int position, View v) {
                         Log.i(LOG_TAG, " Clicked on Item " + position);
-                        Toast.makeText(mContext, "Factura " + invoices.get(position).getInvoiceNumber(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mContext, "Factura " + signedInvoices.get(position).getFileName(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }

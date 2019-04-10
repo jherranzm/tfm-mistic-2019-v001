@@ -15,7 +15,8 @@
     <string name="goToUploadedInvoice">Go To Uploaded Invoice</string>
 
 
-    <string name="showUploadedInvoiceSampleText">Uploaded Invoice Sample Text</string>
+    <string name="showUploadedInvoices">Uploaded Invoices</string>
+    <string name="showLocalInvoices">Local Invoices</string>
 
 
 </resources>
