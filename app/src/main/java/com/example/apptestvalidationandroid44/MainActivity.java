@@ -34,6 +34,7 @@ import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.Invoice;
 import com.example.apptestvalidationandroid44.util.FacturaeNamespaceContext;
 import com.example.apptestvalidationandroid44.util.RandomStringGenerator;
+import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 import com.example.apptestvalidationandroid44.util.UIDGenerator;
 
 import org.apache.commons.io.IOUtils;
@@ -95,11 +96,9 @@ public class MainActivity
     public static final String EXTRA_MESSAGE = "com.example.apptestvalidationandroid44.MESSAGE";
     public static final String INVOICE_LIST = "com.example.apptestvalidationandroid44.INVOICE_LIST";
     public static final String FILE_LIST = "com.example.apptestvalidationandroid44.FILE_LIST";
-
-    private static final String PKCS_12 = "PKCS12";
-    private static final String PKCS12_PASSWORD = "Th2S5p2rStr4ngP1ss";
-    private static final String CR_LF = "\n";
-
+    public static final String CR_LF = "\n";
+    //public static final String PKCS_12 = "PKCS12";
+    //public static final String PKCS12_PASSWORD = "Th2S5p2rStr4ngP1ss";
 
     private EditText editText;
     private EditText urlEditText;
@@ -107,8 +106,7 @@ public class MainActivity
 
     private static final String TAG = "MAIN_ACTIVITY";
 
-    private X509Certificate certificate;
-    private PrivateKey key;
+    private TFMSecurityManager tfmSecurityManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,6 +120,7 @@ public class MainActivity
         mProgressBar = findViewById(R.id.progressBar1);
         mProgressBar.setVisibility(View.INVISIBLE);
 
+        tfmSecurityManager = TFMSecurityManager.getInstance();
         manageSecurity();
 
         editText = findViewById(R.id.editTextDataToEncrypt);
@@ -242,22 +241,25 @@ public class MainActivity
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
             InputStream isServerCrt = this.getResources().openRawResource(R.raw.server);
             InputStream isServerKey = this.getResources().openRawResource(R.raw.serverkey);
-            certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
+            X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
+            tfmSecurityManager.setCertificate(certificate);
+
 
             isServerCrt.close();
 
-            char[] keystorePassword = PKCS12_PASSWORD.toCharArray();
-            char[] keyPassword = PKCS12_PASSWORD.toCharArray();
+            char[] keystorePassword = tfmSecurityManager.PKCS12_PASSWORD.toCharArray();
+            char[] keyPassword = tfmSecurityManager.PKCS12_PASSWORD.toCharArray();
 
-            KeyStore keystore = KeyStore.getInstance(PKCS_12, "BC");
+            KeyStore keystore = KeyStore.getInstance(tfmSecurityManager.PKCS_12, "BC");
             keystore.load(isServerKey, keystorePassword);
             isServerKey.close();
 
-            key = (PrivateKey) keystore.getKey("Server", keyPassword);
+            PrivateKey key = (PrivateKey) keystore.getKey("Server", keyPassword);
             if(key == null) {
                 Log.e(getLocalClassName(),"ERROR NO hay key!");
                 throw new Exception("ERROR no hay Key!");
             }
+            tfmSecurityManager.setKey(key);
 
         } catch (NoSuchAlgorithmException e) {
             Log.e("ERROR", ""+e.getLocalizedMessage());
@@ -302,7 +304,7 @@ public class MainActivity
 
             Toast.makeText(mContext, "Documento factura procesado!", Toast.LENGTH_SHORT).show();
 
-            boolean valid = isValid(certificate, doc);
+            boolean valid = isValid(tfmSecurityManager.getCertificate(), doc);
 
             if(!valid){
                 message += CR_LF;
@@ -382,9 +384,9 @@ public class MainActivity
                 Log.i(TAG, "invoice : ["+invoice.toString()+"]");
 
                 // Encriptació amb clau pública de iv i simKey
-                byte[] ivBytesEnc = AsymmetricEncryptor.encryptData(iv.getBytes(), certificate);
+                byte[] ivBytesEnc = AsymmetricEncryptor.encryptData(iv.getBytes(), tfmSecurityManager.getCertificate());
                 String ivStringEnc = new String(Base64.encode(ivBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
-                byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), certificate);
+                byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), tfmSecurityManager.getCertificate());
                 String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
 
 
@@ -446,7 +448,7 @@ public class MainActivity
             Log.i(getLocalClassName(),"inputText : [" + inputText + "]");
 
             // Encriptem el text
-            byte[] messageEncrypted = AsymmetricEncryptor.encryptData(inputText.getBytes(), certificate);
+            byte[] messageEncrypted = AsymmetricEncryptor.encryptData(inputText.getBytes(), tfmSecurityManager.getCertificate());
             Log.i(getLocalClassName(),"messageEncrypted : [" + new String(messageEncrypted) + "]");
 
             // Codifiquem el text en Base64 per poder-lo enviar
@@ -460,7 +462,7 @@ public class MainActivity
             //message = new String(messageEncryptedDecodedB64);
 
             // Desencriptem el text
-            byte[] messageDecodedB64Decrypted = AsymmetricDecryptor.decryptData(messageEncryptedDecodedB64, key);
+            byte[] messageDecodedB64Decrypted = AsymmetricDecryptor.decryptData(messageEncryptedDecodedB64, tfmSecurityManager.getKey());
             Log.i(getLocalClassName(),"messageDecodedB64Decrypted : [" + new String(messageDecodedB64Decrypted) + "]");
             //message = inputText + "**:**" + new String(messageDecodedB64Decrypted);
 
@@ -472,10 +474,10 @@ public class MainActivity
             byte[] fileContent = IOUtils.toByteArray(isInvoice);
             Log.i(getLocalClassName(),"inputStreamInvoice : fileContent.length " + fileContent.length);
 
-            byte[] fileContentEncrypted = AsymmetricEncryptor.encryptData(fileContent, certificate);
+            byte[] fileContentEncrypted = AsymmetricEncryptor.encryptData(fileContent, tfmSecurityManager.getCertificate());
             Log.i(getLocalClassName(),"inputStreamInvoice : fileContentEncrypted.length " + fileContentEncrypted.length);
 
-            byte[] fileContentEncryptedDecrypted = AsymmetricDecryptor.decryptData(fileContentEncrypted, key);
+            byte[] fileContentEncryptedDecrypted = AsymmetricDecryptor.decryptData(fileContentEncrypted, tfmSecurityManager.getKey());
             Log.i(getLocalClassName(),"inputStreamInvoice : fileContentEncryptedDecrypted.length " + fileContentEncryptedDecrypted.length);
 
 
@@ -615,11 +617,11 @@ public class MainActivity
 
                 // Desencriptació amb clau privada de iv i simKey
                 byte[] ivBytesDec = Base64.decode(iv, Base64.NO_WRAP);
-                byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, key);
+                byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, tfmSecurityManager.getKey());
                 String ivStringDec = new String(ivBytesEncDec);
 
                 byte[] simKeyBytesDec = Base64.decode(simKey, Base64.NO_WRAP);
-                byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, key);
+                byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, tfmSecurityManager.getKey());
                 String simKeyStringDec = new String(simKeyBytesEncDec);
 
                 SymmetricDecryptor simDec = new SymmetricDecryptor();
