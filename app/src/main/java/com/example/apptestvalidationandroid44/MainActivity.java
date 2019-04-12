@@ -1,14 +1,11 @@
 package com.example.apptestvalidationandroid44;
 
 import android.Manifest;
-import android.arch.lifecycle.LifecycleRegistry;
-import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -36,7 +33,6 @@ import com.example.apptestvalidationandroid44.crypto.SymmetricEncryptor;
 import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.Invoice;
 import com.example.apptestvalidationandroid44.model.LocalSimKey;
-import com.example.apptestvalidationandroid44.model.LocalSimKeyRepository;
 import com.example.apptestvalidationandroid44.util.FacturaeNamespaceContext;
 import com.example.apptestvalidationandroid44.util.RandomStringGenerator;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
@@ -75,7 +71,6 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -96,6 +91,8 @@ import es.facturae.facturae.v3.facturae.Facturae;
 public class MainActivity
         extends AppCompatActivity{
 
+    public static final String TAX_IDENTIFICATION_NUMBER = "f2";
+    public static final String INVOICE_NUMBER = "f4";
     private Context mContext;
     private ProgressBar mProgressBar;
 
@@ -103,8 +100,6 @@ public class MainActivity
     public static final String INVOICE_LIST = "com.example.apptestvalidationandroid44.INVOICE_LIST";
     public static final String FILE_LIST = "com.example.apptestvalidationandroid44.FILE_LIST";
     public static final String CR_LF = "\n";
-    //public static final String PKCS_12 = "PKCS12";
-    //public static final String PKCS12_PASSWORD = "Th2S5p2rStr4ngP1ss";
 
     private EditText editText;
     private EditText urlEditText;
@@ -113,13 +108,6 @@ public class MainActivity
     private static final String TAG = "MAIN_ACTIVITY";
 
     private TFMSecurityManager tfmSecurityManager;
-
-    private final LifecycleRegistry lifecycleRegistry = new LifecycleRegistry(this);
-
-    @Override
-    public LifecycleRegistry getLifecycle() {
-        return lifecycleRegistry;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -274,70 +262,41 @@ public class MainActivity
             }
             tfmSecurityManager.setKey(key);
 
-            LocalSimKeyRepository repo = new LocalSimKeyRepository(mContext);
-            Log.i(TAG, "repo es nulo ? " + (repo == null ? "Nulo!":"Correcto!"));
-            //GetAllLocalSimKeysTask galskTask = new GetAllLocalSimKeysTask(mContext);
 
-            final List<LocalSimKey> keyList = new ArrayList<>();
-            repo.getAll().observe(this, new Observer<List<LocalSimKey>>() {
-                @Override
-                public void onChanged(@Nullable List<LocalSimKey> notes) {
-                    //keyList = notes;
-                    for(LocalSimKey note : notes) {
-                        keyList.add(note);
-                        Log.i(TAG, "-----------------------");
-                        Log.i(TAG, ""+note.getId());
-                        Log.i(TAG, note.getF());
-                        Log.i(TAG, note.getK());
-                    }
+            String[] fields = {"f1", "f2", "f3", "f4"};
+            RandomStringGenerator rsg = new RandomStringGenerator();
 
+            for(String str : fields){
+                GetByFLocalSimKeysTask gbflskTask = new GetByFLocalSimKeysTask(mContext);
+                Log.i(TAG, "LocalSimKey : " + str);
+                LocalSimKey lskF1 = gbflskTask.execute(str).get();
+                if(lskF1 == null){
+                    Log.i(TAG, "LocalSimKey NO localizada: " + str);
+                    LocalSimKey lsk = new LocalSimKey();
+                    lsk.setF(str);
+                    String simKey = rsg.getRandomString(16);
+                    byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), tfmSecurityManager.getCertificate());
+                    String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
+                    lsk.setK(simKeyStringEnc);
+
+                    InsertLocalSimKeysTask ilskTask = new InsertLocalSimKeysTask(mContext, lsk);
+                    LocalSimKey lskF = ilskTask.execute().get();
+                    Log.i(TAG, "LocalSimKey ingresada: " + lskF.toString());
+
+                    tfmSecurityManager.getSimKeys().put(str, simKey);
+
+                }else{
+                    Log.i(TAG, "LocalSimKey recuperada: " + lskF1.toString());
+
+                    // Desencriptació amb clau privada de iv i simKey
+                    byte[] simKeyBytesDec = Base64.decode(lskF1.getK(), Base64.NO_WRAP);
+                    byte[] simKeyStringDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, tfmSecurityManager.getKey());
+                    String strKey = new String(simKeyStringDec);
+
+                    tfmSecurityManager.getSimKeys().put(str, strKey);
                 }
-            });
-            Log.i(TAG, "keyList es nulo ? " + (keyList == null ? "Nulo!":"Correcto!"));
-            Log.i(TAG, "keyList:size() :  " + keyList.size());
 
-//            Log.i(TAG, "keyList es nulo ? " + (keyList == null ? "Nulo!":"Correcto!"));
-//            if(keyList == null){
-//                LocalSimKey lsk = new LocalSimKey();
-//                lsk.setF("f1");
-//                RandomStringGenerator rsg = new RandomStringGenerator();
-//                String simKey = rsg.getRandomString(16);
-//                byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), tfmSecurityManager.getCertificate());
-//                String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
-//                lsk.setK(simKeyStringEnc);
-//
-//                repo.insert(lsk);
-//                Log.i(TAG, "Se supone que ahora hemos ingresado un objeto...");
-//                List<LocalSimKey> newKeyList = repo.getAll().getValue();
-//                Log.i(TAG, "newKeyList es nulo ? " + (newKeyList == null ? "Nulo!":"Correcto!"));
-//
-//            }else{
-//                Log.i(TAG, ""+keyList.size());
-//                for( LocalSimKey l : keyList){
-//                    Log.i(TAG, l.toString());
-//                }
-//            }
-
-
-//            List<LocalSimKey> taskList = DatabaseClient
-//                    .getInstance(getApplicationContext())
-//                    .getAppDatabase()
-//                    .localSimKeyDao()
-//                    .getAll();
-//            Log.i(TAG, "LocalSimKey.length : " + taskList.size());
-//
-//            if(taskList.size() == 0) {
-//                LocalSimKey lsk = new LocalSimKey();
-//                lsk.setF("f1");
-//                RandomStringGenerator rsg = new RandomStringGenerator();
-//                String simKey = rsg.getRandomString(16);
-//                byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), tfmSecurityManager.getCertificate());
-//                String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
-//                lsk.setK(simKeyStringEnc);
-//                DatabaseClient.getInstance(getApplicationContext()).getAppDatabase()
-//                        .localSimKeyDao()
-//                        .insert(lsk);
-//            }
+            }
 
         } catch (NoSuchAlgorithmException e) {
             Log.e("ERROR", ""+e.getLocalizedMessage());
@@ -360,9 +319,9 @@ public class MainActivity
         String message;
         try {
             File sdcard = Environment.getExternalStorageDirectory();
-            //File file = new File(sdcard,"Download/invoice_990001_xml_20190329_2020707_xml.xsig");
+            File file = new File(sdcard,"Download/invoice_990001_xml_20190329_2020707_xml.xsig");
             //File file = new File(sdcard,"Download/invoice_990002_xml_20190329_2020915_xml.xsig");
-            File file = new File(sdcard,"Download/invoice_990003_xml_20190329_2020102_xml.xsig");
+            //File file = new File(sdcard,"Download/invoice_990003_xml_20190329_2020102_xml.xsig");
             //File file = new File(sdcard,"Download/invoice_990004_xml_20190329_2020276_xml.xsig");
             //File file = new File(sdcard,"Download/invoice_990005_xml_20190329_2020430_xml.xsig");
             if(!file.exists()){
@@ -426,8 +385,10 @@ public class MainActivity
                 simEnc.setIv(iv);
                 simEnc.setKey(simKey);
 
-                String taxIdentificationNumberEncrypted = simEnc.encrypt(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
-                String invoiceNumberEncrypted = simEnc.encrypt(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
+                String simKeyTaxIdentificationNumber = tfmSecurityManager.getSimKeys().get(TAX_IDENTIFICATION_NUMBER);// taxIdentificationNumber
+                String taxIdentificationNumberEncrypted = simEnc.encrypt(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber(), simKeyTaxIdentificationNumber);
+                String simKeyInvoiceNumber = tfmSecurityManager.getSimKeys().get(INVOICE_NUMBER);// invoiceNumber
+                String invoiceNumberEncrypted = simEnc.encrypt(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber(), simKeyInvoiceNumber);
 
                 // Versió inicial: No s'encripten els imports, ja que si no el sistema NO pot fer càlculs
                 String totalEncrypted  = ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal();
@@ -706,8 +667,8 @@ public class MainActivity
                 simDec.setIv(ivStringDec);
                 simDec.setKey(simKeyStringDec);
 
-                String taxIdentificationNumberDecrypted = simDec.decrypt(taxIdentificationNumber);
-                String invoiceNumberDecrypted = simDec.decrypt(invoiceNumber);
+                String taxIdentificationNumberDecrypted = simDec.decrypt(taxIdentificationNumber, tfmSecurityManager.getSimKeys().get(TAX_IDENTIFICATION_NUMBER));
+                String invoiceNumberDecrypted = simDec.decrypt(invoiceNumber, tfmSecurityManager.getSimKeys().get(INVOICE_NUMBER));
                 String issueDateDecrypted = simDec.decrypt(issueDate);
 
                 Invoice invoice = new Invoice(uid

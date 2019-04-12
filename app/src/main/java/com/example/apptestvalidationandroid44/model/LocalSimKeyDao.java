@@ -1,6 +1,5 @@
 package com.example.apptestvalidationandroid44.model;
 
-import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
@@ -13,10 +12,10 @@ import java.util.List;
 public interface LocalSimKeyDao {
 
     @Query("SELECT * FROM localsimkey")
-    LiveData<List<LocalSimKey>> getAll();
+    List<LocalSimKey> getAll();
 
     @Query("SELECT * FROM localsimkey WHERE f = :theF LIMIT 1")
-    LiveData<LocalSimKey> findLocalSimKeyByF(String theF);
+    LocalSimKey findLocalSimKeyByF(String theF);
 
     @Insert
     long insert(LocalSimKey localSimKey);

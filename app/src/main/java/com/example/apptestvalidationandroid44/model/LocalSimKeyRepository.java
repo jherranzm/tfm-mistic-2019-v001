@@ -1,6 +1,5 @@
 package com.example.apptestvalidationandroid44.model;
 
-import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -54,11 +53,11 @@ public class LocalSimKeyRepository {
     }
 
 
-    public LiveData<LocalSimKey> getByF(String theF) {
+    public LocalSimKey getByF(String theF) {
         return tfmDatabase.localSimKeyDao().findLocalSimKeyByF(theF);
     }
 
-    public LiveData<List<LocalSimKey>> getAll() {
+    public List<LocalSimKey> getAll() {
 
         return tfmDatabase.localSimKeyDao().getAll();
     }

@@ -4,6 +4,8 @@ import android.util.Log;
 
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TFMSecurityManager {
 
@@ -11,6 +13,8 @@ public class TFMSecurityManager {
     public final String PKCS12_PASSWORD = "Th2S5p2rStr4ngP1ss";
 
     private static final String TAG = "TFMSecurityManager";
+
+    private Map<String, String> simKeys = new HashMap<>();
 
 
     private X509Certificate certificate;
@@ -46,5 +50,13 @@ public class TFMSecurityManager {
 
     public void setKey(PrivateKey key) {
         this.key = key;
+    }
+
+    public Map<String, String> getSimKeys() {
+        return simKeys;
+    }
+
+    public void setSimKeys(Map<String, String> simKeys) {
+        this.simKeys = simKeys;
     }
 }
