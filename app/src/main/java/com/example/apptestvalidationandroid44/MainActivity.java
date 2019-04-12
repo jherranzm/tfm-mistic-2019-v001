@@ -1,11 +1,14 @@
 package com.example.apptestvalidationandroid44;
 
 import android.Manifest;
+import android.arch.lifecycle.LifecycleRegistry;
+import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -32,6 +35,8 @@ import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricEncryptor;
 import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.Invoice;
+import com.example.apptestvalidationandroid44.model.LocalSimKey;
+import com.example.apptestvalidationandroid44.model.LocalSimKeyRepository;
 import com.example.apptestvalidationandroid44.util.FacturaeNamespaceContext;
 import com.example.apptestvalidationandroid44.util.RandomStringGenerator;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
@@ -70,6 +75,7 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -107,6 +113,13 @@ public class MainActivity
     private static final String TAG = "MAIN_ACTIVITY";
 
     private TFMSecurityManager tfmSecurityManager;
+
+    private final LifecycleRegistry lifecycleRegistry = new LifecycleRegistry(this);
+
+    @Override
+    public LifecycleRegistry getLifecycle() {
+        return lifecycleRegistry;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -261,6 +274,71 @@ public class MainActivity
             }
             tfmSecurityManager.setKey(key);
 
+            LocalSimKeyRepository repo = new LocalSimKeyRepository(mContext);
+            Log.i(TAG, "repo es nulo ? " + (repo == null ? "Nulo!":"Correcto!"));
+            //GetAllLocalSimKeysTask galskTask = new GetAllLocalSimKeysTask(mContext);
+
+            final List<LocalSimKey> keyList = new ArrayList<>();
+            repo.getAll().observe(this, new Observer<List<LocalSimKey>>() {
+                @Override
+                public void onChanged(@Nullable List<LocalSimKey> notes) {
+                    //keyList = notes;
+                    for(LocalSimKey note : notes) {
+                        keyList.add(note);
+                        Log.i(TAG, "-----------------------");
+                        Log.i(TAG, ""+note.getId());
+                        Log.i(TAG, note.getF());
+                        Log.i(TAG, note.getK());
+                    }
+
+                }
+            });
+            Log.i(TAG, "keyList es nulo ? " + (keyList == null ? "Nulo!":"Correcto!"));
+            Log.i(TAG, "keyList:size() :  " + keyList.size());
+
+//            Log.i(TAG, "keyList es nulo ? " + (keyList == null ? "Nulo!":"Correcto!"));
+//            if(keyList == null){
+//                LocalSimKey lsk = new LocalSimKey();
+//                lsk.setF("f1");
+//                RandomStringGenerator rsg = new RandomStringGenerator();
+//                String simKey = rsg.getRandomString(16);
+//                byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), tfmSecurityManager.getCertificate());
+//                String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
+//                lsk.setK(simKeyStringEnc);
+//
+//                repo.insert(lsk);
+//                Log.i(TAG, "Se supone que ahora hemos ingresado un objeto...");
+//                List<LocalSimKey> newKeyList = repo.getAll().getValue();
+//                Log.i(TAG, "newKeyList es nulo ? " + (newKeyList == null ? "Nulo!":"Correcto!"));
+//
+//            }else{
+//                Log.i(TAG, ""+keyList.size());
+//                for( LocalSimKey l : keyList){
+//                    Log.i(TAG, l.toString());
+//                }
+//            }
+
+
+//            List<LocalSimKey> taskList = DatabaseClient
+//                    .getInstance(getApplicationContext())
+//                    .getAppDatabase()
+//                    .localSimKeyDao()
+//                    .getAll();
+//            Log.i(TAG, "LocalSimKey.length : " + taskList.size());
+//
+//            if(taskList.size() == 0) {
+//                LocalSimKey lsk = new LocalSimKey();
+//                lsk.setF("f1");
+//                RandomStringGenerator rsg = new RandomStringGenerator();
+//                String simKey = rsg.getRandomString(16);
+//                byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), tfmSecurityManager.getCertificate());
+//                String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
+//                lsk.setK(simKeyStringEnc);
+//                DatabaseClient.getInstance(getApplicationContext()).getAppDatabase()
+//                        .localSimKeyDao()
+//                        .insert(lsk);
+//            }
+
         } catch (NoSuchAlgorithmException e) {
             Log.e("ERROR", ""+e.getLocalizedMessage());
             Toast.makeText(mContext, "ERROR : Algorithm " + e.getLocalizedMessage() , Toast.LENGTH_LONG).show();
@@ -284,9 +362,9 @@ public class MainActivity
             File sdcard = Environment.getExternalStorageDirectory();
             //File file = new File(sdcard,"Download/invoice_990001_xml_20190329_2020707_xml.xsig");
             //File file = new File(sdcard,"Download/invoice_990002_xml_20190329_2020915_xml.xsig");
-            //File file = new File(sdcard,"Download/invoice_990003_xml_20190329_2020102_xml.xsig");
+            File file = new File(sdcard,"Download/invoice_990003_xml_20190329_2020102_xml.xsig");
             //File file = new File(sdcard,"Download/invoice_990004_xml_20190329_2020276_xml.xsig");
-            File file = new File(sdcard,"Download/invoice_990005_xml_20190329_2020430_xml.xsig");
+            //File file = new File(sdcard,"Download/invoice_990005_xml_20190329_2020430_xml.xsig");
             if(!file.exists()){
                 throw new FileNotFoundException();
             }
