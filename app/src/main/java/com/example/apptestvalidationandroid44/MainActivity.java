@@ -75,6 +75,7 @@ import es.facturae.facturae.v3.facturae.Facturae;
 public class MainActivity
         extends AppCompatActivity{
 
+    public static final String URL = "http://10.0.2.2:8080/facturas";
     public static final String TAX_IDENTIFICATION_NUMBER = "f2";
     public static final String INVOICE_NUMBER = "f4";
     private Context mContext;
@@ -108,15 +109,9 @@ public class MainActivity
         tfmSecurityManager = TFMSecurityManager.getInstance();
         manageSecurity();
 
-        editText = findViewById(R.id.editTextDataToEncrypt);
-        urlEditText = findViewById(R.id.editTextURL);
-
-        Button buttonVerifySignedInvoice =findViewById(R.id.buttonVerifySignedInvoice);
 
         Button goToShowUploadedInvoices = findViewById(R.id.buttonGoToShowUploadedInvoice);
         Button goToShowLocalInvoices = findViewById(R.id.buttonShowLocalInvoices);
-        Button btn =  findViewById(R.id.buttonEncrypt);
-        assert btn != null;
 
         imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -130,8 +125,6 @@ public class MainActivity
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
 
-        buttonVerifySignedInvoice.setVisibility(View.INVISIBLE);
-
         goToShowUploadedInvoices.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -144,7 +137,7 @@ public class MainActivity
                 // Initialize a new JsonArrayRequest instance
                 JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
                         Request.Method.GET,
-                        urlEditText.getText().toString(),
+                        URL,
                         null,
                         new Response.Listener<JSONArray>() {
                             @Override

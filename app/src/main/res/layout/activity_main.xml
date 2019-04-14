@@ -20,40 +20,10 @@
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.602"
+        app:layout_constraintHorizontal_bias="0.526"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintVertical_bias="0.556" />
-
-    <Button
-        android:id="@+id/buttonEncrypt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="256dp"
-        android:layout_marginTop="72dp"
-        android:layout_marginEnd="16dp"
-        android:onClick="onClickEncryptButton"
-        android:text="@string/click"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/editTextDataToEncrypt"
-        app:layout_constraintStart_toStartOf="@+id/editTextDataToEncrypt"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
-
-    <EditText
-        android:id="@+id/editTextDataToEncrypt"
-        android:layout_width="248dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="72dp"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:selectAllOnFocus="true"
-        android:text="@string/name"
-        android:labelFor="@id/buttonEncrypt"
-        app:layout_constraintEnd_toStartOf="@+id/buttonEncrypt"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+        app:layout_constraintVertical_bias="0.301" />
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -68,39 +38,10 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:title="TestTitle" />
 
-    <EditText
-        android:id="@+id/editTextURL"
-        android:layout_width="326dp"
-        android:layout_height="43dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="8dp"
-        android:ems="10"
-        android:inputType="textUri"
-        android:text="@string/url"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextDataToEncrypt" />
-
-    <Button
-        android:id="@+id/buttonVerifySignedInvoice"
-        android:layout_width="243dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="420dp"
-        android:layout_marginEnd="8dp"
-        android:onClick="verifySignedInvoice"
-        android:text="@string/verify_signature"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.552"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        tools:clickable="false" />
-
     <Button
         android:id="@+id/buttonGoToShowUploadedInvoice"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
+        android:layout_width="220dp"
+        android:layout_height="80dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="8dp"
@@ -115,8 +56,8 @@
 
     <Button
         android:id="@+id/buttonShowLocalInvoices"
-        android:layout_width="179dp"
-        android:layout_height="wrap_content"
+        android:layout_width="220dp"
+        android:layout_height="80dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
@@ -124,8 +65,10 @@
         android:text="@string/showLocalInvoices"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.537"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintVertical_bias="0.514" />
 
 
 </android.support.constraint.ConstraintLayout>
