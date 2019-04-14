@@ -1,4 +1,4 @@
-package com.example.apptestvalidationandroid44;
+package com.example.apptestvalidationandroid44.localsimkeystasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -15,7 +15,7 @@ public class GetAllLocalSimKeysTask extends AsyncTask<Void, Void, List<LocalSimK
 
     private Context mContext;
 
-    GetAllLocalSimKeysTask(Context theContext){
+    public GetAllLocalSimKeysTask(Context theContext){
         this.mContext = theContext;
     }
 
@@ -27,7 +27,7 @@ public class GetAllLocalSimKeysTask extends AsyncTask<Void, Void, List<LocalSimK
     @Override
     protected List<LocalSimKey> doInBackground(Void... voids) {
 
-                    List<LocalSimKey> taskList = (List<LocalSimKey>) DatabaseClient
+                    List<LocalSimKey> taskList = DatabaseClient
                     .getInstance(this.mContext)
                     .getAppDatabase()
                     .localSimKeyDao()

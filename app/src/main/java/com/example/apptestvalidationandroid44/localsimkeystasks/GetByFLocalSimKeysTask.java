@@ -1,4 +1,4 @@
-package com.example.apptestvalidationandroid44;
+package com.example.apptestvalidationandroid44.localsimkeystasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -12,7 +12,7 @@ public class GetByFLocalSimKeysTask extends AsyncTask<String, Void, LocalSimKey>
 
     private Context mContext;
 
-    GetByFLocalSimKeysTask(Context theContext){
+    public GetByFLocalSimKeysTask(Context theContext){
         this.mContext = theContext;
     }
 

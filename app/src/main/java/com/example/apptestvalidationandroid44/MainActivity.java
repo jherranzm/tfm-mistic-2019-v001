@@ -30,34 +30,28 @@ import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricEncryptor;
+import com.example.apptestvalidationandroid44.localsimkeystasks.GetByFLocalSimKeysTask;
+import com.example.apptestvalidationandroid44.localsimkeystasks.InsertLocalSimKeysTask;
 import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.Invoice;
 import com.example.apptestvalidationandroid44.model.LocalSimKey;
-import com.example.apptestvalidationandroid44.util.FacturaeNamespaceContext;
 import com.example.apptestvalidationandroid44.util.RandomStringGenerator;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 import com.example.apptestvalidationandroid44.util.UIDGenerator;
+import com.example.apptestvalidationandroid44.util.UtilDocument;
+import com.example.apptestvalidationandroid44.util.UtilFacturae;
+import com.example.apptestvalidationandroid44.util.UtilValidator;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.xml.security.signature.XMLSignature;
-import org.apache.xml.security.utils.Constants;
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IUnmarshallingContext;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -73,16 +67,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
 
 import es.facturae.facturae.v3.facturae.Facturae;
 
@@ -127,6 +111,8 @@ public class MainActivity
         editText = findViewById(R.id.editTextDataToEncrypt);
         urlEditText = findViewById(R.id.editTextURL);
 
+        Button buttonVerifySignedInvoice =findViewById(R.id.buttonVerifySignedInvoice);
+
         Button goToShowUploadedInvoices = findViewById(R.id.buttonGoToShowUploadedInvoice);
         Button goToShowLocalInvoices = findViewById(R.id.buttonShowLocalInvoices);
         Button btn =  findViewById(R.id.buttonEncrypt);
@@ -144,7 +130,7 @@ public class MainActivity
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
 
-
+        buttonVerifySignedInvoice.setVisibility(View.INVISIBLE);
 
         goToShowUploadedInvoices.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -199,6 +185,7 @@ public class MainActivity
                             public void onErrorResponse(VolleyError error){
                                 // Do something when error occurred
                                 Toast.makeText(mContext, "ERROR : genérico."+error.getLocalizedMessage() , Toast.LENGTH_LONG).show();
+                                mProgressBar.setVisibility(View.INVISIBLE);
                             }
                         }
                 );
@@ -263,8 +250,17 @@ public class MainActivity
             tfmSecurityManager.setKey(key);
 
 
+//            GetAllLocalSimKeysTask galskTask = new GetAllLocalSimKeysTask(mContext);
+//            List<LocalSimKey> lskList = galskTask.execute().get();
+//            for(LocalSimKey aLocalSimKey : lskList){
+//                DeleteLocalSimKeysTask dlskTask = new DeleteLocalSimKeysTask(mContext, aLocalSimKey);
+//                LocalSimKey deleted = dlskTask.execute().get();
+//                Log.i(TAG, "Deleted: " + deleted.toString());
+//            }
+
             String[] fields = {"f1", "f2", "f3", "f4"};
             RandomStringGenerator rsg = new RandomStringGenerator();
+
 
             for(String str : fields){
                 GetByFLocalSimKeysTask gbflskTask = new GetByFLocalSimKeysTask(mContext);
@@ -319,8 +315,8 @@ public class MainActivity
         String message;
         try {
             File sdcard = Environment.getExternalStorageDirectory();
-            File file = new File(sdcard,"Download/invoice_990001_xml_20190329_2020707_xml.xsig");
-            //File file = new File(sdcard,"Download/invoice_990002_xml_20190329_2020915_xml.xsig");
+            //File file = new File(sdcard,"Download/invoice_990001_xml_20190329_2020707_xml.xsig");
+            File file = new File(sdcard,"Download/invoice_990002_xml_20190329_2020915_xml.xsig");
             //File file = new File(sdcard,"Download/invoice_990003_xml_20190329_2020102_xml.xsig");
             //File file = new File(sdcard,"Download/invoice_990004_xml_20190329_2020276_xml.xsig");
             //File file = new File(sdcard,"Download/invoice_990005_xml_20190329_2020430_xml.xsig");
@@ -337,11 +333,11 @@ public class MainActivity
             Toast.makeText(mContext, "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]", Toast.LENGTH_SHORT).show();
 
             isSignedInvoice = new FileInputStream(file);
-            Document doc = getDocument(isSignedInvoice);
+            Document doc = UtilDocument.getDocument(isSignedInvoice);
 
             Toast.makeText(mContext, "Documento factura procesado!", Toast.LENGTH_SHORT).show();
 
-            boolean valid = isValid(tfmSecurityManager.getCertificate(), doc);
+            boolean valid = UtilValidator.isValid(tfmSecurityManager.getCertificate(), doc);
 
             if(!valid){
                 message += CR_LF;
@@ -352,11 +348,11 @@ public class MainActivity
                 message += CR_LF + "La firma es válida!";
                 Toast.makeText(mContext, "Documento factura válida!", Toast.LENGTH_SHORT).show();
 
-                Document document = removeSignature(doc);
+                Document document = UtilDocument.removeSignature(doc);
 
                 Toast.makeText(mContext, "Firma eliminada!", Toast.LENGTH_SHORT).show();
 
-                Facturae facturae = getFacturaeFromFactura(documentToString(document));
+                Facturae facturae = UtilFacturae.getFacturaeFromFactura(UtilDocument.documentToString(document));
 
                 Toast.makeText(mContext, "Recuperando datos de factura...", Toast.LENGTH_SHORT).show();
 
@@ -466,17 +462,6 @@ public class MainActivity
         startActivity(intent);
     }
 
-    private boolean isValid(X509Certificate certificate, Document doc) throws Exception {
-        NodeList nl = doc.getElementsByTagNameNS(Constants.SignatureSpecNS, "Signature");
-        if (nl.getLength() == 0) {
-            throw new Exception("No XML Digital Signature Found, document is discarded");
-        }
-
-        Element sigElement = (Element) nl.item(0);
-        XMLSignature signature = new XMLSignature(sigElement, "");
-
-        return signature.checkSignatureValue(certificate.getPublicKey());
-    }
 
     public void onClickEncryptButton(View view) {
         Intent intent = new Intent(this, DisplayMessageActivity.class);
@@ -564,74 +549,8 @@ public class MainActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private Document getDocument(InputStream isDocument) {
-        Document doc = null;
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        try {
-            doc = dbf.newDocumentBuilder().parse(isDocument);
-        } catch (ParserConfigurationException ex) {
-            System.err.println("Error al parsear el documento");
-            ex.printStackTrace();
-            System.exit(-1);
-        } catch (SAXException ex) {
-            System.err.println("Error al parsear el documento");
-            ex.printStackTrace();
-            System.exit(-1);
-        } catch (IOException ex) {
-            System.err.println("Error al parsear el documento");
-            ex.printStackTrace();
-            System.exit(-1);
-        } catch (IllegalArgumentException ex) {
-            System.err.println("Error al parsear el documento");
-            ex.printStackTrace();
-            System.exit(-1);
-        }
-        return doc;
-    }
 
-    private Document removeSignature(Document document){
 
-        XPathFactory xpf = XPathFactory.newInstance();
-        XPath xpath = xpf.newXPath();
-
-        xpath.setNamespaceContext(new FacturaeNamespaceContext());
-
-        NodeList list = document.getElementsByTagNameNS(Constants.SignatureSpecNS, "Signature");
-        list.item(0).getParentNode().removeChild(list.item(0));
-
-        return document;
-    }
-
-    private String documentToString(Document doc) {
-        try {
-            StringWriter sw = new StringWriter();
-            TransformerFactory tf = TransformerFactory.newInstance();
-            Transformer transformer = tf.newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-            transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-            //transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-
-            transformer.transform(new DOMSource(doc), new StreamResult(sw));
-            return sw.toString();
-        } catch (Exception ex) {
-            throw new RuntimeException("Error converting to String", ex);
-        }
-    }
-
-    private Facturae getFacturaeFromFactura(String factura){
-        try
-        {
-            IBindingFactory bfact = BindingDirectory.getFactory(Facturae.class);
-            IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
-
-            return (Facturae)uctx.unmarshalDocument(new ByteArrayInputStream(factura.getBytes()), null);
-         }catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     private ArrayList<Invoice> getInvoicesFromResponse(JSONArray response){
         ArrayList<Invoice> invoices = new ArrayList<>();
