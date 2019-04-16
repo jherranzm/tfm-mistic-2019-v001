@@ -17,9 +17,8 @@ import java.util.List;
 
 public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
     private Context mContext;
-    private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
+
     private static String LOG_TAG = "UploadedInvoicesRecyclerViewActivity";
 
     private List<Invoice> invoices;
@@ -28,6 +27,9 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recycler_view);
+
+        RecyclerView mRecyclerView;
+        RecyclerView.LayoutManager mLayoutManager;
 
         mContext = getApplicationContext();
         mRecyclerView = findViewById(R.id.my_recycler_view);

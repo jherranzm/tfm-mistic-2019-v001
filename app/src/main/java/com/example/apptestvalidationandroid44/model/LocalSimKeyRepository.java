@@ -9,7 +9,7 @@ import java.util.List;
 
 public class LocalSimKeyRepository {
 
-    private String DB_NAME = "LocalSimKeyDB";
+    public static String DB_NAME = "LocalSimKeyDB";
     private static final String TAG = "LocalSimKeyRepository";
 
     private TFMDatabase tfmDatabase;

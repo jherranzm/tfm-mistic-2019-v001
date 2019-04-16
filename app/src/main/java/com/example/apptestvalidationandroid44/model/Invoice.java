@@ -88,7 +88,7 @@ public class Invoice implements Serializable {
 
     @Override
     public String toString() {
-        String sb = "Invoice{" + "uid='" + uid + '\'' +
+        return  "Invoice{" + "uid='" + uid + '\'' +
                 ", taxIdentificationNumber='" + taxIdentificationNumber + '\'' +
                 ", corporateName='" + corporateName + '\'' +
                 ", invoiceNumber='" + invoiceNumber + '\'' +
@@ -96,6 +96,6 @@ public class Invoice implements Serializable {
                 ", totalTaxOutputs=" + totalTaxOutputs +
                 ", issueDate=" + issueDate +
                 '}';
-        return sb;
+
     }
 }

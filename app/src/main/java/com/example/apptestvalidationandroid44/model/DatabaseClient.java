@@ -5,15 +5,12 @@ import android.content.Context;
 
 public class DatabaseClient {
 
-    private Context mCtx;
     private static DatabaseClient mInstance;
 
     //our app database object
     private TFMDatabase appDatabase;
 
     private DatabaseClient(Context mCtx) {
-        this.mCtx = mCtx;
-
         // creating the app database with Room database builder
         // LocalSimKeyDB is the name of the database
         appDatabase = Room.databaseBuilder(mCtx, TFMDatabase.class, "LocalSimKeyDB").build();

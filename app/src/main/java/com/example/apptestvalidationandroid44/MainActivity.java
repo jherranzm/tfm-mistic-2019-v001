@@ -215,9 +215,18 @@ public class MainActivity
             tfmSecurityManager.setKey(key);
 
 
-            deleteAllLocalSymKeys();
+            //deleteAllLocalSymKeys();
 
-            String[] fields = {"f1", "f2", "f3", "f4"};
+            String[] fields = {
+                    Configuration.UID_FACTURA,
+                    Configuration.TAX_IDENTIFICATION_NUMBER,
+                    Configuration.CORPORATE_NAME,
+                    Configuration.INVOICE_NUMBER,
+                    Configuration.INVOICE_TOTAL,
+                    Configuration.TOTAL_GROSS_AMOUNT,
+                    Configuration.TOTAL_TAX_OUTPUTS,
+                    Configuration.ISSUE_DATE
+            };
             RandomStringGenerator rsg = new RandomStringGenerator();
 
             for(String str : fields){
@@ -373,7 +382,9 @@ public class MainActivity
                 String invoiceNumberDecrypted = simDec.decrypt(
                         invoiceNumber,
                         tfmSecurityManager.getSimKeys().get(Configuration.INVOICE_NUMBER));
-                String issueDateDecrypted = simDec.decrypt(issueDate);
+                String issueDateDecrypted = simDec.decrypt(
+                        issueDate,
+                        tfmSecurityManager.getSimKeys().get(Configuration.ISSUE_DATE));
 
                 Invoice invoice = new Invoice(uid
                         , taxIdentificationNumberDecrypted

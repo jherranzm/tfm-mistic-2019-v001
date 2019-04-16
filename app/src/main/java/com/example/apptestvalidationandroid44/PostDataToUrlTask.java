@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
 
-    private static String LOG_TAG = "PostDataToUrlTask";
+    private static String TAG = "PostDataToUrlTask";
 
     // This is the JSON body of the post
     private JSONObject postData;
@@ -46,7 +46,7 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
             String server_response;
 
             url = new URL(params[0]);
-            Log.i(LOG_TAG, "POST URL : " +url.toString());
+            Log.i(TAG, "POST URL : " +url.toString());
             urlConnection = (HttpURLConnection) url.openConnection();
 
             urlConnection.setDoInput(true);
@@ -62,26 +62,31 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
                 writer.write(postData.toString());
                 writer.flush();
                 writer.close();
-                Log.i(LOG_TAG, "POST DATA : " + postData.toString());
+                Log.i(TAG, "POST DATA : " + postData.toString());
             }
 
 
             responseCode = urlConnection.getResponseCode();
 
-            Log.i(LOG_TAG, "Código de respuesta del servidor : ["+responseCode+"]");
+            Log.i(TAG, "Código de respuesta del servidor : ["+responseCode+"]");
 
             if(responseCode == HttpURLConnection.HTTP_OK){
                 server_response = readStream(urlConnection.getInputStream());
-                Log.i(LOG_TAG, "Respuesta servidor: " + server_response);
+                Log.i(TAG, "Respuesta servidor: " + server_response);
                 urlConnection.disconnect();
 
                 return server_response;
             }else if(responseCode == HttpURLConnection.HTTP_CONFLICT){
                 server_response = readStream(urlConnection.getErrorStream());
-                Log.i(LOG_TAG, "Factura ya registrada en el sistema!");
-                Log.i(LOG_TAG, "Respuesta servidor: " + server_response);
+                Log.i(TAG, "Factura ya registrada en el sistema!");
+                Log.i(TAG, "Respuesta servidor: " + server_response);
                 urlConnection.disconnect();
                 return server_response;
+            }else if(responseCode == HttpURLConnection.HTTP_INTERNAL_ERROR){
+                //server_response = readStream(urlConnection.getErrorStream());
+                Log.i(TAG, "ERROR de servidor!");
+                urlConnection.disconnect();
+                return "{\"id\" : -1}";
             }
 
             return null;

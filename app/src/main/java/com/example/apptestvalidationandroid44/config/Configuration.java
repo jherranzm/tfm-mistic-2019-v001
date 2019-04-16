@@ -10,6 +10,7 @@ public class Configuration {
     public static final String INVOICE_TOTAL                = "f5";
     public static final String TOTAL_GROSS_AMOUNT           = "f6";
     public static final String TOTAL_TAX_OUTPUTS            = "f7";
+    public static final String ISSUE_DATE                   = "f8";
 
     public static final String CR_LF = "\n";
     public static final String BC = "BC";

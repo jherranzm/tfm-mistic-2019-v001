@@ -26,6 +26,7 @@ import com.example.apptestvalidationandroid44.util.UtilFacturae;
 import com.example.apptestvalidationandroid44.util.UtilValidator;
 
 import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 
 import java.io.File;
@@ -34,6 +35,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +45,10 @@ import es.facturae.facturae.v3.facturae.Facturae;
 public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
 
     // Constants
-    private static String LOG_TAG = "LocalInvoicesRVA";
     private static final String TAG = "LocalInvoicesRAV";
+    public static final String INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA = "INFO: La factura  %s ha quedado correctamente registrada en el sistema!";
+    public static final String ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA = "ALERTA: La factura  %s ya está registrada en el sistema!";
+    public static final String ALERTA_LA_FIRMA_NO_ES_VALIDA = "ALERTA: La firma NO es válida!";
 
     // Widgets
     private Context mContext;
@@ -70,7 +74,7 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        signedInvoices = getIntent().getParcelableArrayListExtra((MainActivity.FILE_LIST));
+        signedInvoices = (ArrayList<FileDataObject>)getIntent().getSerializableExtra(MainActivity.FILE_LIST);
         mAdapter = new LocalInvoicesRecyclerViewAdapter(signedInvoices);
 
         mRecyclerView.setAdapter(mAdapter);
@@ -88,7 +92,7 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
                 new LocalInvoicesRecyclerViewAdapter.LocalInvoicesClickListener() {
                     @Override
                     public void onItemClick(int position, View v) {
-                        Log.i(LOG_TAG, " Clicked on Item " + position);
+                        Log.i(TAG, " Clicked on Item " + position);
                         Toast.makeText(mContext, "Factura " + signedInvoices.get(position).getFileName(), Toast.LENGTH_SHORT).show();
 
                         customDialog("Verify and Upload Invoice?",
@@ -157,7 +161,8 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
             String message = "";
 
             if(!valid){
-                Toast.makeText(mContext, "ERROR : La firma NO es válida!", Toast.LENGTH_LONG).show();
+                //Toast.makeText(mContext, "ERROR : La firma NO es válida!", Toast.LENGTH_LONG).show();
+                alertShow(ALERTA_LA_FIRMA_NO_ES_VALIDA);
             }else{
                 Toast.makeText(mContext, "Documento factura válida!", Toast.LENGTH_SHORT).show();
 
@@ -199,8 +204,10 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
                         facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber(),
                         tfmSecurityManager.getSimKeys().get(Configuration.INVOICE_NUMBER));
 
-                // Versió inicial: No s'encripten els imports, ja que si no el sistema NO pot fer càlculs
-                String dataEncrypted   = simEnc.encrypt(""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
+
+                String dataEncrypted   = simEnc.encrypt(
+                        ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate(),
+                        tfmSecurityManager.getSimKeys().get(Configuration.ISSUE_DATE));
 
                 String signedInvoiceEncrypted   = simEnc.encrypt(getByteArrayFromSignedInvoice(position));
 
@@ -228,9 +235,12 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
                 params.put("uidfactura", (UIDFacturaHash == null ? "---" : UIDFacturaHash));
                 params.put("tax_identification_number", taxIdentificationNumberEncrypted);
                 params.put("invoice_number", invoiceNumberEncrypted);
+
+                // Versió inicial: No s'encripten els imports, ja que si no el sistema NO pot fer càlculs
                 params.put("total", ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
                 params.put("total_tax_outputs", ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
                 params.put("total_gross_amount", ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount());
+
                 params.put("issue_data", dataEncrypted);
                 params.put("file", signedInvoiceEncrypted);
                 params.put("iv", ivStringEnc);
@@ -239,14 +249,20 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
                 PostDataToUrlTask getData = new PostDataToUrlTask(params);
 
                 String res = getData.execute(Configuration.URL).get();
+                Log.i(TAG, "res : " + res);
+
+                JSONObject receivedInvoice = new JSONObject(res);
+                String id = receivedInvoice.getString("id");
 
                 if (getData.getResponseCode() == 200){
-
-                    alertShow("La factura se ha guardado correctamente en el sistema!");
-
+                    alertShow(String.format(INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA, id));
                 }else if (getData.getResponseCode() == 409){
 
-                    message += Configuration.CR_LF + String.format("ALERTA: La factura ya está registrada en el sistema! %s", "");
+                    message += Configuration.CR_LF + String.format(ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA, id);
+                    alertShow(message);
+                }else if (getData.getResponseCode() == 500){
+
+                    message += Configuration.CR_LF + "ERROR de Servidor";
                     alertShow(message);
                 }
 
@@ -255,11 +271,16 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
             } // if(valid)
         }catch (Exception e){
             Toast.makeText(mContext, "ERROR:" + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e(TAG, "ERROR:" + e.getMessage());
         }
     }
 
-
-    public void customDialog(String title, String message, final String cancelMethod, final String okMethod, final int position){
+    private void customDialog(
+            String title,
+            String message,
+            final String cancelMethod,
+            final String okMethod,
+            final int position){
         final android.support.v7.app.AlertDialog.Builder builderSingle = new android.support.v7.app.AlertDialog.Builder(this);
         builderSingle.setIcon(R.mipmap.ic_launcher_round);
         builderSingle.setTitle(title);
@@ -294,7 +315,6 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
 
         builderSingle.show();
     }
-
 
     private void alertShow( String message ) {
         AlertDialog alertDialog = new AlertDialog.Builder(this).create();

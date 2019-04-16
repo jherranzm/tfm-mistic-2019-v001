@@ -24,12 +24,11 @@ public class GetByFLocalSimKeysTask extends AsyncTask<String, Void, LocalSimKey>
     @Override
     protected LocalSimKey doInBackground(String... params) {
 
-        LocalSimKey lsk = DatabaseClient
-                    .getInstance(this.mContext)
-                    .getAppDatabase()
-                    .localSimKeyDao()
-                    .findLocalSimKeyByF(params[0]);
-        return lsk;
+        return DatabaseClient
+                .getInstance(this.mContext)
+                .getAppDatabase()
+                .localSimKeyDao()
+                .findLocalSimKeyByF(params[0]);
     }
 
 }
