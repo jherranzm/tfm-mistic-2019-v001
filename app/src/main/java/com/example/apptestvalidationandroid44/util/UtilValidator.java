@@ -68,12 +68,6 @@ public class UtilValidator {
             Log.i(TAG, "id..." + id.getTagName());
         }
 
-
-        //return signature.checkSignatureValue(certificate.getPublicKey());
-        //return signature.checkSignatureValue(certificate);
-
-
-
         KeyInfo ki = signature.getKeyInfo();
         if (ki == null) {
             throw new Exception("KeyInfo NOT found!");

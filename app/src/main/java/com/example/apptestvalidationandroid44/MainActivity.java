@@ -59,8 +59,10 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 
@@ -215,7 +217,7 @@ public class MainActivity
             tfmSecurityManager.setKey(key);
 
 
-            //deleteAllLocalSymKeys();
+            deleteAllLocalSymKeys();
 
             String[] fields = {
                     Configuration.UID_FACTURA,
@@ -307,6 +309,15 @@ public class MainActivity
         LocalSimKey lskF = ilskTask.execute().get();
         Log.i(TAG, "LocalSimKey ingresada: " + lskF.toString());
 
+        Map<String, String> params = new HashMap<>();
+        params.put("f", str);
+        params.put("k", simKeyStringEnc);
+
+        PostDataToUrlTask getData = new PostDataToUrlTask(params);
+
+        String res = getData.execute(Configuration.URL_KEYS).get();
+        Log.i(TAG, "res : " + res);
+
         tfmSecurityManager.getSimKeys().put(str, simKey);
     }
 
@@ -352,7 +363,6 @@ public class MainActivity
                 JSONObject factura = response.getJSONObject(i);
 
                 // Get the current factura (json object) data
-                //long id = factura.getLong("id");
                 String uid = factura.getString("uid");
                 String taxIdentificationNumber = factura.getString("taxIdentificationNumber");
                 String invoiceNumber = factura.getString("invoiceNumber");
