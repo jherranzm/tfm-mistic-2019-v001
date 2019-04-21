@@ -56,7 +56,8 @@ dependencies {
     //
     //implementation 'org.apache.santuario:xmlsec:2.1.2'
     //implementation 'org.apache.santuario:xmlsec:1.4.7'
-    implementation 'org.apache.santuario:xmlsec:1.5.6'
+    //implementation 'org.apache.santuario:xmlsec:1.5.6'
+    implementation 'org.apache.santuario:xmlsec:1.5.8'
 
     //
     implementation 'es.gob.afirma:afirma-core:1.6.2'

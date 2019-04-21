@@ -412,6 +412,7 @@ public class MainActivity
 
     static {
         Security.insertProviderAt(new org.spongycastle.jce.provider.BouncyCastleProvider(), 1);
+        // Works correctly with apache.santuario v1.5.8
         org.apache.xml.security.Init.init();
     }
 }
