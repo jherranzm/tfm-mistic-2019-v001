@@ -111,8 +111,10 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
             valid = UtilValidator.isValid(tfmSecurityManager.getCertificate(), doc);
         } catch (IOException e) {
             Toast.makeText(mContext, "ERROR IO " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            Log.i(TAG, "ERROR IO : " + e.getLocalizedMessage());
         } catch (Exception e) {
             Toast.makeText(mContext, "ERROR Genérico " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            Log.i(TAG, "ERROR Generic : " + e.getLocalizedMessage());
         }
 
         return valid;

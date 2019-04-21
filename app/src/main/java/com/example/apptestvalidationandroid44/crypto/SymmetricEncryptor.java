@@ -1,24 +1,24 @@
 package com.example.apptestvalidationandroid44.crypto;
 
+import java.util.Base64;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
-
-import es.gob.afirma.core.misc.Base64;
-
 
 public class SymmetricEncryptor extends SymmetricCommon {
 
     /**
      *
-     * @param src
-     * @return
+     * @param stringToEncriptAndEncode String to encrypt and encode
+     * @return String encrypted and encoded in Base64
      */
-	public String encrypt(String src) {
+	public String encrypt(String stringToEncriptAndEncode) {
 
 		try {
 			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 			cipher.init(Cipher.ENCRYPT_MODE, generateKey(), generateInitializationVector());
-			return Base64.encode(cipher.doFinal(src.getBytes()));
+			//return Base64.encode(cipher.doFinal(stringToEncode.getBytes()));
+			return Base64.getEncoder().encodeToString(cipher.doFinal(stringToEncriptAndEncode.getBytes()));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -26,15 +26,16 @@ public class SymmetricEncryptor extends SymmetricCommon {
 
     /**
      *
-     * @param src
-     * @return
+     * @param byteArrayToEncriptAndEncode Byte Array to encrypt and encode
+     * @return String encrypted and encoded in Base64
      */
-	public String encrypt(byte[] src) {
+	public String encrypt(byte[] byteArrayToEncriptAndEncode) {
 
 		try {
 			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 			cipher.init(Cipher.ENCRYPT_MODE, generateKey(), generateInitializationVector());
-			return Base64.encode(cipher.doFinal(src));
+			//return Base64.encode(cipher.doFinal(stringToEncode));
+			return Base64.getEncoder().encodeToString(cipher.doFinal(byteArrayToEncriptAndEncode));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -42,11 +43,11 @@ public class SymmetricEncryptor extends SymmetricCommon {
 
     /**
      *
-     * @param src
-     * @param simKey
-     * @return
+     * @param stringToEncriptAndEncode String to encrypt with a symmetric key and encode
+     * @param simKey Symmetric key
+     * @return String encrypted and encoded in Base64
      */
-	public String encrypt(String src, String simKey) {
+	public String encrypt(String stringToEncriptAndEncode, String simKey) {
 
 		try {
 
@@ -54,7 +55,8 @@ public class SymmetricEncryptor extends SymmetricCommon {
 
 			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
 			cipher.init(Cipher.ENCRYPT_MODE, skey);
-			return Base64.encode(cipher.doFinal(src.getBytes()));
+			//return Base64.encode(cipher.doFinal(src.getBytes()));
+            return Base64.getEncoder().encodeToString(cipher.doFinal(stringToEncriptAndEncode.getBytes()));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

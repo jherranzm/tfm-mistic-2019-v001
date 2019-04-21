@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.example.apptestvalidationandroid44"
-        minSdkVersion 19
+        minSdkVersion 27
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -55,7 +55,8 @@ dependencies {
     // AGPBI: {"kind":"error","text":"Default interface methods are only supported starting with Android N (--min-api 24): javax.xml.stream.events.Characters org.apache.xml.security.stax.ext.stax.XMLSecEvent.asCharacters()","sources":[{}],"tool":"D8"}
     //
     //implementation 'org.apache.santuario:xmlsec:2.1.2'
-    implementation 'org.apache.santuario:xmlsec:1.4.7'
+    //implementation 'org.apache.santuario:xmlsec:1.4.7'
+    implementation 'org.apache.santuario:xmlsec:1.5.6'
 
     //
     implementation 'es.gob.afirma:afirma-core:1.6.2'
@@ -93,4 +94,9 @@ dependencies {
     // json
     //implementation "org.json:json:20180130"
     implementation "com.google.code.gson:gson:$gson_version"
+
+
+    implementation 'org.slf4j:slf4j-simple:1.7.26'
+    implementation 'org.slf4j:slf4j-api:1.7.26'
+    //implementation 'org.slf4j:slf4j-nop:1.7.26'
 }
