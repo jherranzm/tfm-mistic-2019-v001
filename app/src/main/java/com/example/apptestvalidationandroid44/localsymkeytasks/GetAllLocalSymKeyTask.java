@@ -1,4 +1,4 @@
-package com.example.apptestvalidationandroid44.localsimkeystasks;
+package com.example.apptestvalidationandroid44.localsymkeytasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -9,13 +9,13 @@ import com.example.apptestvalidationandroid44.model.LocalSimKey;
 
 import java.util.List;
 
-public class GetAllLocalSimKeysTask extends AsyncTask<Void, Void, List<LocalSimKey>> {
+public class GetAllLocalSymKeyTask extends AsyncTask<Void, Void, List<LocalSimKey>> {
 
-    private static final String TAG = "GetAllLocalSimKeysTask";
+    private static final String TAG = "GetAllLocalSymKeyTask";
 
     private Context mContext;
 
-    public GetAllLocalSimKeysTask(Context theContext){
+    public GetAllLocalSymKeyTask(Context theContext){
         this.mContext = theContext;
     }
 

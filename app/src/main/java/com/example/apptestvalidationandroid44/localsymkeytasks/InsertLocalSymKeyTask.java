@@ -1,4 +1,4 @@
-package com.example.apptestvalidationandroid44.localsimkeystasks;
+package com.example.apptestvalidationandroid44.localsymkeytasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -7,14 +7,14 @@ import android.util.Log;
 import com.example.apptestvalidationandroid44.model.DatabaseClient;
 import com.example.apptestvalidationandroid44.model.LocalSimKey;
 
-public class DeleteLocalSimKeysTask extends AsyncTask<Void, Void, LocalSimKey> {
+public class InsertLocalSymKeyTask extends AsyncTask<Void, Void, LocalSimKey> {
 
-    private static final String TAG = "DeleteLocalSimKeysTask";
+    private static final String TAG = "InsertLocalSymKeyTask";
 
     private Context mContext;
     private LocalSimKey lsk;
 
-    public DeleteLocalSimKeysTask(Context theContext, LocalSimKey theLsk){
+    public InsertLocalSymKeyTask(Context theContext, LocalSimKey theLsk){
         this.mContext = theContext;
         this.lsk = theLsk;
     }
@@ -27,12 +27,13 @@ public class DeleteLocalSimKeysTask extends AsyncTask<Void, Void, LocalSimKey> {
     @Override
     protected LocalSimKey doInBackground(Void... voids) {
 
-        DatabaseClient
+        //LocalSimKey lsk = new LocalSimKey();
+        long idInserted= DatabaseClient
                     .getInstance(this.mContext)
                     .getAppDatabase()
                     .localSimKeyDao()
-                    .delete(this.lsk);
-            Log.i(TAG, "Deleted : ["+this.lsk+"]" );
+                    .insert(this.lsk);
+            Log.i(TAG, "Inserted! ["+idInserted+"]" );
 
         return lsk;
     }
