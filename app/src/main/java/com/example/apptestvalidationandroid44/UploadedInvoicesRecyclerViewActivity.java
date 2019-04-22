@@ -3,6 +3,7 @@ package com.example.apptestvalidationandroid44;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,7 +27,11 @@ import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import es.facturae.facturae.v3.facturae.Facturae;
@@ -143,6 +148,42 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
             Log.i(TAG, "Received from server [facturae]: UnitPriceWithoutTax : " + facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getUnitPriceWithoutTax());
             Log.i(TAG, "Received from server [facturae]: TotalCost       : " + facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getTotalCost());
 
+            StringBuilder sb = new StringBuilder();
+            sb.append(Configuration.CR_LF);
+            sb.append("InvoiceNumber:");
+            sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
+            sb.append(Configuration.CR_LF);
+            sb.append("ItemDescription:");
+            sb.append(facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getItemDescription());
+            sb.append(Configuration.CR_LF);
+            sb.append("Quantity        : ");
+            sb.append(facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getQuantity());
+            sb.append(Configuration.CR_LF);
+            sb.append("UnitOfMeasure   : ");
+            sb.append(facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getUnitOfMeasure().toString());
+            sb.append(Configuration.CR_LF);
+            sb.append("GrossAmount   : ");
+            sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount());
+            sb.append(Configuration.CR_LF);
+            sb.append("TaxAmount   : ");
+            sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
+            sb.append(Configuration.CR_LF);
+            sb.append("TotalCost   : ");
+            sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+            sb.append(Configuration.CR_LF);
+
+            infoDialog(
+                    "Invoice Info",
+                    sb.toString(),
+                    "ok");
+
+            String root_sd = Environment.getExternalStorageDirectory().toString();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmSS");
+            String fileName = sdf.format(Calendar.getInstance().getTime());
+            try (PrintWriter out = new PrintWriter( new FileOutputStream(root_sd + "/Download/" + fileName + ".xsig"))) {
+                out.println(signedInvoiceDecrypted);
+            }
+
         }catch(Exception e){
             Log.e(TAG, "ERROR : " + e.getLocalizedMessage());
             Log.i(TAG, "ERROR : " + e.getLocalizedMessage());
@@ -190,4 +231,30 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
         builderSingle.show();
     }
 
+
+    private void infoDialog(
+            String title,
+            String message,
+            final String okMethod){
+        final android.support.v7.app.AlertDialog.Builder builderSingle = new android.support.v7.app.AlertDialog.Builder(this);
+        builderSingle.setIcon(R.mipmap.ic_launcher_round);
+        builderSingle.setTitle("Info");
+        builderSingle.setMessage(message);
+
+
+        builderSingle.setPositiveButton(
+                "OK",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Log.d(TAG, "onClick: OK Called.");
+                        if(okMethod.equals("ok")){
+                            Log.d(TAG, "onClick: OK Called.");
+                        }
+                    }
+                });
+
+
+        builderSingle.show();
+    }
 }
