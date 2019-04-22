@@ -9,21 +9,21 @@ import android.arch.persistence.room.Update;
 import java.util.List;
 
 @Dao
-public interface LocalSimKeyDao {
+public interface LocalSymKeyDao {
 
-    @Query("SELECT * FROM localsimkey")
-    List<LocalSimKey> getAll();
+    @Query("SELECT * FROM LocalSymKey")
+    List<LocalSymKey> getAll();
 
-    @Query("SELECT * FROM localsimkey WHERE f = :theF LIMIT 1")
-    LocalSimKey findLocalSimKeyByF(String theF);
+    @Query("SELECT * FROM LocalSymKey WHERE f = :theF LIMIT 1")
+    LocalSymKey findLocalSimKeyByF(String theF);
 
     @Insert
-    long insert(LocalSimKey localSimKey);
+    long insert(LocalSymKey localSimKey);
 
     @Delete
-    void delete(LocalSimKey localSimKey);
+    void delete(LocalSymKey localSimKey);
 
     @Update
-    void update(LocalSimKey localSimKey);
+    void update(LocalSymKey localSimKey);
 }
 

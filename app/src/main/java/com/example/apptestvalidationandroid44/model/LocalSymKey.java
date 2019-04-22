@@ -7,7 +7,7 @@ import android.arch.persistence.room.PrimaryKey;
 import java.io.Serializable;
 
 @Entity
-public class LocalSimKey  implements Serializable {
+public class LocalSymKey implements Serializable {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
@@ -44,7 +44,7 @@ public class LocalSimKey  implements Serializable {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("LocalSimKey{");
+        final StringBuffer sb = new StringBuffer("LocalSymKey{");
         sb.append("id=").append(id);
         sb.append(", f='").append(f).append('\'');
         sb.append(", k='").append(k).append('\'');

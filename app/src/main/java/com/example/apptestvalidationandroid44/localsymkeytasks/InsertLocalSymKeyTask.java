@@ -5,16 +5,16 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.example.apptestvalidationandroid44.model.DatabaseClient;
-import com.example.apptestvalidationandroid44.model.LocalSimKey;
+import com.example.apptestvalidationandroid44.model.LocalSymKey;
 
-public class InsertLocalSymKeyTask extends AsyncTask<Void, Void, LocalSimKey> {
+public class InsertLocalSymKeyTask extends AsyncTask<Void, Void, LocalSymKey> {
 
     private static final String TAG = "InsertLocalSymKeyTask";
 
     private Context mContext;
-    private LocalSimKey lsk;
+    private LocalSymKey lsk;
 
-    public InsertLocalSymKeyTask(Context theContext, LocalSimKey theLsk){
+    public InsertLocalSymKeyTask(Context theContext, LocalSymKey theLsk){
         this.mContext = theContext;
         this.lsk = theLsk;
     }
@@ -25,13 +25,13 @@ public class InsertLocalSymKeyTask extends AsyncTask<Void, Void, LocalSimKey> {
 
 
     @Override
-    protected LocalSimKey doInBackground(Void... voids) {
+    protected LocalSymKey doInBackground(Void... voids) {
 
-        //LocalSimKey lsk = new LocalSimKey();
+        //LocalSymKey lsk = new LocalSymKey();
         long idInserted= DatabaseClient
                     .getInstance(this.mContext)
                     .getAppDatabase()
-                    .localSimKeyDao()
+                    .localSymKeyDao()
                     .insert(this.lsk);
             Log.i(TAG, "Inserted! ["+idInserted+"]" );
 

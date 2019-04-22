@@ -34,7 +34,7 @@ import com.example.apptestvalidationandroid44.localsymkeytasks.GetByFLocalSymKey
 import com.example.apptestvalidationandroid44.localsymkeytasks.InsertLocalSymKeyTask;
 import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.Invoice;
-import com.example.apptestvalidationandroid44.model.LocalSimKey;
+import com.example.apptestvalidationandroid44.model.LocalSymKey;
 import com.example.apptestvalidationandroid44.remotesymkeytasks.GetByFRemoteSymKeyTask;
 import com.example.apptestvalidationandroid44.util.RandomStringGenerator;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
@@ -234,11 +234,11 @@ public class MainActivity
 
             for(String str : fields){
                 GetByFLocalSymKeyTask gbflskTask = new GetByFLocalSymKeyTask(mContext);
-                Log.i(TAG, "LocalSimKey : " + str);
-                LocalSimKey lskF1 = gbflskTask.execute(str).get();
+                Log.i(TAG, "LocalSymKey : " + str);
+                LocalSymKey lskF1 = gbflskTask.execute(str).get();
                 if(lskF1 == null){
 
-                    Log.i(TAG, "LocalSimKey : [" + str + "] NO està a la base de datos local!");
+                    Log.i(TAG, "LocalSymKey : [" + str + "] NO està a la base de datos local!");
 
                     Log.i(TAG, "Buscando [" + str + "] en la base de datos REMOTA...");
                     // Recuperem la clau del servidor
@@ -252,7 +252,7 @@ public class MainActivity
 
                         JSONObject receivedRemoteSymKey = new JSONObject(res);
 
-                        LocalSimKey lskReceived = new LocalSimKey();
+                        LocalSymKey lskReceived = new LocalSymKey();
                         lskReceived.setF(receivedRemoteSymKey.getString("f"));
                         lskReceived.setK(receivedRemoteSymKey.getString("k"));
 
@@ -308,8 +308,8 @@ public class MainActivity
         }
     }
 
-    private void getLocalSymKey(String str, LocalSimKey lskF1) throws CMSException {
-        Log.i(TAG, "LocalSimKey recuperada: " + lskF1.toString());
+    private void getLocalSymKey(String str, LocalSymKey lskF1) throws CMSException {
+        Log.i(TAG, "LocalSymKey recuperada: " + lskF1.toString());
 
         // Desencriptació amb clau privada de iv i simKey
         byte[] simKeyBytesDec = Base64.decode(lskF1.getK(), Base64.NO_WRAP);
@@ -328,8 +328,8 @@ public class MainActivity
             java.util.concurrent.ExecutionException,
             InterruptedException {
 
-        Log.i(TAG, "LocalSimKey NO localizada: " + str);
-        LocalSimKey lsk = new LocalSimKey();
+        Log.i(TAG, "LocalSymKey NO localizada: " + str);
+        LocalSymKey lsk = new LocalSymKey();
         lsk.setF(str);
         String simKey = rsg.getRandomString(16);
         byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), tfmSecurityManager.getCertificate());
@@ -337,8 +337,8 @@ public class MainActivity
         lsk.setK(simKeyStringEnc);
 
         InsertLocalSymKeyTask ilskTask = new InsertLocalSymKeyTask(mContext, lsk);
-        LocalSimKey lskF = ilskTask.execute().get();
-        Log.i(TAG, "LocalSimKey ingresada: " + lskF.toString());
+        LocalSymKey lskF = ilskTask.execute().get();
+        Log.i(TAG, "LocalSymKey ingresada: " + lskF.toString());
 
         Map<String, String> params = new HashMap<>();
         params.put("f", str);
@@ -354,10 +354,10 @@ public class MainActivity
 
     private void deleteAllLocalSymKeys() throws java.util.concurrent.ExecutionException, InterruptedException {
         GetAllLocalSymKeyTask galskTask = new GetAllLocalSymKeyTask(mContext);
-        List<LocalSimKey> lskList = galskTask.execute().get();
-        for(LocalSimKey aLocalSimKey : lskList){
+        List<LocalSymKey> lskList = galskTask.execute().get();
+        for(LocalSymKey aLocalSimKey : lskList){
             DeleteLocalSymKeyTask dlskTask = new DeleteLocalSymKeyTask(mContext, aLocalSimKey);
-            LocalSimKey deleted = dlskTask.execute().get();
+            LocalSymKey deleted = dlskTask.execute().get();
             Log.i(TAG, "Deleted: " + deleted.toString());
         }
     }

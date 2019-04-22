@@ -46,15 +46,14 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
 
     // Constants
     private static final String TAG = "LocalInvoicesRAV";
+
     public static final String INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA = "INFO: La factura  %s ha quedado correctamente registrada en el sistema!";
     public static final String ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA = "ALERTA: La factura  %s ya está registrada en el sistema!";
     public static final String ALERTA_LA_FIRMA_NO_ES_VALIDA = "ALERTA: La firma NO es válida!";
 
     // Widgets
     private Context mContext;
-    //private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
-    //private RecyclerView.LayoutManager mLayoutManager;
 
     // Vars
     private List<FileDataObject> signedInvoices;

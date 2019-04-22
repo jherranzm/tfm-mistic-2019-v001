@@ -4,9 +4,9 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import com.example.apptestvalidationandroid44.model.DatabaseClient;
-import com.example.apptestvalidationandroid44.model.LocalSimKey;
+import com.example.apptestvalidationandroid44.model.LocalSymKey;
 
-public class GetByFLocalSymKeyTask extends AsyncTask<String, Void, LocalSimKey> {
+public class GetByFLocalSymKeyTask extends AsyncTask<String, Void, LocalSymKey> {
 
     private static final String TAG = "GetByFLocalSymKeyTask";
 
@@ -22,12 +22,12 @@ public class GetByFLocalSymKeyTask extends AsyncTask<String, Void, LocalSimKey> 
 
 
     @Override
-    protected LocalSimKey doInBackground(String... params) {
+    protected LocalSymKey doInBackground(String... params) {
 
         return DatabaseClient
                 .getInstance(this.mContext)
                 .getAppDatabase()
-                .localSimKeyDao()
+                .localSymKeyDao()
                 .findLocalSimKeyByF(params[0]);
     }
 

@@ -13,7 +13,9 @@ public class DatabaseClient {
     private DatabaseClient(Context mCtx) {
         // creating the app database with Room database builder
         // LocalSimKeyDB is the name of the database
-        appDatabase = Room.databaseBuilder(mCtx, TFMDatabase.class, "LocalSimKeyDB").build();
+        appDatabase = Room.databaseBuilder(mCtx, TFMDatabase.class, "LocalSimKeyDB")
+                .fallbackToDestructiveMigration()
+                .build();
     }
 
     public static synchronized DatabaseClient getInstance(Context mCtx) {

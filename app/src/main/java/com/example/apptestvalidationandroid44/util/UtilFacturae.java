@@ -11,12 +11,11 @@ import es.facturae.facturae.v3.facturae.Facturae;
 public class UtilFacturae {
 
     public static Facturae getFacturaeFromFactura(String factura){
-        try
-        {
-            IBindingFactory bfact = BindingDirectory.getFactory(Facturae.class);
-            IUnmarshallingContext uctx = bfact.createUnmarshallingContext();
+        try{
+            IBindingFactory bindingFactory = BindingDirectory.getFactory(Facturae.class);
+            IUnmarshallingContext unmarshallingContext = bindingFactory.createUnmarshallingContext();
 
-            return (Facturae)uctx.unmarshalDocument(new ByteArrayInputStream(factura.getBytes()), null);
+            return (Facturae)unmarshallingContext.unmarshalDocument(new ByteArrayInputStream(factura.getBytes()), null);
         }catch (Exception e) {
             e.printStackTrace();
         }
