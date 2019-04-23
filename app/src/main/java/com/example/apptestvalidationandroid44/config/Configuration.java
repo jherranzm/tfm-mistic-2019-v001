@@ -1,8 +1,10 @@
 package com.example.apptestvalidationandroid44.config;
 
 public class Configuration {
-    public static final String URL = "http://10.0.2.2:8080/facturas";
-    public static final String URL_KEYS = "http://10.0.2.2:8080/keys";
+    public static final String URL = "https://10.0.2.2:8443/facturas";
+    public static final String URL_KEYS = "https://10.0.2.2:8443/keys";
+    //public static final String URL = "http://10.0.2.2:8080/facturas";
+    //public static final String URL_KEYS = "http://10.0.2.2:8080/keys";
 
     public static final String UID_FACTURA                  = "f1";
     public static final String TAX_IDENTIFICATION_NUMBER    = "f2";

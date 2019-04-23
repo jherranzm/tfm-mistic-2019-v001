@@ -18,12 +18,6 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.Volley;
 import com.example.apptestvalidationandroid44.config.Configuration;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
@@ -35,6 +29,7 @@ import com.example.apptestvalidationandroid44.localsymkeytasks.InsertLocalSymKey
 import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.Invoice;
 import com.example.apptestvalidationandroid44.model.LocalSymKey;
+import com.example.apptestvalidationandroid44.remotesymkeytasks.GetAllUpladedInvoicesTask;
 import com.example.apptestvalidationandroid44.remotesymkeytasks.GetByFRemoteSymKeyTask;
 import com.example.apptestvalidationandroid44.util.RandomStringGenerator;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
@@ -117,51 +112,24 @@ public class MainActivity
 
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                // Initialize a new RequestQueue instance
-                RequestQueue requestQueue = Volley.newRequestQueue(mContext);
+                try {
+                    GetAllUpladedInvoicesTask getAllUpladedInvoicesTask = new GetAllUpladedInvoicesTask(mContext);
 
-                // Initialize a new JsonArrayRequest instance
-                JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
-                        Request.Method.GET,
-                        Configuration.URL,
-                        null,
-                        new Response.Listener<JSONArray>() {
-                            @Override
-                            public void onResponse(JSONArray response) {
-                                // Do something with response
+                    List<Invoice> invoices = getAllUpladedInvoicesTask.execute(Configuration.URL).get();
 
-                                Log.i(TAG, response.toString());
+                    Log.i(TAG, "getAllUpladedInvoicesTask : " + invoices.size());
 
-                                // Process the JSON
-                                try{
-                                    ArrayList<Invoice> invoices;
+                    mProgressBar.setVisibility(View.INVISIBLE);
 
-                                    invoices = getInvoicesFromResponse(response);
+                    Intent intent = new Intent(mContext, UploadedInvoicesRecyclerViewActivity.class);
+                    intent.putExtra(INVOICE_LIST, new ArrayList<Invoice>(invoices));
+                    startActivity(intent);
 
-                                    mProgressBar.setVisibility(View.INVISIBLE);
-
-                                    Intent intent = new Intent(mContext, UploadedInvoicesRecyclerViewActivity.class);
-                                    intent.putExtra(INVOICE_LIST, invoices);
-                                    startActivity(intent);
-
-                                }catch (Exception e){
-                                    e.printStackTrace();
-                                }
-                            }
-                        },
-                        new Response.ErrorListener(){
-                            @Override
-                            public void onErrorResponse(VolleyError error){
-                                // Do something when error occurred
-                                Toast.makeText(mContext, "ERROR : genérico."+error.getLocalizedMessage() , Toast.LENGTH_LONG).show();
-                                mProgressBar.setVisibility(View.INVISIBLE);
-                            }
-                        }
-                );
-
-                // Add JsonArrayRequest to the RequestQueue
-                requestQueue.add(jsonArrayRequest);
-
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -242,7 +210,7 @@ public class MainActivity
 
                     Log.i(TAG, "Buscando [" + str + "] en la base de datos REMOTA...");
                     // Recuperem la clau del servidor
-                    GetByFRemoteSymKeyTask gbfrskTask = new GetByFRemoteSymKeyTask();
+                    GetByFRemoteSymKeyTask gbfrskTask = new GetByFRemoteSymKeyTask(getApplicationContext());
                     String url = Configuration.URL_KEYS + "/" + str;
                     String res = gbfrskTask.execute(url).get();
                     if(res == null || res.isEmpty()){
