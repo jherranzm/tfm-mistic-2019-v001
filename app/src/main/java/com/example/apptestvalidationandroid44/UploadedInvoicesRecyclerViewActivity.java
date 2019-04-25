@@ -96,7 +96,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
     private void downloadInvoice(int position) {
         try{
             String url = Configuration.URL + "/" + (position+1);
-            GetInvoiceByIdTask getInvoiceByIdTask = new GetInvoiceByIdTask(getApplicationContext());
+            GetInvoiceByIdTask getInvoiceByIdTask = new GetInvoiceByIdTask();
 
             String res = getInvoiceByIdTask.execute(url).get();
             Log.i(TAG, "Received from server : " + res);

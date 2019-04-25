@@ -1,10 +1,10 @@
 package com.example.apptestvalidationandroid44.remotesymkeytasks;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
 
+import com.example.apptestvalidationandroid44.InvoiceApp;
 import com.example.apptestvalidationandroid44.config.Configuration;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
@@ -33,16 +33,13 @@ import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class GetAllUpladedInvoicesTask extends AsyncTask<String, Void, List<Invoice>> {
+public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Invoice>> {
 
-    private static final String TAG = "GetAllUpladedInvoicesTask";
+    private static final String TAG = "GetAllUploadedInvoicesTask";
 
-    private Context mContext;
     private TFMSecurityManager tfmSecurityManager;
 
-    public GetAllUpladedInvoicesTask(Context mCtx){
-
-        this.mContext = mCtx;
+    public GetAllUploadedInvoicesTask(){
         tfmSecurityManager = TFMSecurityManager.getInstance();
     }
 
@@ -63,7 +60,7 @@ public class GetAllUpladedInvoicesTask extends AsyncTask<String, Void, List<Invo
             HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
             HttpsURLConnection.setDefaultHostnameVerifier(new NullHostNameVerifier());
             urlConnection.setRequestMethod("GET");
-            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(mContext));
+            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
 
             int responseCode = urlConnection.getResponseCode();
 

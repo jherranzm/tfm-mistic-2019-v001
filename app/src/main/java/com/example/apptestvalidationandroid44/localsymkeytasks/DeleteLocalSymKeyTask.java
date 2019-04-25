@@ -1,9 +1,9 @@
 package com.example.apptestvalidationandroid44.localsymkeytasks;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.example.apptestvalidationandroid44.InvoiceApp;
 import com.example.apptestvalidationandroid44.model.DatabaseClient;
 import com.example.apptestvalidationandroid44.model.LocalSymKey;
 
@@ -11,11 +11,9 @@ public class DeleteLocalSymKeyTask extends AsyncTask<Void, Void, LocalSymKey> {
 
     private static final String TAG = "DeleteLocalSymKeyTask";
 
-    private Context mContext;
     private LocalSymKey lsk;
 
-    public DeleteLocalSymKeyTask(Context theContext, LocalSymKey theLsk){
-        this.mContext = theContext;
+    public DeleteLocalSymKeyTask(LocalSymKey theLsk){
         this.lsk = theLsk;
     }
 
@@ -28,7 +26,7 @@ public class DeleteLocalSymKeyTask extends AsyncTask<Void, Void, LocalSymKey> {
     protected LocalSymKey doInBackground(Void... voids) {
 
         DatabaseClient
-                    .getInstance(this.mContext)
+                    .getInstance(InvoiceApp.getContext())
                     .getAppDatabase()
                     .localSymKeyDao()
                     .delete(this.lsk);

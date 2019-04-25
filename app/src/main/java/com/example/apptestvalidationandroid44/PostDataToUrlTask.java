@@ -1,6 +1,5 @@
 package com.example.apptestvalidationandroid44;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -26,14 +25,9 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
 
-    private static String TAG = "PostDataToUrlTask";
+    private static final String TAG = "PostDataToUrlTask";
 
-    private Context mContext;
-
-
-    public PostDataToUrlTask(Context mCtx){
-        this.mContext = mCtx;
-    }
+    public PostDataToUrlTask(){}
 
     // This is the JSON body of the post
     private JSONObject postData;
@@ -57,22 +51,17 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
     protected String doInBackground(String... params) {
         try {
             URL url;
-            //HttpURLConnection urlConnection;
             String server_response;
 
             url = new URL(params[0]);
             Log.i(TAG, "POST URL : " +url.toString());
 
             HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-
             HttpsURLConnection.setDefaultHostnameVerifier(new NullHostNameVerifier());
-
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
-
             urlConnection.setRequestProperty("Content-Type", "application/json");
-            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(mContext));
-
+            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
             urlConnection.setRequestMethod("POST");
 
             // Send the post body

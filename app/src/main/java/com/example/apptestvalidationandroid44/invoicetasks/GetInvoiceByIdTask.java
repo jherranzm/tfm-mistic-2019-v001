@@ -1,9 +1,9 @@
 package com.example.apptestvalidationandroid44.invoicetasks;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.example.apptestvalidationandroid44.InvoiceApp;
 import com.example.apptestvalidationandroid44.https.CustomSSLSocketFactory;
 import com.example.apptestvalidationandroid44.https.NullHostNameVerifier;
 
@@ -23,10 +23,7 @@ public class GetInvoiceByIdTask extends AsyncTask<String, Void, String> {
 
     private static final String TAG = "GetInvoiceByIdTask";
 
-    private Context mContext;
-
-    public GetInvoiceByIdTask(Context mCtx){
-        this.mContext = mCtx;
+    public GetInvoiceByIdTask(){
     }
 
 
@@ -47,7 +44,7 @@ public class GetInvoiceByIdTask extends AsyncTask<String, Void, String> {
             HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
             HttpsURLConnection.setDefaultHostnameVerifier(new NullHostNameVerifier());
             urlConnection.setRequestMethod("GET");
-            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(mContext));
+            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
 
             int responseCode = urlConnection.getResponseCode();
 

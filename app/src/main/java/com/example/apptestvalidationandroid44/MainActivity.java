@@ -21,7 +21,6 @@ import android.widget.Toast;
 import com.example.apptestvalidationandroid44.config.Configuration;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
-import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
 import com.example.apptestvalidationandroid44.localsymkeytasks.DeleteLocalSymKeyTask;
 import com.example.apptestvalidationandroid44.localsymkeytasks.GetAllLocalSymKeyTask;
 import com.example.apptestvalidationandroid44.localsymkeytasks.GetByFLocalSymKeyTask;
@@ -29,12 +28,11 @@ import com.example.apptestvalidationandroid44.localsymkeytasks.InsertLocalSymKey
 import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.Invoice;
 import com.example.apptestvalidationandroid44.model.LocalSymKey;
-import com.example.apptestvalidationandroid44.remotesymkeytasks.GetAllUpladedInvoicesTask;
+import com.example.apptestvalidationandroid44.remotesymkeytasks.GetAllUploadedInvoicesTask;
 import com.example.apptestvalidationandroid44.remotesymkeytasks.GetByFRemoteSymKeyTask;
 import com.example.apptestvalidationandroid44.util.RandomStringGenerator;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.spongycastle.cms.CMSException;
 
@@ -53,11 +51,9 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -86,7 +82,7 @@ public class MainActivity
         setContentView(R.layout.activity_main);
 
         // Get the application context
-        mContext = getApplicationContext();
+        mContext = InvoiceApp.getContext();
         mProgressBar = findViewById(R.id.progressBar1);
         mProgressBar.setVisibility(View.INVISIBLE);
 
@@ -113,16 +109,16 @@ public class MainActivity
                 mProgressBar.setVisibility(View.VISIBLE);
 
                 try {
-                    GetAllUpladedInvoicesTask getAllUpladedInvoicesTask = new GetAllUpladedInvoicesTask(mContext);
+                    GetAllUploadedInvoicesTask getAllUploadedInvoicesTask = new GetAllUploadedInvoicesTask();
 
-                    List<Invoice> invoices = getAllUpladedInvoicesTask.execute(Configuration.URL).get();
+                    List<Invoice> invoices = getAllUploadedInvoicesTask.execute(Configuration.URL).get();
 
-                    Log.i(TAG, "getAllUpladedInvoicesTask : " + invoices.size());
+                    Log.i(TAG, "getAllUploadedInvoicesTask : " + invoices.size());
 
                     mProgressBar.setVisibility(View.INVISIBLE);
 
                     Intent intent = new Intent(mContext, UploadedInvoicesRecyclerViewActivity.class);
-                    intent.putExtra(INVOICE_LIST, new ArrayList<Invoice>(invoices));
+                    intent.putExtra(INVOICE_LIST, new ArrayList<>(invoices));
                     startActivity(intent);
 
                 } catch (ExecutionException e) {
@@ -163,8 +159,8 @@ public class MainActivity
         // Security
         try {
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509", Configuration.BC);
-            InputStream isServerCrt = this.getResources().openRawResource(R.raw.server);
-            InputStream isServerKey = this.getResources().openRawResource(R.raw.serverkey);
+            InputStream isServerCrt = InvoiceApp.getContext().getResources().openRawResource(R.raw.server);
+            InputStream isServerKey = InvoiceApp.getContext().getResources().openRawResource(R.raw.serverkey);
             X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
             tfmSecurityManager.setCertificate(certificate);
 
@@ -186,7 +182,7 @@ public class MainActivity
             tfmSecurityManager.setKey(key);
 
 
-            //deleteAllLocalSymKeys();
+            deleteAllLocalSymKeys();
 
             String[] fields = {
                     Configuration.UID_FACTURA,
@@ -202,7 +198,7 @@ public class MainActivity
 
             for(String str : fields){
                 if(tfmSecurityManager.getSimKeys().get(str) == null){
-                    GetByFLocalSymKeyTask gbflskTask = new GetByFLocalSymKeyTask(mContext);
+                    GetByFLocalSymKeyTask gbflskTask = new GetByFLocalSymKeyTask();
                     Log.i(TAG, "LocalSymKey : " + str);
                     LocalSymKey lskF1 = gbflskTask.execute(str).get();
                     if(lskF1 == null){
@@ -211,7 +207,7 @@ public class MainActivity
 
                         Log.i(TAG, "Buscando [" + str + "] en la base de datos REMOTA...");
                         // Recuperem la clau del servidor
-                        GetByFRemoteSymKeyTask gbfrskTask = new GetByFRemoteSymKeyTask(getApplicationContext());
+                        GetByFRemoteSymKeyTask gbfrskTask = new GetByFRemoteSymKeyTask();
                         String url = Configuration.URL_KEYS + "/" + str;
                         String res = gbfrskTask.execute(url).get();
                         if(res == null || res.isEmpty()){
@@ -307,7 +303,7 @@ public class MainActivity
         String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
         lsk.setK(simKeyStringEnc);
 
-        InsertLocalSymKeyTask ilskTask = new InsertLocalSymKeyTask(mContext, lsk);
+        InsertLocalSymKeyTask ilskTask = new InsertLocalSymKeyTask(lsk);
         LocalSymKey lskF = ilskTask.execute().get();
         Log.i(TAG, "LocalSymKey ingresada: " + lskF.toString());
 
@@ -324,10 +320,10 @@ public class MainActivity
     }
 
     private void deleteAllLocalSymKeys() throws java.util.concurrent.ExecutionException, InterruptedException {
-        GetAllLocalSymKeyTask galskTask = new GetAllLocalSymKeyTask(mContext);
+        GetAllLocalSymKeyTask galskTask = new GetAllLocalSymKeyTask();
         List<LocalSymKey> lskList = galskTask.execute().get();
         for(LocalSymKey aLocalSimKey : lskList){
-            DeleteLocalSymKeyTask dlskTask = new DeleteLocalSymKeyTask(mContext, aLocalSimKey);
+            DeleteLocalSymKeyTask dlskTask = new DeleteLocalSymKeyTask(aLocalSimKey);
             LocalSymKey deleted = dlskTask.execute().get();
             Log.i(TAG, "Deleted: " + deleted.toString());
         }
@@ -353,73 +349,6 @@ public class MainActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private ArrayList<Invoice> getInvoicesFromResponse(JSONArray response){
-        ArrayList<Invoice> invoices = new ArrayList<>();
-
-        try{
-            // Loop through the array elements
-            for(int i=0;i<response.length();i++){
-                // Get current json object
-                JSONObject factura = response.getJSONObject(i);
-
-                // Get the current factura (json object) data
-                String uid = factura.getString("uid");
-                String taxIdentificationNumber = factura.getString("taxIdentificationNumber");
-                String invoiceNumber = factura.getString("invoiceNumber");
-                String issueDate = factura.getString("issueDate");
-                double invoiceTotal = factura.getDouble("invoiceTotal");
-                double totalTaxOutputs = factura.getDouble("totalTaxOutputs");
-
-                String iv = factura.getString("iv");
-                String simKey = factura.getString("simKey");
-
-                // Desencriptació amb clau privada de iv i simKey
-                byte[] ivBytesDec = Base64.decode(iv, Base64.NO_WRAP);
-                byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, tfmSecurityManager.getKey());
-                String ivStringDec = new String(ivBytesEncDec);
-
-                byte[] simKeyBytesDec = Base64.decode(simKey, Base64.NO_WRAP);
-                byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, tfmSecurityManager.getKey());
-                String simKeyStringDec = new String(simKeyBytesEncDec);
-
-                SymmetricDecryptor simDec = new SymmetricDecryptor();
-                simDec.setIv(ivStringDec);
-                simDec.setKey(simKeyStringDec);
-
-                String taxIdentificationNumberDecrypted = simDec.decrypt(
-                        taxIdentificationNumber,
-                        tfmSecurityManager.getSimKeys().get(Configuration.TAX_IDENTIFICATION_NUMBER));
-                String invoiceNumberDecrypted = simDec.decrypt(
-                        invoiceNumber,
-                        tfmSecurityManager.getSimKeys().get(Configuration.INVOICE_NUMBER));
-                String issueDateDecrypted = simDec.decrypt(
-                        issueDate,
-                        tfmSecurityManager.getSimKeys().get(Configuration.ISSUE_DATE));
-
-                Invoice invoice = new Invoice(uid
-                        , taxIdentificationNumberDecrypted
-                        , ""
-                        , invoiceNumberDecrypted
-                        , invoiceTotal
-                        , totalTaxOutputs
-                        , new SimpleDateFormat("yyyy-MM-dd", new Locale("ES-es")).parse(issueDateDecrypted)
-                );
-
-                Log.i(TAG, "invoice : ["+invoice.toString()+"]");
-                invoices.add(invoice);
-
-
-
-            }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        return invoices;
-
     }
 
     static {

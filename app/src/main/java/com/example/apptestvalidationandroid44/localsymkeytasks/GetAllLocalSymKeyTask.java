@@ -1,9 +1,9 @@
 package com.example.apptestvalidationandroid44.localsymkeytasks;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.example.apptestvalidationandroid44.InvoiceApp;
 import com.example.apptestvalidationandroid44.model.DatabaseClient;
 import com.example.apptestvalidationandroid44.model.LocalSymKey;
 
@@ -13,10 +13,8 @@ public class GetAllLocalSymKeyTask extends AsyncTask<Void, Void, List<LocalSymKe
 
     private static final String TAG = "GetAllLocalSymKeyTask";
 
-    private Context mContext;
+    public GetAllLocalSymKeyTask(){
 
-    public GetAllLocalSymKeyTask(Context theContext){
-        this.mContext = theContext;
     }
 
     protected void onPreExecute() {
@@ -28,7 +26,7 @@ public class GetAllLocalSymKeyTask extends AsyncTask<Void, Void, List<LocalSymKe
     protected List<LocalSymKey> doInBackground(Void... voids) {
 
                     List<LocalSymKey> taskList = DatabaseClient
-                    .getInstance(this.mContext)
+                    .getInstance(InvoiceApp.getContext())
                     .getAppDatabase()
                     .localSymKeyDao()
                     .getAll();

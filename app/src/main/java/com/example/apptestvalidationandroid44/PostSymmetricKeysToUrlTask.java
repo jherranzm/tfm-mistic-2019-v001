@@ -3,6 +3,9 @@ package com.example.apptestvalidationandroid44;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.example.apptestvalidationandroid44.https.CustomSSLSocketFactory;
+import com.example.apptestvalidationandroid44.https.NullHostNameVerifier;
+
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -13,12 +16,16 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.cert.CertificateException;
 import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
 
 
 public class PostSymmetricKeysToUrlTask extends AsyncTask<String, Void, String> {
 
-    private static String TAG = "PostSymmetricKeysToUrlTask";
+    private static final String TAG = "PostSymmetricKeysToUrlTask";
 
     // This is the JSON body of the post
     private JSONObject postData;
@@ -41,18 +48,17 @@ public class PostSymmetricKeysToUrlTask extends AsyncTask<String, Void, String> 
     protected String doInBackground(String... params) {
         try {
             URL url;
-            HttpURLConnection urlConnection;
             String server_response;
 
             url = new URL(params[0]);
             Log.i(TAG, "POST URL : " +url.toString());
-            urlConnection = (HttpURLConnection) url.openConnection();
 
+            HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
+            HttpsURLConnection.setDefaultHostnameVerifier(new NullHostNameVerifier());
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
-
             urlConnection.setRequestProperty("Content-Type", "application/json");
-
+            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
             urlConnection.setRequestMethod("POST");
 
             // Send the post body
@@ -90,6 +96,10 @@ public class PostSymmetricKeysToUrlTask extends AsyncTask<String, Void, String> 
 
             return null;
 
+        }catch (CertificateException e){
+            e.printStackTrace();
+        }catch (GeneralSecurityException e){
+            e.printStackTrace();
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
