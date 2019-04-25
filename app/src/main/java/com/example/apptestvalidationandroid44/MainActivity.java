@@ -186,7 +186,7 @@ public class MainActivity
             tfmSecurityManager.setKey(key);
 
 
-            deleteAllLocalSymKeys();
+            //deleteAllLocalSymKeys();
 
             String[] fields = {
                     Configuration.UID_FACTURA,
@@ -201,41 +201,44 @@ public class MainActivity
             RandomStringGenerator rsg = new RandomStringGenerator();
 
             for(String str : fields){
-                GetByFLocalSymKeyTask gbflskTask = new GetByFLocalSymKeyTask(mContext);
-                Log.i(TAG, "LocalSymKey : " + str);
-                LocalSymKey lskF1 = gbflskTask.execute(str).get();
-                if(lskF1 == null){
+                if(tfmSecurityManager.getSimKeys().get(str) == null){
+                    GetByFLocalSymKeyTask gbflskTask = new GetByFLocalSymKeyTask(mContext);
+                    Log.i(TAG, "LocalSymKey : " + str);
+                    LocalSymKey lskF1 = gbflskTask.execute(str).get();
+                    if(lskF1 == null){
 
-                    Log.i(TAG, "LocalSymKey : [" + str + "] NO està a la base de datos local!");
+                        Log.i(TAG, "LocalSymKey : [" + str + "] NO està a la base de datos local!");
 
-                    Log.i(TAG, "Buscando [" + str + "] en la base de datos REMOTA...");
-                    // Recuperem la clau del servidor
-                    GetByFRemoteSymKeyTask gbfrskTask = new GetByFRemoteSymKeyTask(getApplicationContext());
-                    String url = Configuration.URL_KEYS + "/" + str;
-                    String res = gbfrskTask.execute(url).get();
-                    if(res == null || res.isEmpty()){
-                        createLocalSymKey(rsg, str);
-                    }else{
-                        Log.i(TAG, "Recibida del servidor la clave : ["+str+"] : " + res );
-
-                        JSONObject receivedRemoteSymKey = new JSONObject(res);
-
-                        LocalSymKey lskReceived = new LocalSymKey();
-                        lskReceived.setF(receivedRemoteSymKey.getString("f"));
-                        lskReceived.setK(receivedRemoteSymKey.getString("k"));
-
-                        Log.i(TAG, "Recibida del servidor la clave : ["+str+"] : " + lskReceived.toString() );
-
-                        if(lskReceived.getF().isEmpty() || lskReceived.getK().isEmpty()){
+                        Log.i(TAG, "Buscando [" + str + "] en la base de datos REMOTA...");
+                        // Recuperem la clau del servidor
+                        GetByFRemoteSymKeyTask gbfrskTask = new GetByFRemoteSymKeyTask(getApplicationContext());
+                        String url = Configuration.URL_KEYS + "/" + str;
+                        String res = gbfrskTask.execute(url).get();
+                        if(res == null || res.isEmpty()){
                             createLocalSymKey(rsg, str);
                         }else{
-                            getLocalSymKey(str, lskReceived);
+                            Log.i(TAG, "Recibida del servidor la clave : ["+str+"] : " + res );
+
+                            JSONObject receivedRemoteSymKey = new JSONObject(res);
+
+                            LocalSymKey lskReceived = new LocalSymKey();
+                            lskReceived.setF(receivedRemoteSymKey.getString("f"));
+                            lskReceived.setK(receivedRemoteSymKey.getString("k"));
+
+                            Log.i(TAG, "Recibida del servidor la clave : ["+str+"] : " + lskReceived.toString() );
+
+                            if(lskReceived.getF().isEmpty() || lskReceived.getK().isEmpty()){
+                                createLocalSymKey(rsg, str);
+                            }else{
+                                getLocalSymKey(str, lskReceived);
+                            }
+
                         }
 
+                    }else{
+                        getLocalSymKey(str, lskF1);
                     }
 
-                }else{
-                    getLocalSymKey(str, lskF1);
                 }
 
             }
