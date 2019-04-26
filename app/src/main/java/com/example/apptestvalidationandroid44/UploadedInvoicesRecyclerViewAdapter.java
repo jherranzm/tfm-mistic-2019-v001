@@ -11,6 +11,7 @@ import com.example.apptestvalidationandroid44.model.Invoice;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
         .Adapter<UploadedInvoicesRecyclerViewAdapter
@@ -65,11 +66,21 @@ public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
 
     @Override
     public void onBindViewHolder(DataObjectHolder holder, int position) {
-        holder.taxIdentificationNumber.setText(String.format("TIN: %s", mDataset.get(position).getTaxIdentificationNumber()));
-        holder.invoiceNumber.setText(String.format("Invoice: %s", mDataset.get(position).getInvoiceNumber()));
-        holder.totalAmount.setText(String.format("Total: %f", mDataset.get(position).getInvoiceTotal()));
-        holder.totalTaxOutputs.setText(String.format("Taxes: %f", mDataset.get(position).getTotalTaxOutputs()));
-        holder.issueDate.setText(String.format("Date: %s", DATE_FORMAT.format(mDataset.get(position).getIssueDate())));
+        holder.taxIdentificationNumber.setText(String.format(
+                Locale.forLanguageTag("es-ES"),
+                "TIN: %s", mDataset.get(position).getTaxIdentificationNumber()));
+        holder.invoiceNumber.setText(String.format(
+                Locale.forLanguageTag("es-ES"),
+                "Invoice: %s", mDataset.get(position).getInvoiceNumber()));
+        holder.totalAmount.setText(String.format(
+                Locale.forLanguageTag("es-ES"),
+                "Total: %f", mDataset.get(position).getInvoiceTotal()));
+        holder.totalTaxOutputs.setText(String.format(
+                Locale.forLanguageTag("es-ES"),
+                "Taxes: %f", mDataset.get(position).getTotalTaxOutputs()));
+        holder.issueDate.setText(String.format(
+                Locale.forLanguageTag("es-ES"),
+                "Date: %s", DATE_FORMAT.format(mDataset.get(position).getIssueDate())));
     }
 
     public void addItem(Invoice dataObj, int index) {
