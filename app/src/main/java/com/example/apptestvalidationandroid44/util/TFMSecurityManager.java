@@ -6,7 +6,6 @@ import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.InvoiceApp;
 import com.example.apptestvalidationandroid44.PostDataToUrlTask;
-import com.example.apptestvalidationandroid44.R;
 import com.example.apptestvalidationandroid44.config.Configuration;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
@@ -85,20 +84,22 @@ public class TFMSecurityManager {
     }
 
     private void manageSecurity() {
+
+        char[] keystorePassword = Configuration.PKCS12_PASSWORD.toCharArray();
+        char[] keyPassword = Configuration.PKCS12_PASSWORD.toCharArray();
+
         // Security
         try {
             CertificateFactory certFactory = CertificateFactory.getInstance(Configuration.X_509, Configuration.BC);
 
-            InputStream isServerCrt = InvoiceApp.getContext().getResources().openRawResource(R.raw.server);
+            InputStream isServerCrt = InvoiceApp.getContext().getAssets().open("server.crt"); // .getResources().openRawResource(R.raw.server);
             X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
             isServerCrt.close();
             this.setCertificate(certificate);
 
 
-            char[] keystorePassword = Configuration.PKCS12_PASSWORD.toCharArray();
-            char[] keyPassword = Configuration.PKCS12_PASSWORD.toCharArray();
 
-            InputStream isServerKey = InvoiceApp.getContext().getResources().openRawResource(R.raw.serverkey);
+            InputStream isServerKey = InvoiceApp.getContext().getAssets().open("serverkey.p12"); //.getResources().openRawResource(R.raw.serverkey);
 
             KeyStore keystore = KeyStore.getInstance(Configuration.PKCS_12, Configuration.BC);
             keystore.load(isServerKey, keystorePassword);
@@ -106,9 +107,10 @@ public class TFMSecurityManager {
 
             PrivateKey key = (PrivateKey) keystore.getKey("Server", keyPassword);
             if(key == null) {
-                Log.e("ERROR","ERROR NO hay key!");
-                throw new Exception("ERROR no hay Key!");
+                Log.e(TAG,"ERROR: NO hay clave privada!");
+                throw new Exception("ERROR NO hay clave privada!");
             }
+            Log.i(TAG,"Tenemos clave privada!");
             this.setPrivateKey(key);
 
 
