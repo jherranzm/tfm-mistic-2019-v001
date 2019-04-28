@@ -20,6 +20,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.spongycastle.cms.CMSException;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +31,7 @@ import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,19 +107,55 @@ public class TFMSecurityManager {
         try {
             CertificateFactory certFactory = CertificateFactory.getInstance(Configuration.X_509, Configuration.BC);
 
-            InputStream isServerCrt = InvoiceApp.getContext().getAssets().open("server.crt"); // .getResources().openRawResource(R.raw.server);
-            X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
-            isServerCrt.close();
-            this.setCertificate(certificate);
-            Log.i(TAG,"Tenemos certificado!" + certificate.getSubjectDN().getName());
 
-
-
-            InputStream isServerKey = InvoiceApp.getContext().getAssets().open("serverkey.p12"); //.getResources().openRawResource(R.raw.serverkey);
 
             KeyStore keyStore = KeyStore.getInstance(Configuration.PKCS_12, Configuration.BC);
+            File keyStoreFile = new File(InvoiceApp.getAppDir(), "keyStoreInvoiceApp");
+            if(keyStoreFile.exists()){
+                Log.i(TAG,"Tenemos Fichero de KeyStore! Localización : " + keyStoreFile.getAbsolutePath());
+                keyStore.load(new FileInputStream(keyStoreFile), keystorePassword);
+                Enumeration<String> aliases = keyStore.aliases();
+                while(aliases.hasMoreElements()){
+                    Log.i(TAG,"aliases : " + aliases.nextElement());
+                }
+                X509Certificate certificate = (X509Certificate) keyStore.getCertificate("Server");
+                this.setCertificate(certificate);
+                Log.i(TAG,"Tenemos certificado de la KeyStore! SubjectDN : " + certificate.getSubjectDN().getName());
+
+            }else{
+                Log.i(TAG,"Creamos Fichero de KeyStore! Localización : " + keyStoreFile.getAbsolutePath());
+                keyStoreFile.createNewFile();
+                try (FileOutputStream keyStoreOutputStream = new FileOutputStream(keyStoreFile)) {
+
+                    InputStream isServerCrt = InvoiceApp.getContext().getAssets().open(Configuration.SERVER_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
+                    X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
+                    isServerCrt.close();
+                    this.setCertificate(certificate);
+                    Log.i(TAG,"Tenemos certificado! SubjectDN : " + certificate.getSubjectDN().getName());
+
+
+                    keyStore.load(null, null);
+                    keyStore.setCertificateEntry("Server", certificate);
+                    keyStore.setCertificateEntry("ca", certificate);
+                }
+                FileOutputStream out = new FileOutputStream(keyStoreFile);
+                keyStore.store(out, keystorePassword);
+                out.close();
+            }
+
+
+            InputStream isServerKey = InvoiceApp.getContext().getAssets().open(Configuration.SERVER_KEY_P12); //.getResources().openRawResource(R.raw.serverkey);
+
+            //KeyStore keyStore = KeyStore.getInstance(Configuration.PKCS_12, Configuration.BC);
             keyStore.load(isServerKey, keystorePassword);
             isServerKey.close();
+
+            Log.i(TAG,"KeyStore: Guardando...");
+            FileOutputStream out = new FileOutputStream(keyStoreFile);
+            keyStore.store(out, keystorePassword);
+            out.close();
+            Log.i(TAG,"KeyStore: Guardado!");
+
 
             // Create a TrustManager that trusts the CAs in our KeyStore
             String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();

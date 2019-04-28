@@ -22,4 +22,6 @@ public class Configuration {
     public static final String PKCS_12 = "PKCS12";
     public static final String PKCS12_PASSWORD = "Th2S5p2rStr4ngP1ss";
     public static final String X_509 = "X.509";
+    public static final String SERVER_CERTIFICATE_FILE = "server.crt";
+    public static final String SERVER_KEY_P12 = "serverkey.p12";
 }
