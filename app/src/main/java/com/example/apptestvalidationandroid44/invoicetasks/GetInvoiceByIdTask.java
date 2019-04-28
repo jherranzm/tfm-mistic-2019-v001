@@ -12,10 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.GeneralSecurityException;
-import java.security.cert.CertificateException;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -56,13 +53,8 @@ public class GetInvoiceByIdTask extends AsyncTask<String, Void, String> {
 
             return null;
 
-        }catch (CertificateException e){
-            e.printStackTrace();
-        }catch (GeneralSecurityException e){
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        }catch (Exception e) {
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         }
         return null;

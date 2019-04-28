@@ -109,11 +109,11 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
             // Desencriptació amb clau privada de iv i simKey
             byte[] ivBytesDec = Base64.decode((String)jsonInvoice.get("iv"), Base64.NO_WRAP);
-            byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, tfmSecurityManager.getKey());
+            byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, tfmSecurityManager.getPrivateKey());
             String ivStringDec = new String(ivBytesEncDec);
 
             byte[] simKeyBytesDec = Base64.decode((String)jsonInvoice.get("simKey"), Base64.NO_WRAP);
-            byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, tfmSecurityManager.getKey());
+            byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, tfmSecurityManager.getPrivateKey());
             String simKeyStringDec = new String(simKeyBytesEncDec);
 
             Log.i(TAG, "Received from server [iv]    : " + ivStringDec);

@@ -30,8 +30,7 @@ public class CustomSSLSocketFactory {
         //sólo se instancia la primera vez que se necesite
         if (sslSocketFactory == null) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            InputStream caInput = new BufferedInputStream(context.getAssets()
-                    .open(FICHERO_CERT));
+            InputStream caInput = new BufferedInputStream(context.getAssets().open(FICHERO_CERT));
             Certificate ca;
             try {
                 ca = cf.generateCertificate(caInput);

@@ -55,7 +55,7 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
             String server_response;
 
             url = new URL(params[0]);
-            Log.i(TAG, url.toString());
+            Log.i(TAG, "URL:" + url.toString());
 
             HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
             HttpsURLConnection.setDefaultHostnameVerifier(new NullHostNameVerifier());
@@ -63,13 +63,12 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
             urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
 
             int responseCode = urlConnection.getResponseCode();
+            Log.i(TAG, "responseCode:" + responseCode);
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 server_response = readStream(urlConnection.getInputStream());
                 Log.i(TAG,"Respuesta servidor: " + server_response);
-                //return server_response;
 
-                //JSONObject parentObject = new JSONObject(server_response);
                 JSONArray array = new JSONArray(server_response);
 
                 ArrayList<Invoice> invoices;
@@ -77,19 +76,26 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
                 invoices = getInvoicesFromResponse(array);
                 Log.i(TAG,"invoices: " + invoices.size());
                 return invoices;
+            }else if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
+                return new ArrayList<>();
+            }else{
+                return new ArrayList<>();
             }
 
-            return null;
-
         }catch (JSONException e){
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         }catch (CertificateException e){
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         }catch (GeneralSecurityException e){
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         } catch (MalformedURLException e) {
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         } catch (IOException e) {
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         }
         return null;
@@ -101,9 +107,7 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
 
     }
 
-
     // Converting InputStream to String
-
     private String readStream(InputStream in) {
         BufferedReader reader = null;
         StringBuffer response;
@@ -151,11 +155,11 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
 
                 // Desencriptació amb clau privada de iv i simKey
                 byte[] ivBytesDec = Base64.decode(iv, Base64.NO_WRAP);
-                byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, tfmSecurityManager.getKey());
+                byte[] ivBytesEncDec = AsymmetricDecryptor.decryptData(ivBytesDec, tfmSecurityManager.getPrivateKey());
                 String ivStringDec = new String(ivBytesEncDec);
 
                 byte[] simKeyBytesDec = Base64.decode(simKey, Base64.NO_WRAP);
-                byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, tfmSecurityManager.getKey());
+                byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, tfmSecurityManager.getPrivateKey());
                 String simKeyStringDec = new String(simKeyBytesEncDec);
 
                 SymmetricDecryptor simDec = new SymmetricDecryptor();
@@ -184,11 +188,10 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
                 Log.i(TAG, "invoice : ["+invoice.toString()+"]");
                 invoices.add(invoice);
 
-
-
             }
 
         }catch (Exception e){
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         }
 

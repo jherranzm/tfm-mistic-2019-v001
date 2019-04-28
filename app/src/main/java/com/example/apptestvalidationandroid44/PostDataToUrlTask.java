@@ -36,7 +36,7 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
     private int responseCode;
 
     // This is a constructor that allows you to pass in the JSON body
-    PostDataToUrlTask(Map<String, String> postData) {
+    public PostDataToUrlTask(Map<String, String> postData) {
         if (postData != null) {
             this.postData = new JSONObject(postData);
         }
@@ -100,12 +100,16 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
             return null;
 
         }catch (CertificateException e){
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         }catch (GeneralSecurityException e){
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         } catch (MalformedURLException e) {
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         } catch (IOException e) {
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         }
         return null;
@@ -143,7 +147,6 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
         }
         return response.toString();
     }
-
 
     public int getResponseCode() {
         return responseCode;

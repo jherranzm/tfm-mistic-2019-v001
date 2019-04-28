@@ -17,4 +17,9 @@ public class Configuration {
 
     public static final String CR_LF = "\n";
     public static final String BC = "BC";
+
+
+    public static final String PKCS_12 = "PKCS12";
+    public static final String PKCS12_PASSWORD = "Th2S5p2rStr4ngP1ss";
+    public static final String X_509 = "X.509";
 }
