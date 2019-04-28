@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import javax.net.ssl.TrustManagerFactory;
+
 public class TFMSecurityManager {
 
     private static final String TAG = "TFMSecurityManager";
@@ -41,6 +43,7 @@ public class TFMSecurityManager {
 
     private X509Certificate certificate;
     private PrivateKey privateKey;
+    private TrustManagerFactory tmf;
 
     private static TFMSecurityManager instance;
 
@@ -75,6 +78,14 @@ public class TFMSecurityManager {
         this.privateKey = privateKey;
     }
 
+    public TrustManagerFactory getTmf() {
+        return tmf;
+    }
+
+    public void setTmf(TrustManagerFactory tmf) {
+        this.tmf = tmf;
+    }
+
     public Map<String, String> getSimKeys() {
         return simKeys;
     }
@@ -96,16 +107,23 @@ public class TFMSecurityManager {
             X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
             isServerCrt.close();
             this.setCertificate(certificate);
+            Log.i(TAG,"Tenemos certificado!" + certificate.getSubjectDN().getName());
 
 
 
             InputStream isServerKey = InvoiceApp.getContext().getAssets().open("serverkey.p12"); //.getResources().openRawResource(R.raw.serverkey);
 
-            KeyStore keystore = KeyStore.getInstance(Configuration.PKCS_12, Configuration.BC);
-            keystore.load(isServerKey, keystorePassword);
+            KeyStore keyStore = KeyStore.getInstance(Configuration.PKCS_12, Configuration.BC);
+            keyStore.load(isServerKey, keystorePassword);
             isServerKey.close();
 
-            PrivateKey key = (PrivateKey) keystore.getKey("Server", keyPassword);
+            // Create a TrustManager that trusts the CAs in our KeyStore
+            String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+            tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+            tmf.init(keyStore);
+            Log.i(TAG,"Tenemos TrustManager! Algoritmo : " + tmfAlgorithm);
+
+            PrivateKey key = (PrivateKey) keyStore.getKey("Server", keyPassword);
             if(key == null) {
                 Log.e(TAG,"ERROR: NO hay clave privada!");
                 throw new Exception("ERROR NO hay clave privada!");
