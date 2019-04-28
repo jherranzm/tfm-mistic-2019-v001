@@ -26,7 +26,7 @@ import java.util.Map;
 public class CsrHelper {
 
     private final static String DEFAULT_SIGNATURE_ALGORITHM = "SHA256withRSA";
-    private final static String CN_PATTERN = "CN=%s, O=Aralink, OU=OrgUnit";
+    private final static String CN_PATTERN = "C=ES,ST=Catalunya,L=Barcelona,O=Universitat Oberta de Catalunya,OU=MISTIC,CN=%s";
 
     private static class JCESigner implements ContentSigner {
 

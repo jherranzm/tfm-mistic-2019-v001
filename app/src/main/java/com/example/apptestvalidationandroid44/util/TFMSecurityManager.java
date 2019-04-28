@@ -4,6 +4,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.apptestvalidationandroid44.CsrHelper;
 import com.example.apptestvalidationandroid44.InvoiceApp;
 import com.example.apptestvalidationandroid44.PostDataToUrlTask;
 import com.example.apptestvalidationandroid44.config.Configuration;
@@ -15,19 +16,27 @@ import com.example.apptestvalidationandroid44.localsymkeytasks.GetByFLocalSymKey
 import com.example.apptestvalidationandroid44.localsymkeytasks.InsertLocalSymKeyTask;
 import com.example.apptestvalidationandroid44.model.LocalSymKey;
 import com.example.apptestvalidationandroid44.remotesymkeytasks.GetByFRemoteSymKeyTask;
+import com.example.apptestvalidationandroid44.remotesymkeytasks.GetCertificateFromServerTask;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.spongycastle.cms.CMSException;
+import org.spongycastle.openssl.jcajce.JcaPEMWriter;
+import org.spongycastle.pkcs.PKCS10CertificationRequest;
+import org.spongycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.SecureRandom;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -102,14 +111,15 @@ public class TFMSecurityManager {
 
         char[] keystorePassword = Configuration.PKCS12_PASSWORD.toCharArray();
         char[] keyPassword = Configuration.PKCS12_PASSWORD.toCharArray();
+        X509Certificate[] certificateChain = new X509Certificate[2];
 
         // Security
         try {
             CertificateFactory certFactory = CertificateFactory.getInstance(Configuration.X_509, Configuration.BC);
 
-
-
             KeyStore keyStore = KeyStore.getInstance(Configuration.PKCS_12, Configuration.BC);
+            KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(keystorePassword);
+
             File keyStoreFile = new File(InvoiceApp.getAppDir(), "keyStoreInvoiceApp");
             if(keyStoreFile.exists()){
                 Log.i(TAG,"Tenemos Fichero de KeyStore! Localización : " + keyStoreFile.getAbsolutePath());
@@ -127,28 +137,27 @@ public class TFMSecurityManager {
                 keyStoreFile.createNewFile();
                 try (FileOutputStream keyStoreOutputStream = new FileOutputStream(keyStoreFile)) {
 
+                    InputStream isCACrt = InvoiceApp.getContext().getAssets().open(Configuration.CA_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
+                    X509Certificate caCertificate = (X509Certificate) certFactory.generateCertificate(isCACrt);
+                    isCACrt.close();
+                    certificateChain[1] = caCertificate;
+
                     InputStream isServerCrt = InvoiceApp.getContext().getAssets().open(Configuration.SERVER_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
                     X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
                     isServerCrt.close();
                     this.setCertificate(certificate);
                     Log.i(TAG,"Tenemos certificado! SubjectDN : " + certificate.getSubjectDN().getName());
-
+                    certificateChain[0] = certificate;
 
                     keyStore.load(null, null);
                     keyStore.setCertificateEntry("Server", certificate);
                     keyStore.setCertificateEntry("ca", certificate);
+
+                    InputStream isServerKey = InvoiceApp.getContext().getAssets().open(Configuration.SERVER_KEY_P12); //.getResources().openRawResource(R.raw.serverkey);
+                    keyStore.load(isServerKey, keystorePassword);
+                    isServerKey.close();
                 }
-                FileOutputStream out = new FileOutputStream(keyStoreFile);
-                keyStore.store(out, keystorePassword);
-                out.close();
             }
-
-
-            InputStream isServerKey = InvoiceApp.getContext().getAssets().open(Configuration.SERVER_KEY_P12); //.getResources().openRawResource(R.raw.serverkey);
-
-            //KeyStore keyStore = KeyStore.getInstance(Configuration.PKCS_12, Configuration.BC);
-            keyStore.load(isServerKey, keystorePassword);
-            isServerKey.close();
 
             Log.i(TAG,"KeyStore: Guardando...");
             FileOutputStream out = new FileOutputStream(keyStoreFile);
@@ -171,7 +180,6 @@ public class TFMSecurityManager {
             Log.i(TAG,"Tenemos clave privada!");
             this.setPrivateKey(key);
 
-
             deleteAllLocalSymKeys();
 
             String[] fields = {
@@ -186,6 +194,33 @@ public class TFMSecurityManager {
             };
 
             getSymmetricKeys(fields);
+
+            //Generate KeyPair
+            Log.i(TAG,"KeyPair : generating...");
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+            keyGen.initialize(4096, new SecureRandom());
+            KeyPair keyPair = keyGen.generateKeyPair();
+            Log.i(TAG,"KeyPair : generated!");
+            Log.i(TAG, "KeyPair.getPrivate() : " + keyPair.getPrivate().toString());
+
+            //Generate CSR in PKCS#10 format encoded in DER
+            PKCS10CertificationRequest csr = CsrHelper.generateCSR(keyPair, "UsuarioApp");
+
+            JcaPKCS10CertificationRequest req2 = new JcaPKCS10CertificationRequest(csr.getEncoded()).setProvider("SC");
+
+            StringWriter sw = new StringWriter();
+            JcaPEMWriter pemWriter = new JcaPEMWriter(sw);
+            pemWriter.writeObject(req2);
+            pemWriter.close();
+
+            Log.i(TAG, "Request : " + sw.toString());
+
+
+            Map<String, String> params = new HashMap<>();
+            params.put("csr", sw.toString());
+            GetCertificateFromServerTask getCertificateFromServerTask = new GetCertificateFromServerTask(params);
+            String response_server = getCertificateFromServerTask.execute(Configuration.URL_CERT).get();
+            Log.i(TAG, "CSRder.Response : " + response_server);
 
         }catch(Exception e){
             Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
