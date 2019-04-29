@@ -18,6 +18,7 @@ import com.example.apptestvalidationandroid44.model.LocalSymKey;
 import com.example.apptestvalidationandroid44.remotesymkeytasks.GetByFRemoteSymKeyTask;
 import com.example.apptestvalidationandroid44.remotesymkeytasks.GetCertificateFromServerTask;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.spongycastle.cms.CMSException;
@@ -195,32 +196,58 @@ public class TFMSecurityManager {
 
             getSymmetricKeys(fields);
 
-            //Generate KeyPair
-            Log.i(TAG,"KeyPair : generating...");
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-            keyGen.initialize(4096, new SecureRandom());
-            KeyPair keyPair = keyGen.generateKeyPair();
-            Log.i(TAG,"KeyPair : generated!");
-            Log.i(TAG, "KeyPair.getPrivate() : " + keyPair.getPrivate().toString());
+            if(keyStore.containsAlias("UsuarioApp")){
+                Log.i(TAG,"Tenemos el certificado de usuario!");
+                X509Certificate certificate = (X509Certificate) keyStore.getCertificate("UsuarioApp");
+                Log.i(TAG, "certificate : " + certificate.getSubjectDN().getName());
+                Log.i(TAG, "certificate : " + certificate.getIssuerDN().getName());
+                Log.i(TAG, "");
+            }else{
+                //Generate KeyPair
+                Log.i(TAG,"KeyPair : generating...");
+                KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+                keyGen.initialize(4096, new SecureRandom());
+                KeyPair keyPair = keyGen.generateKeyPair();
+                Log.i(TAG,"KeyPair : generated!");
+                Log.i(TAG, "KeyPair.getPrivate() : " + keyPair.getPrivate().toString());
 
-            //Generate CSR in PKCS#10 format encoded in DER
-            PKCS10CertificationRequest csr = CsrHelper.generateCSR(keyPair, "UsuarioApp");
+                //Generate CSR in PKCS#10 format encoded in DER
+                PKCS10CertificationRequest csr = CsrHelper.generateCSR(keyPair, "UsuarioApp");
 
-            JcaPKCS10CertificationRequest req2 = new JcaPKCS10CertificationRequest(csr.getEncoded()).setProvider("SC");
+                JcaPKCS10CertificationRequest req2 = new JcaPKCS10CertificationRequest(csr.getEncoded()).setProvider("SC");
 
-            StringWriter sw = new StringWriter();
-            JcaPEMWriter pemWriter = new JcaPEMWriter(sw);
-            pemWriter.writeObject(req2);
-            pemWriter.close();
+                StringWriter sw = new StringWriter();
+                JcaPEMWriter pemWriter = new JcaPEMWriter(sw);
+                pemWriter.writeObject(req2);
+                pemWriter.close();
 
-            Log.i(TAG, "Request : " + sw.toString());
+                Log.i(TAG, "Request : " + sw.toString());
 
 
-            Map<String, String> params = new HashMap<>();
-            params.put("csr", sw.toString());
-            GetCertificateFromServerTask getCertificateFromServerTask = new GetCertificateFromServerTask(params);
-            String response_server = getCertificateFromServerTask.execute(Configuration.URL_CERT).get();
-            Log.i(TAG, "CSRder.Response : " + response_server);
+                Map<String, String> params = new HashMap<>();
+                params.put("csr", sw.toString());
+                GetCertificateFromServerTask getCertificateFromServerTask = new GetCertificateFromServerTask(params);
+                String response_server = getCertificateFromServerTask.execute(Configuration.URL_CERT).get();
+                String decoded = new String(java.util.Base64.getDecoder().decode(response_server.getBytes()));
+                Log.i(TAG, "CSRder.Response : " + decoded);
+
+                InputStream isReceivedCertificate = IOUtils.toInputStream(decoded);
+                X509Certificate receivedCertificate = (X509Certificate) certFactory.generateCertificate(isReceivedCertificate);
+                isReceivedCertificate.close();
+                Log.i(TAG, "receivedCertificate : " + receivedCertificate.getSubjectDN().getName());
+                Log.i(TAG, "receivedCertificate : " + receivedCertificate.getIssuerDN().getName());
+
+                keyStore.setCertificateEntry("UsuarioApp", receivedCertificate);
+
+                Log.i(TAG,"KeyStore: Guardando...");
+                FileOutputStream out2 = new FileOutputStream(keyStoreFile);
+                keyStore.store(out2, keystorePassword);
+                out2.close();
+                Log.i(TAG,"KeyStore: Guardado!");
+
+            }
+
+
 
         }catch(Exception e){
             Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
