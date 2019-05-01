@@ -56,6 +56,8 @@ public class GetCertificateFromServerTask extends AsyncTask<String, Void, String
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
             urlConnection.setRequestMethod("POST");
+            urlConnection.setConnectTimeout(20000);
+            urlConnection.setReadTimeout(20000);
 
             // Send the post body
             if (this.postData != null) {

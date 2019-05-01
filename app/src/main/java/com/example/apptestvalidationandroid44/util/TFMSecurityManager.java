@@ -17,6 +17,7 @@ import com.example.apptestvalidationandroid44.localsymkeytasks.InsertLocalSymKey
 import com.example.apptestvalidationandroid44.model.LocalSymKey;
 import com.example.apptestvalidationandroid44.remotesymkeytasks.GetByFRemoteSymKeyTask;
 import com.example.apptestvalidationandroid44.remotesymkeytasks.GetCertificateFromServerTask;
+import com.example.apptestvalidationandroid44.remotesymkeytasks.GetServerStatusTask;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
@@ -36,9 +37,12 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
@@ -114,8 +118,11 @@ public class TFMSecurityManager {
         char[] keyPassword = Configuration.PKCS12_PASSWORD.toCharArray();
         X509Certificate[] certificateChain = new X509Certificate[2];
 
+
         // Security
         try {
+
+
             CertificateFactory certFactory = CertificateFactory.getInstance(Configuration.X_509, Configuration.BC);
 
             KeyStore keyStore = KeyStore.getInstance(Configuration.PKCS_12, Configuration.BC);
@@ -123,48 +130,77 @@ public class TFMSecurityManager {
 
             File keyStoreFile = new File(InvoiceApp.getAppDir(), "keyStoreInvoiceApp");
             if(keyStoreFile.exists()){
-                Log.i(TAG,"Tenemos Fichero de KeyStore! Localización : " + keyStoreFile.getAbsolutePath());
+                Log.i(TAG,"KeyStore file already exists in : " + keyStoreFile.getAbsolutePath());
                 keyStore.load(new FileInputStream(keyStoreFile), keystorePassword);
-                Enumeration<String> aliases = keyStore.aliases();
-                while(aliases.hasMoreElements()){
-                    Log.i(TAG,"aliases : " + aliases.nextElement());
+
+                showAliasesInKeyStore(keyStore);
+
+                // Retrieve CA Certificate from KeyStore
+                //X509Certificate caCertificate = (X509Certificate) keyStore.getCertificate("ca");
+                X509Certificate caCertificate = (X509Certificate) keyStore.getCertificate("CA TFM");
+                if(caCertificate == null){
+                    throw new Exception("ERROR : NO CA Certificate in KeyStore!");
                 }
-                X509Certificate certificate = (X509Certificate) keyStore.getCertificate("Server");
-                this.setCertificate(certificate);
-                Log.i(TAG,"Tenemos certificado de la KeyStore! SubjectDN : " + certificate.getSubjectDN().getName());
+                certificateChain[1] = caCertificate;
+                Log.i(TAG,"Retrieved CA Certificate from KeyStore! SubjectDN : " + caCertificate.getSubjectDN().getName());
+
+                // Retrieve Server Certificate from KeyStore
+                X509Certificate serverCertificate = (X509Certificate) keyStore.getCertificate("Server");
+                if(serverCertificate == null){
+                    throw new Exception("ERROR : NO Server Certificate in KeyStore!");
+                }
+                certificateChain[0] = serverCertificate;
+                Log.i(TAG,"Retrieved Server Certificate from KeyStore! SubjectDN : " + serverCertificate.getSubjectDN().getName());
+
+                // Certificate with PublicKey to encrypt or decrypt
+                this.setCertificate(serverCertificate);
 
             }else{
                 Log.i(TAG,"Creamos Fichero de KeyStore! Localización : " + keyStoreFile.getAbsolutePath());
                 keyStoreFile.createNewFile();
-                try (FileOutputStream keyStoreOutputStream = new FileOutputStream(keyStoreFile)) {
 
-                    InputStream isCACrt = InvoiceApp.getContext().getAssets().open(Configuration.CA_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
-                    X509Certificate caCertificate = (X509Certificate) certFactory.generateCertificate(isCACrt);
-                    isCACrt.close();
-                    certificateChain[1] = caCertificate;
+                keyStore.load(null, null);
+                showAliasesInKeyStore(keyStore);
 
-                    InputStream isServerCrt = InvoiceApp.getContext().getAssets().open(Configuration.SERVER_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
-                    X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
-                    isServerCrt.close();
-                    this.setCertificate(certificate);
-                    Log.i(TAG,"Tenemos certificado! SubjectDN : " + certificate.getSubjectDN().getName());
-                    certificateChain[0] = certificate;
-
-                    keyStore.load(null, null);
-                    keyStore.setCertificateEntry("Server", certificate);
-                    keyStore.setCertificateEntry("ca", certificate);
-
-                    InputStream isServerKey = InvoiceApp.getContext().getAssets().open(Configuration.SERVER_KEY_P12); //.getResources().openRawResource(R.raw.serverkey);
-                    keyStore.load(isServerKey, keystorePassword);
-                    isServerKey.close();
+                // Load CA Certificate from assets
+                InputStream isCACrt = InvoiceApp.getContext().getAssets().open(Configuration.CA_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
+                X509Certificate caCertificate = (X509Certificate) certFactory.generateCertificate(isCACrt);
+                isCACrt.close();
+                if(caCertificate == null){
+                    throw new Exception("ERROR : NO CA Certificate in "+Configuration.CA_CERTIFICATE_FILE+"!");
                 }
+                Log.i(TAG,"Retrieved CA Certificate from file in assets! SubjectDN : " + caCertificate.getSubjectDN().getName());
+                certificateChain[1] = caCertificate;
+
+                // Load Server Certificate from assets
+                InputStream isServerCrt = InvoiceApp.getContext().getAssets().open(Configuration.SERVER_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
+                X509Certificate serverCertificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
+                isServerCrt.close();
+                if(caCertificate == null){
+                    throw new Exception("ERROR : NO Server Certificate in "+Configuration.SERVER_CERTIFICATE_FILE+"!");
+                }
+                Log.i(TAG,"Retrieved Server Certificate from file in assets! SubjectDN : " + serverCertificate.getSubjectDN().getName());
+                certificateChain[0] = serverCertificate;
+
+                // Load Certificates in KeyStore
+                keyStore.load(null, null);
+                // Pregunta: és necessari?
+                //keyStore.setCertificateEntry("Server", serverCertificate);
+                //keyStore.setCertificateEntry("ca", caCertificate);
+
+                // Load Server Private Key from assets : needed to encrypt, will be changed for user private key
+                Log.i(TAG,"Loading Server Private Key from assets...");
+                InputStream isServerKey = InvoiceApp.getContext().getAssets().open(Configuration.SERVER_KEY_P12); //.getResources().openRawResource(R.raw.serverkey);
+                keyStore.load(isServerKey, keystorePassword);
+                isServerKey.close();
+
+                showAliasesInKeyStore(keyStore);
+
+                // Certificate with PublicKey to encrypt or decrypt
+                this.setCertificate(serverCertificate);
             }
 
-            Log.i(TAG,"KeyStore: Guardando...");
-            FileOutputStream out = new FileOutputStream(keyStoreFile);
-            keyStore.store(out, keystorePassword);
-            out.close();
-            Log.i(TAG,"KeyStore: Guardado!");
+            saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
 
 
             // Create a TrustManager that trusts the CAs in our KeyStore
@@ -181,28 +217,18 @@ public class TFMSecurityManager {
             Log.i(TAG,"Tenemos clave privada!");
             this.setPrivateKey(key);
 
-            deleteAllLocalSymKeys();
+            // First connection to server
+            String status = "";
+            while (!"ACTIVE".equals(status)) {
+                GetServerStatusTask getServerStatusTask = new GetServerStatusTask();
+                status = getServerStatusTask.execute(Configuration.URL_STATUS).get();
+                Log.i(TAG, "Server status : " + status);
+            }
 
-            String[] fields = {
-                    Configuration.UID_FACTURA,
-                    Configuration.TAX_IDENTIFICATION_NUMBER,
-                    Configuration.CORPORATE_NAME,
-                    Configuration.INVOICE_NUMBER,
-                    Configuration.INVOICE_TOTAL,
-                    Configuration.TOTAL_GROSS_AMOUNT,
-                    Configuration.TOTAL_TAX_OUTPUTS,
-                    Configuration.ISSUE_DATE
-            };
 
-            getSymmetricKeys(fields);
-
-            if(keyStore.containsAlias("UsuarioApp")){
-                Log.i(TAG,"Tenemos el certificado de usuario!");
-                X509Certificate certificate = (X509Certificate) keyStore.getCertificate("UsuarioApp");
-                Log.i(TAG, "certificate : " + certificate.getSubjectDN().getName());
-                Log.i(TAG, "certificate : " + certificate.getIssuerDN().getName());
-                Log.i(TAG, "");
-            }else{
+            X509Certificate userCertificate = (X509Certificate) keyStore.getCertificate("UsuarioApp");
+            //if(keyStore.containsAlias("UsuarioApp")){
+            if(userCertificate == null){
                 //Generate KeyPair
                 Log.i(TAG,"KeyPair : generating...");
                 KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
@@ -234,24 +260,76 @@ public class TFMSecurityManager {
                 InputStream isReceivedCertificate = IOUtils.toInputStream(decoded);
                 X509Certificate receivedCertificate = (X509Certificate) certFactory.generateCertificate(isReceivedCertificate);
                 isReceivedCertificate.close();
-                Log.i(TAG, "receivedCertificate : " + receivedCertificate.getSubjectDN().getName());
-                Log.i(TAG, "receivedCertificate : " + receivedCertificate.getIssuerDN().getName());
+                Log.i(TAG, "receivedCertificate Subject : " + receivedCertificate.getSubjectDN().getName());
+                Log.i(TAG, "receivedCertificate Issuer  : " + receivedCertificate.getIssuerDN().getName());
 
                 keyStore.setCertificateEntry("UsuarioApp", receivedCertificate);
 
-                Log.i(TAG,"KeyStore: Guardando...");
-                FileOutputStream out2 = new FileOutputStream(keyStoreFile);
-                keyStore.store(out2, keystorePassword);
-                out2.close();
-                Log.i(TAG,"KeyStore: Guardado!");
+                userCertificate = (X509Certificate) keyStore.getCertificate("UsuarioApp");
 
+                //
+                Log.i(TAG, "privateKey : saving...");
+                keyStore.setKeyEntry("UsuarioApp",
+                        keyPair.getPrivate(),
+                        keystorePassword,
+                        new java.security.cert.Certificate[]{receivedCertificate});
+                Log.i(TAG, "privateKey : saved!");
+
+
+                saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
+
+            }else{
+                Log.i(TAG,"Tenemos el certificado de usuario!");
+                //X509Certificate certificate = (X509Certificate) keyStore.getCertificate("UsuarioApp");
+                Log.i(TAG, "User Certificate Subject : " + userCertificate.getSubjectDN().getName());
+                Log.i(TAG, "User Certificate Issuer  : " + userCertificate.getIssuerDN().getName());
+                Log.i(TAG, "");
             }
+
+            KeyStore.PrivateKeyEntry retrievedPrivateKeyEntry = (KeyStore.PrivateKeyEntry)keyStore.getEntry("UsuarioApp", protParam);
+            PrivateKey retrievedPrivateKey = retrievedPrivateKeyEntry.getPrivateKey();
+
+            this.setCertificate(userCertificate);
+            this.setPrivateKey(retrievedPrivateKey);
+
+
+            deleteAllLocalSymKeys();
+
+            String[] fields = {
+                    Configuration.UID_FACTURA,
+                    Configuration.TAX_IDENTIFICATION_NUMBER,
+                    Configuration.CORPORATE_NAME,
+                    Configuration.INVOICE_NUMBER,
+                    Configuration.INVOICE_TOTAL,
+                    Configuration.TOTAL_GROSS_AMOUNT,
+                    Configuration.TOTAL_TAX_OUTPUTS,
+                    Configuration.ISSUE_DATE
+            };
+
+            getSymmetricKeys(fields);
+
 
 
 
         }catch(Exception e){
             Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             Toast.makeText(InvoiceApp.getContext(), "ERROR : "+e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage() , Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void saveKeyStoreToFileSystem(char[] keystorePassword, KeyStore keyStore, File keyStoreFile) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
+        Log.i(TAG, "KeyStore: Guardando...");
+        FileOutputStream out = new FileOutputStream(keyStoreFile);
+        keyStore.store(out, keystorePassword);
+        out.close();
+        Log.i(TAG, "KeyStore: Guardado!");
+    }
+
+    private void showAliasesInKeyStore(KeyStore keyStore) throws KeyStoreException {
+        Enumeration<String> aliases = keyStore.aliases();
+        Log.i(TAG,"Showing aliases in KeyStore...");
+        while(aliases.hasMoreElements()){
+            Log.i(TAG,"alias : " + aliases.nextElement());
         }
     }
 

@@ -107,7 +107,8 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
     private boolean validateSignedInvoice(Document doc){
         boolean valid = false;
         try {
-            valid = UtilValidator.isValid(tfmSecurityManager.getCertificate(), doc);
+            //valid = UtilValidator.isValid(tfmSecurityManager.getCertificate(), doc);
+            valid = UtilValidator.isValid(doc);
         } catch (IOException e) {
             Toast.makeText(mContext, "ERROR IO " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             Log.i(TAG, "ERROR IO : " + e.getLocalizedMessage());

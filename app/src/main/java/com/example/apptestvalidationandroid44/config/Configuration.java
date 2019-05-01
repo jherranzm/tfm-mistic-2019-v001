@@ -4,6 +4,8 @@ public class Configuration {
     public static final String URL = "https://10.0.2.2:8443/facturas";
     public static final String URL_KEYS = "https://10.0.2.2:8443/keys";
     public static final String URL_CERT = "https://10.0.2.2:8443/cert/csr";
+    public static final String URL_STATUS = "https://10.0.2.2:8443/status";
+
     //public static final String URL = "http://10.0.2.2:8080/facturas";
     //public static final String URL_KEYS = "http://10.0.2.2:8080/keys";
 
@@ -26,4 +28,5 @@ public class Configuration {
     public static final String SERVER_CERTIFICATE_FILE = "server.crt";
     public static final String SERVER_KEY_P12 = "serverkey.p12";
     public static final String CA_CERTIFICATE_FILE = "ca.crt";
+
 }

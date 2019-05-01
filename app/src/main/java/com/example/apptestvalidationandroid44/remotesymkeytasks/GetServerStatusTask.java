@@ -1,30 +1,30 @@
-package com.example.apptestvalidationandroid44;
+package com.example.apptestvalidationandroid44.remotesymkeytasks;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.example.apptestvalidationandroid44.InvoiceApp;
 import com.example.apptestvalidationandroid44.https.CustomSSLSocketFactory;
+import com.example.apptestvalidationandroid44.https.NullHostNameVerifier;
+import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.GeneralSecurityException;
-import java.security.cert.CertificateException;
 
 import javax.net.ssl.HttpsURLConnection;
 
+public class GetServerStatusTask extends AsyncTask<String, Void, String> {
 
-public class GetDataFromUrlTask extends AsyncTask<String, Void, String> {
+    private static final String TAG = "GetServerStatusTask";
 
-    private Context mContext;
+    private TFMSecurityManager tfmSecurityManager;
 
-    public GetDataFromUrlTask(Context mCtx){
-        this.mContext = mCtx;
+    public GetServerStatusTask(){
+        tfmSecurityManager = TFMSecurityManager.getInstance();
     }
 
     @Override
@@ -36,42 +36,34 @@ public class GetDataFromUrlTask extends AsyncTask<String, Void, String> {
     protected String doInBackground(String... params) {
         try {
             URL url;
-            //HttpURLConnection urlConnection;
             String server_response;
 
             url = new URL(params[0]);
-            Log.v("url: ", url.toString());
-
-
-            //urlConnection = (HttpURLConnection) url.openConnection();
-
-            //int responseCode = urlConnection.getResponseCode();
-
-            //if(responseCode == HttpURLConnection.HTTP_OK){
+            Log.i(TAG, "URL:" + url.toString());
 
             HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
+            HttpsURLConnection.setDefaultHostnameVerifier(new NullHostNameVerifier());
             urlConnection.setRequestMethod("GET");
-            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(mContext));
+            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
             urlConnection.setConnectTimeout(20000);
             urlConnection.setReadTimeout(20000);
 
             int responseCode = urlConnection.getResponseCode();
+            Log.i(TAG, "responseCode:" + responseCode);
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 server_response = readStream(urlConnection.getInputStream());
-                Log.v("Respuesta servidor: ", server_response);
+                Log.i(TAG,"Respuesta servidor: " + server_response);
+
                 return server_response;
+            }else if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
+                return new String();
+            }else{
+                return "ERROR";
             }
 
-            return null;
-
-        }catch (CertificateException e){
-            e.printStackTrace();
-        }catch (GeneralSecurityException e){
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        }catch (Exception e) {
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         }
         return null;
@@ -83,9 +75,7 @@ public class GetDataFromUrlTask extends AsyncTask<String, Void, String> {
 
     }
 
-
     // Converting InputStream to String
-
     private String readStream(InputStream in) {
         BufferedReader reader = null;
         StringBuffer response;
