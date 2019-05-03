@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.config.Configuration;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
+import com.example.apptestvalidationandroid44.crypto.EnvelopedSignature;
 import com.example.apptestvalidationandroid44.crypto.SymmetricEncryptor;
 import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.util.RandomStringGenerator;
@@ -171,6 +172,7 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
                 Document document = UtilDocument.removeSignature(doc);
                 Toast.makeText(mContext, "Firma eliminada!", Toast.LENGTH_SHORT).show();
 
+
                 Toast.makeText(mContext, "Recuperando datos de factura...", Toast.LENGTH_SHORT).show();
                 Facturae facturae = UtilFacturae.getFacturaeFromFactura(UtilDocument.documentToString(document));
                 if(facturae == null){
@@ -269,6 +271,9 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
                 }
 
                 Log.i(TAG, "Respuesta del Servidor : ["+res+"]");
+
+                boolean ret = EnvelopedSignature.signXMLFile(document);
+                Log.i(TAG, "EnvelopedSignature.signXMLFile..." + (ret ? "Firmada!!" : "Sin firmar..."));
 
             } // if(valid)
         }catch (Exception e){
