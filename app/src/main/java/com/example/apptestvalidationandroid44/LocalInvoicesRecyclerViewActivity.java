@@ -35,6 +35,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -258,13 +259,16 @@ public class LocalInvoicesRecyclerViewActivity extends AppCompatActivity {
                 JSONObject receivedInvoice = new JSONObject(res);
                 String id = receivedInvoice.getString("id");
 
-                if (getData.getResponseCode() == 200){
+                if (getData.getResponseCode() == HttpURLConnection.HTTP_OK){
+
                     alertShow(String.format(INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA, id));
-                }else if (getData.getResponseCode() == 409){
+
+                }else if (getData.getResponseCode() == HttpURLConnection.HTTP_CONFLICT){
 
                     message += Configuration.CR_LF + String.format(ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA, id);
                     alertShow(message);
-                }else if (getData.getResponseCode() == 500){
+
+                }else if (getData.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR){
 
                     message += Configuration.CR_LF + "ERROR de Servidor";
                     alertShow(message);
