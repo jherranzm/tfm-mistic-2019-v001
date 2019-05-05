@@ -9,7 +9,10 @@ import org.w3c.dom.Document;
 
 import java.io.StringWriter;
 import java.security.Provider;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.crypto.dsig.DigestMethod;
@@ -23,6 +26,7 @@ import javax.xml.crypto.dsig.dom.DOMSignContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
+import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.transform.Transformer;
@@ -34,7 +38,7 @@ import javax.xml.transform.stream.StreamResult;
 public class EnvelopedSignature {
 
     // Constants
-    private static final String TAG = "LocalInvoicesRAV";
+    private static final String TAG = "EnvelopedSignature";
 
     public static boolean signXMLFile(final Document docToSign) {
 
@@ -62,8 +66,20 @@ public class EnvelopedSignature {
             KeyInfoFactory kif = fac.getKeyInfoFactory();
             KeyValue kv = kif.newKeyValue(tfmSecurityManager.getCertificate().getPublicKey());
 
+            List x509Content = new ArrayList();
+            x509Content.add(tfmSecurityManager.getCertificate().getSubjectX500Principal().getName());
+            x509Content.add(tfmSecurityManager.getCertificate());
+            //x509Content.add(tfmSecurityManager.getCertificate().getNotBefore());
+            //x509Content.add(tfmSecurityManager.getCertificate().getNotAfter());
+            X509Data xd = kif.newX509Data(x509Content);
+
+            Log.i(TAG, "X500Principal.Name : " + tfmSecurityManager.getCertificate().getSubjectX500Principal().getName());
+            Log.i(TAG, "X500Principal.NotBefore : " + tfmSecurityManager.getCertificate().getNotBefore());
+            Log.i(TAG, "X500Principal.NotAfter  : " + tfmSecurityManager.getCertificate().getNotAfter());
+
             // Create a KeyInfo and add the KeyValue to it
-            KeyInfo ki = kif.newKeyInfo(Collections.singletonList(kv));
+            //KeyInfo ki = kif.newKeyInfo(Collections.singletonList(kv));
+            KeyInfo ki = kif.newKeyInfo(Arrays.asList(kv, xd));
 
             // Instantiate the document to be signed
 

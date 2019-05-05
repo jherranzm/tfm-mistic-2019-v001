@@ -37,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
+import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -62,6 +63,7 @@ public class TFMSecurityManager {
 
     private X509Certificate certificate;
     private PrivateKey privateKey;
+    private PrivateKeyEntry pke;
     private TrustManagerFactory tmf;
 
     private static TFMSecurityManager instance;
@@ -96,6 +98,10 @@ public class TFMSecurityManager {
     private void setPrivateKey(PrivateKey privateKey) {
         this.privateKey = privateKey;
     }
+
+    public PrivateKeyEntry getPke() { return pke; }
+
+    public void setPke(PrivateKeyEntry pke) { this.pke = pke; }
 
     public TrustManagerFactory getTmf() {
         return tmf;
@@ -228,6 +234,10 @@ public class TFMSecurityManager {
             for(TrustManager tm : tmf.getTrustManagers()){
                 Log.i(TAG,"TrustManager  Item : " + tm.toString());
             }
+
+
+            this.pke = (PrivateKeyEntry) keyStore.getEntry("Server", protParam);
+
 
             PrivateKey key = (PrivateKey) keyStore.getKey("Server", keyPassword);
             if(key == null) {
