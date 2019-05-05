@@ -2,7 +2,7 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:context="com.example.apptestvalidationandroid44.LocalInvoicesRecyclerViewActivity">
+                tools:context="com.example.apptestvalidationandroid44.ReceivedInvoicesRecyclerViewActivity">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/local_invoices_rv"

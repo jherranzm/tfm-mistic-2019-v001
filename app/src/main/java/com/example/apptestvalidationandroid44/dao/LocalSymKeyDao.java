@@ -1,10 +1,12 @@
-package com.example.apptestvalidationandroid44.model;
+package com.example.apptestvalidationandroid44.dao;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
+
+import com.example.apptestvalidationandroid44.model.LocalSymKey;
 
 import java.util.List;
 

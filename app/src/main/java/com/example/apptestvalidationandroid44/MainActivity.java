@@ -16,8 +16,11 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 
 import com.example.apptestvalidationandroid44.config.Configuration;
+import com.example.apptestvalidationandroid44.invoicedatatasks.DeleteAllInvoiceDataTask;
+import com.example.apptestvalidationandroid44.invoicedatatasks.GetAllInvoiceDataTask;
 import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.Invoice;
+import com.example.apptestvalidationandroid44.model.InvoiceData;
 import com.example.apptestvalidationandroid44.remotesymkeytasks.GetAllUploadedInvoicesTask;
 
 import java.io.File;
@@ -52,6 +55,8 @@ public class MainActivity
 
         Button goToShowUploadedInvoices = findViewById(R.id.buttonGoToShowUploadedInvoice);
         Button goToShowLocalInvoices = findViewById(R.id.buttonShowLocalInvoices);
+        Button goToLocalInvoices = findViewById(R.id.buttonShowInvoices);
+        Button goToDeleteAllInvoices = findViewById(R.id.buttonDeleteAllInvoices);
 
         // 2019-03-30
         // Check whether this app has write external storage permission or not.
@@ -107,9 +112,65 @@ public class MainActivity
                     signedInvoices.add(obj);
                 }
 
-                Intent intent = new Intent(InvoiceApp.getContext(), LocalInvoicesRecyclerViewActivity.class);
+                Intent intent = new Intent(InvoiceApp.getContext(), ReceivedInvoicesRecyclerViewActivity.class);
                 intent.putExtra(FILE_LIST, signedInvoices);
                 startActivity(intent);
+
+                mProgressBar.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        goToLocalInvoices.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mProgressBar.setVisibility(View.VISIBLE);
+
+                try {
+                    GetAllInvoiceDataTask getAllInvoiceDataTask = new GetAllInvoiceDataTask();
+
+                    List<InvoiceData> invoices = getAllInvoiceDataTask.execute().get();
+
+                    Log.i(TAG, "GetAllInvoiceDataTask : " + invoices.size());
+
+                    mProgressBar.setVisibility(View.INVISIBLE);
+
+                    Intent intent = new Intent(InvoiceApp.getContext(), InvoiceDataRecyclerViewActivity.class);
+                    intent.putExtra(INVOICE_LIST, new ArrayList<>(invoices));
+                    startActivity(intent);
+
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                mProgressBar.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        goToDeleteAllInvoices.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mProgressBar.setVisibility(View.VISIBLE);
+
+                try {
+                    DeleteAllInvoiceDataTask deleteInvoiceDataTask = new DeleteAllInvoiceDataTask();
+
+                    boolean deleted = deleteInvoiceDataTask.execute().get();
+
+
+
+                    mProgressBar.setVisibility(View.INVISIBLE);
+
+//                    Intent intent = new Intent(InvoiceApp.getContext(), UploadedInvoicesRecyclerViewActivity.class);
+//                    intent.putExtra(INVOICE_LIST, new ArrayList<>(invoices));
+//                    startActivity(intent);
+
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
                 mProgressBar.setVisibility(View.INVISIBLE);
             }

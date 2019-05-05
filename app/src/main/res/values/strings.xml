@@ -16,7 +16,9 @@
 
 
     <string name="showUploadedInvoices">Uploaded Invoices</string>
-    <string name="showLocalInvoices">Local Invoices</string>
+    <string name="showLocalInvoices">Received Invoices</string>
+    <string name="showInvoices">Invoices</string>
+    <string name="deleteAllInvoices">Delete all Invoices</string>
 
 
 </resources>

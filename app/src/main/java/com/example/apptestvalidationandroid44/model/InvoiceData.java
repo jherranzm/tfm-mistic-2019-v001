@@ -141,4 +141,24 @@ public class InvoiceData implements Serializable {
     public void setTotalGrossAmount(double totalGrossAmount) {
         this.totalGrossAmount = totalGrossAmount;
     }
+
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("InvoiceData{");
+        sb.append("id=").append(id);
+        sb.append(", batchIdentifier='").append(batchIdentifier).append('\'').append("\n");
+        sb.append(", totalAmount=").append(totalAmount).append("\n");
+        sb.append(", taxIdentificationNumber='").append(taxIdentificationNumber).append('\'').append("\n");
+        sb.append(", corporateName='").append(corporateName).append('\'').append("\n");
+        sb.append(", invoiceNumber='").append(invoiceNumber).append('\'').append("\n");
+        sb.append(", issueDate=").append(issueDate).append("\n");
+        sb.append(", startDate=").append(startDate).append("\n");
+        sb.append(", endDate=").append(endDate).append("\n");
+        sb.append(", taxBase=").append(taxBase).append("\n");
+        sb.append(", taxAmount=").append(taxAmount).append("\n");
+        sb.append(", totalGrossAmount=").append(totalGrossAmount).append("\n");
+        sb.append('}');
+        return sb.toString();
+    }
 }

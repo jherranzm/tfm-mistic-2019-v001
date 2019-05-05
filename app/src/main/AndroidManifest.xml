@@ -45,7 +45,17 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".LocalInvoicesRecyclerViewActivity"
+            android:name=".ReceivedInvoicesRecyclerViewActivity"
+            android:label="@string/app_name"
+            android:parentActivityName=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".InvoiceDataRecyclerViewActivity"
             android:label="@string/app_name"
             android:parentActivityName=".MainActivity">
             <intent-filter>

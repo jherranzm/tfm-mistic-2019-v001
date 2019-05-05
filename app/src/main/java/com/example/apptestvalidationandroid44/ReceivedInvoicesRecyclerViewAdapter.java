@@ -11,12 +11,12 @@ import com.example.apptestvalidationandroid44.model.FileDataObject;
 
 import java.util.List;
 
-public class LocalInvoicesRecyclerViewAdapter extends RecyclerView
-        .Adapter<LocalInvoicesRecyclerViewAdapter
+public class ReceivedInvoicesRecyclerViewAdapter extends RecyclerView
+        .Adapter<ReceivedInvoicesRecyclerViewAdapter
         .DataObjectHolder> {
     private final static String LOG_TAG = "LocalInvoicesRVA";
     private List<FileDataObject> mDataset;
-    private static LocalInvoicesClickListener theClickListener;
+    private static ReceivedInvoicesClickListener theClickListener;
 
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
@@ -37,11 +37,11 @@ public class LocalInvoicesRecyclerViewAdapter extends RecyclerView
         }
     }
 
-    void setOnItemClickListener(LocalInvoicesClickListener aClickListener) {
-        LocalInvoicesRecyclerViewAdapter.theClickListener = aClickListener;
+    void setOnItemClickListener(ReceivedInvoicesClickListener aClickListener) {
+        ReceivedInvoicesRecyclerViewAdapter.theClickListener = aClickListener;
     }
 
-    LocalInvoicesRecyclerViewAdapter(List<FileDataObject> myDataset) {
+    ReceivedInvoicesRecyclerViewAdapter(List<FileDataObject> myDataset) {
         mDataset = myDataset;
     }
 
@@ -49,7 +49,7 @@ public class LocalInvoicesRecyclerViewAdapter extends RecyclerView
     public DataObjectHolder onCreateViewHolder(ViewGroup parent,
                                                int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.local_invoice_recyclerview_item, parent, false);
+                .inflate(R.layout.received_invoice_recyclerview_item, parent, false);
 
         return new DataObjectHolder(view);
     }
@@ -74,7 +74,7 @@ public class LocalInvoicesRecyclerViewAdapter extends RecyclerView
         return mDataset.size();
     }
 
-    public interface LocalInvoicesClickListener {
+    public interface ReceivedInvoicesClickListener {
         void onItemClick(int position, View v);
     }
 }
