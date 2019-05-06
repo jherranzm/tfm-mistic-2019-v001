@@ -19,7 +19,7 @@ public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
     private final static String LOG_TAG = "UploadedInvoicesRVA";
     private List<Invoice> mDataset;
     private static UploadedInvoicesClickListener myClickListener;
-    private SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    private SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View

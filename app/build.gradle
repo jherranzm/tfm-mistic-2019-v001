@@ -73,7 +73,7 @@ dependencies {
     implementation 'commons-lang:commons-lang:2.6'
 
     // Base64 encode/decode
-    implementation 'commons-codec:commons-codec:1.11'
+    implementation 'commons-codec:commons-codec:1.12'
 
     // Volley
     // https://mvnrepository.com/artifact/com.android.volley/volley

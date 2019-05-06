@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.example.apptestvalidationandroid44.model.InvoiceData;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
@@ -19,12 +20,14 @@ public class InvoiceDataRecyclerViewAdapter extends RecyclerView
     private final static String LOG_TAG = "InvoiceDataRVA";
     private List<InvoiceData> mDataset;
     private static InvoiceDataClickListener myClickListener;
-    private SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    private SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    private DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.00");
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View
             .OnClickListener {
         TextView taxIdentificationNumber;
+        TextView corporateName;
         TextView invoiceNumber;
         TextView totalAmount;
         TextView totalTaxOutputs;
@@ -33,6 +36,7 @@ public class InvoiceDataRecyclerViewAdapter extends RecyclerView
         DataObjectHolder(View itemView) {
             super(itemView);
             taxIdentificationNumber = itemView.findViewById(R.id.textViewTaxItentificationNumber);
+            corporateName = itemView.findViewById(R.id.textViewCorporateName);
             invoiceNumber = itemView.findViewById(R.id.textViewInvoiceNumber);
             totalAmount = itemView.findViewById(R.id.textViewTotalAmount);
             totalTaxOutputs = itemView.findViewById(R.id.textViewTotalTaxOutputs);
@@ -68,16 +72,19 @@ public class InvoiceDataRecyclerViewAdapter extends RecyclerView
     public void onBindViewHolder(DataObjectHolder holder, int position) {
         holder.taxIdentificationNumber.setText(String.format(
                 Locale.forLanguageTag("es-ES"),
-                "TIN: %s", mDataset.get(position).getTaxIdentificationNumber()));
+                "%s", mDataset.get(position).getTaxIdentificationNumber()));
+        holder.corporateName.setText(String.format(
+                Locale.forLanguageTag("es-ES"),
+                "%s", mDataset.get(position).getCorporateName()));
         holder.invoiceNumber.setText(String.format(
                 Locale.forLanguageTag("es-ES"),
                 "Invoice: %s", mDataset.get(position).getInvoiceNumber()));
         holder.totalAmount.setText(String.format(
                 Locale.forLanguageTag("es-ES"),
-                "Total: %f", mDataset.get(position).getTotalAmount()));
+                "%s", DECIMAL_FORMAT.format(mDataset.get(position).getTotalAmount())));
         holder.totalTaxOutputs.setText(String.format(
                 Locale.forLanguageTag("es-ES"),
-                "Taxes: %f", mDataset.get(position).getTaxAmount()));
+                "Taxes: %s", DECIMAL_FORMAT.format(mDataset.get(position).getTaxAmount())));
         holder.issueDate.setText(String.format(
                 Locale.forLanguageTag("es-ES"),
                 "Date: %s", DATE_FORMAT.format(mDataset.get(position).getIssueDate())));

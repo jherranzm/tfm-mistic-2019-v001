@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import es.facturae.facturae.v3.facturae.Facturae;
 
@@ -178,7 +179,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
                     "ok");
 
             String root_sd = Environment.getExternalStorageDirectory().toString();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmSS");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmSS", Locale.getDefault());
             String fileName = sdf.format(Calendar.getInstance().getTime());
             try (PrintWriter out = new PrintWriter( new FileOutputStream(root_sd + "/Download/" + fileName + ".xsig"))) {
                 out.println(signedInvoiceDecrypted);
