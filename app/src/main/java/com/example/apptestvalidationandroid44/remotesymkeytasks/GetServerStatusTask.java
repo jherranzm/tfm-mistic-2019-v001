@@ -3,10 +3,7 @@ package com.example.apptestvalidationandroid44.remotesymkeytasks;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.example.apptestvalidationandroid44.InvoiceApp;
-import com.example.apptestvalidationandroid44.https.CustomSSLSocketFactory;
-import com.example.apptestvalidationandroid44.https.NullHostNameVerifier;
-import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
+import com.example.apptestvalidationandroid44.https.UtilConnection;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,10 +18,7 @@ public class GetServerStatusTask extends AsyncTask<String, Void, String> {
 
     private static final String TAG = "GetServerStatusTask";
 
-    private TFMSecurityManager tfmSecurityManager;
-
     public GetServerStatusTask(){
-        tfmSecurityManager = TFMSecurityManager.getInstance();
     }
 
     @Override
@@ -41,12 +35,8 @@ public class GetServerStatusTask extends AsyncTask<String, Void, String> {
             url = new URL(params[0]);
             Log.i(TAG, "URL:" + url.toString());
 
-            HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-            HttpsURLConnection.setDefaultHostnameVerifier(new NullHostNameVerifier());
+            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url);
             urlConnection.setRequestMethod("GET");
-            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
-            urlConnection.setConnectTimeout(20000);
-            urlConnection.setReadTimeout(20000);
 
             int responseCode = urlConnection.getResponseCode();
             Log.i(TAG, "responseCode:" + responseCode);
@@ -57,7 +47,7 @@ public class GetServerStatusTask extends AsyncTask<String, Void, String> {
 
                 return server_response;
             }else if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
-                return new String();
+                return "";
             }else{
                 return "ERROR";
             }
@@ -68,6 +58,7 @@ public class GetServerStatusTask extends AsyncTask<String, Void, String> {
         }
         return null;
     }
+
 
     @Override
     protected void onPostExecute(String aVoid) {

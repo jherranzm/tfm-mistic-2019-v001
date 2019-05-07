@@ -3,8 +3,7 @@ package com.example.apptestvalidationandroid44;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.example.apptestvalidationandroid44.https.CustomSSLSocketFactory;
-import com.example.apptestvalidationandroid44.https.NullHostNameVerifier;
+import com.example.apptestvalidationandroid44.https.UtilConnection;
 
 import org.json.JSONObject;
 
@@ -53,12 +52,10 @@ public class PostSymmetricKeysToUrlTask extends AsyncTask<String, Void, String> 
             url = new URL(params[0]);
             Log.i(TAG, "POST URL : " +url.toString());
 
-            HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-            HttpsURLConnection.setDefaultHostnameVerifier(new NullHostNameVerifier());
+            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url);
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
             urlConnection.setRequestProperty("Content-Type", "application/json");
-            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
             urlConnection.setRequestMethod("POST");
 
             // Send the post body

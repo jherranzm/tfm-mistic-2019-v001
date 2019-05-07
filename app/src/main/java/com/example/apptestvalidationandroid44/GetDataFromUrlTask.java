@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.example.apptestvalidationandroid44.https.CustomSSLSocketFactory;
+import com.example.apptestvalidationandroid44.https.UtilConnection;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,19 +41,8 @@ public class GetDataFromUrlTask extends AsyncTask<String, Void, String> {
 
             url = new URL(params[0]);
             Log.v("url: ", url.toString());
-
-
-            //urlConnection = (HttpURLConnection) url.openConnection();
-
-            //int responseCode = urlConnection.getResponseCode();
-
-            //if(responseCode == HttpURLConnection.HTTP_OK){
-
-            HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
+            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url);
             urlConnection.setRequestMethod("GET");
-            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(mContext));
-            urlConnection.setConnectTimeout(20000);
-            urlConnection.setReadTimeout(20000);
 
             int responseCode = urlConnection.getResponseCode();
 

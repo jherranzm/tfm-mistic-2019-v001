@@ -4,12 +4,10 @@ import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
 
-import com.example.apptestvalidationandroid44.InvoiceApp;
 import com.example.apptestvalidationandroid44.config.Configuration;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
-import com.example.apptestvalidationandroid44.https.CustomSSLSocketFactory;
-import com.example.apptestvalidationandroid44.https.NullHostNameVerifier;
+import com.example.apptestvalidationandroid44.https.UtilConnection;
 import com.example.apptestvalidationandroid44.model.Invoice;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 
@@ -57,10 +55,8 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
             url = new URL(params[0]);
             Log.i(TAG, "URL:" + url.toString());
 
-            HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-            HttpsURLConnection.setDefaultHostnameVerifier(new NullHostNameVerifier());
+            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url);
             urlConnection.setRequestMethod("GET");
-            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
 
             int responseCode = urlConnection.getResponseCode();
             Log.i(TAG, "responseCode:" + responseCode);

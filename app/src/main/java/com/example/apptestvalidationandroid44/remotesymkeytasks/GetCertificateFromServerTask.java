@@ -3,9 +3,7 @@ package com.example.apptestvalidationandroid44.remotesymkeytasks;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.example.apptestvalidationandroid44.InvoiceApp;
-import com.example.apptestvalidationandroid44.https.CustomSSLSocketFactory;
-import com.example.apptestvalidationandroid44.https.NullHostNameVerifier;
+import com.example.apptestvalidationandroid44.https.UtilConnection;
 
 import org.json.JSONObject;
 
@@ -23,8 +21,6 @@ import javax.net.ssl.HttpsURLConnection;
 public class GetCertificateFromServerTask extends AsyncTask<String, Void, String> {
 
     private static final String TAG = "GetCertificateFromServerTask";
-
-    private int responseCode;
 
     public GetCertificateFromServerTask(Map<String, String> postData){
         if (postData != null) {
@@ -49,15 +45,11 @@ public class GetCertificateFromServerTask extends AsyncTask<String, Void, String
             url = new URL(params[0]);
             Log.i(TAG, url.toString());
 
-            HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-            HttpsURLConnection.setDefaultHostnameVerifier(new NullHostNameVerifier());
+            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url);
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
             urlConnection.setRequestProperty("Content-Type", "application/json");
-            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
             urlConnection.setRequestMethod("POST");
-            urlConnection.setConnectTimeout(20000);
-            urlConnection.setReadTimeout(20000);
 
             // Send the post body
             if (this.postData != null) {
@@ -69,7 +61,7 @@ public class GetCertificateFromServerTask extends AsyncTask<String, Void, String
             }
 
 
-            responseCode = urlConnection.getResponseCode();
+            int responseCode = urlConnection.getResponseCode();
 
             Log.i(TAG, "Código de respuesta del servidor : ["+responseCode+"]");
 

@@ -3,8 +3,7 @@ package com.example.apptestvalidationandroid44;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.example.apptestvalidationandroid44.https.CustomSSLSocketFactory;
-import com.example.apptestvalidationandroid44.https.NullHostNameVerifier;
+import com.example.apptestvalidationandroid44.https.UtilConnection;
 
 import org.json.JSONObject;
 
@@ -56,13 +55,13 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
             url = new URL(params[0]);
             Log.i(TAG, "POST URL : " +url.toString());
 
-            HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-            HttpsURLConnection.setDefaultHostnameVerifier(new NullHostNameVerifier());
+            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url);
+
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
             urlConnection.setRequestProperty("Content-Type", "application/json");
-            urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
             urlConnection.setRequestMethod("POST");
+
 
             // Send the post body
             if (this.postData != null) {
@@ -90,14 +89,16 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
                 Log.i(TAG, "Respuesta servidor: " + server_response);
                 urlConnection.disconnect();
                 return server_response;
-            }else if(responseCode == HttpURLConnection.HTTP_INTERNAL_ERROR){
+            }else if(responseCode == HttpURLConnection.HTTP_INTERNAL_ERROR) {
                 //server_response = readStream(urlConnection.getErrorStream());
                 Log.i(TAG, "ERROR de servidor!");
                 urlConnection.disconnect();
                 return "{\"id\" : -1}";
+            }else{
+                return "{\"responseCode\" : "+ responseCode + "}";
             }
 
-            return null;
+            //return null;
 
         }catch (CertificateException e){
             Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
