@@ -18,9 +18,11 @@ import android.widget.ProgressBar;
 import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.invoicedatatasks.DeleteAllInvoiceDataTask;
 import com.example.apptestvalidationandroid44.invoicedatatasks.GetAllInvoiceDataTask;
+import com.example.apptestvalidationandroid44.invoicedatatasks.GetTotalsByProviderTask;
 import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.Invoice;
 import com.example.apptestvalidationandroid44.model.InvoiceData;
+import com.example.apptestvalidationandroid44.model.TotalByProvider;
 import com.example.apptestvalidationandroid44.remotesymkeytasks.GetAllUploadedInvoicesTask;
 
 import java.io.File;
@@ -55,6 +57,7 @@ public class MainActivity
 
         Button goToShowUploadedInvoices = findViewById(R.id.buttonGoToShowUploadedInvoice);
         Button goToShowLocalInvoices = findViewById(R.id.buttonShowLocalInvoices);
+        Button goToShowInfoByProviders = findViewById(R.id.buttonShowInfoByProvider);
         Button goToLocalInvoices = findViewById(R.id.buttonShowInvoices);
         Button goToDeleteAllInvoices = findViewById(R.id.buttonDeleteAllInvoices);
 
@@ -169,6 +172,33 @@ public class MainActivity
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                mProgressBar.setVisibility(View.INVISIBLE);
+            }
+        });
+
+
+        goToShowInfoByProviders.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mProgressBar.setVisibility(View.VISIBLE);
+
+                try {
+
+                    GetTotalsByProviderTask getTotalsByProviderTask = new GetTotalsByProviderTask();
+                    List<TotalByProvider> totals = getTotalsByProviderTask.execute().get();
+
+                    for(TotalByProvider totalByProvider : totals){
+                        Log.i(TAG, totalByProvider.toString());
+                    }
+
+                    mProgressBar.setVisibility(View.INVISIBLE);
+
+
+                } catch (Exception e) {
+                    Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
                     e.printStackTrace();
                 }
 

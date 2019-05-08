@@ -7,6 +7,7 @@ import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
 import com.example.apptestvalidationandroid44.model.InvoiceData;
+import com.example.apptestvalidationandroid44.model.TotalByProvider;
 
 import java.util.List;
 
@@ -22,6 +23,8 @@ public interface InvoiceDataDao {
         @Query("SELECT * FROM InvoiceData WHERE batchIdentifier = :bi")
         List<InvoiceData> findByBatchIdentifierInvoiceData(String bi);
 
+        @Query("SELECT taxIdentificationNumber, corporateName, SUM(totalAmount) as totalAmount FROM InvoiceData GROUP BY taxIdentificationNumber, corporateName")
+        List<TotalByProvider> findTotalsByProvider();
 
         @Query("DELETE FROM InvoiceData")
         void deleteAll();
