@@ -7,7 +7,7 @@ import android.widget.Toast;
 import com.example.apptestvalidationandroid44.CsrHelper;
 import com.example.apptestvalidationandroid44.InvoiceApp;
 import com.example.apptestvalidationandroid44.PostDataToUrlTask;
-import com.example.apptestvalidationandroid44.config.Configuration;
+import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
 import com.example.apptestvalidationandroid44.localsymkeytasks.DeleteLocalSymKeyTask;
@@ -113,8 +113,8 @@ public class TFMSecurityManager {
 
     private void manageSecurity() {
 
-        char[] keystorePassword = Configuration.PKCS12_PASSWORD.toCharArray();
-        char[] keyPassword = Configuration.PKCS12_PASSWORD.toCharArray();
+        char[] keystorePassword = Constants.PKCS12_PASSWORD.toCharArray();
+        char[] keyPassword = Constants.PKCS12_PASSWORD.toCharArray();
         //X509Certificate[] certificateChain = new X509Certificate[2];
 
 
@@ -122,9 +122,9 @@ public class TFMSecurityManager {
         try {
 
 
-            CertificateFactory certFactory = CertificateFactory.getInstance(Configuration.X_509, Configuration.BC);
+            CertificateFactory certFactory = CertificateFactory.getInstance(Constants.X_509, Constants.BC);
 
-            KeyStore keyStore = KeyStore.getInstance(Configuration.PKCS_12, Configuration.BC);
+            KeyStore keyStore = KeyStore.getInstance(Constants.PKCS_12, Constants.BC);
             KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(keystorePassword);
 
             File keyStoreFile = new File(InvoiceApp.getAppDir(), "keyStoreInvoiceApp");
@@ -164,11 +164,11 @@ public class TFMSecurityManager {
 
                 // Load CA Certificate from assets
                 Log.i(TAG,"Retrieving CA Certificate from file in assets...");
-                InputStream isCACrt = InvoiceApp.getContext().getAssets().open(Configuration.CA_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
+                InputStream isCACrt = InvoiceApp.getContext().getAssets().open(Constants.CA_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
                 X509Certificate caCertificate = (X509Certificate) certFactory.generateCertificate(isCACrt);
                 isCACrt.close();
                 if(caCertificate == null){
-                    throw new Exception("ERROR : NO CA Certificate in "+Configuration.CA_CERTIFICATE_FILE+"!");
+                    throw new Exception("ERROR : NO CA Certificate in "+ Constants.CA_CERTIFICATE_FILE+"!");
                 }
                 Log.i(TAG,"Retrieved CA Certificate from file in assets! SubjectDN : " + caCertificate.getSubjectDN().getName());
                 //certificateChain[1] = caCertificate;
@@ -183,11 +183,11 @@ public class TFMSecurityManager {
 
                 // Load Server Certificate from assets
                 Log.i(TAG,"Retrieving Server Certificate from file in assets...");
-                InputStream isServerCrt = InvoiceApp.getContext().getAssets().open(Configuration.SERVER_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
+                InputStream isServerCrt = InvoiceApp.getContext().getAssets().open(Constants.SERVER_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
                 X509Certificate serverCertificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
                 isServerCrt.close();
                 if(serverCertificate == null){
-                    throw new Exception("ERROR : NO Server Certificate in "+Configuration.SERVER_CERTIFICATE_FILE+"!");
+                    throw new Exception("ERROR : NO Server Certificate in "+ Constants.SERVER_CERTIFICATE_FILE+"!");
                 }
                 Log.i(TAG,"Retrieved Server Certificate from file in assets! SubjectDN : " + serverCertificate.getSubjectDN().getName());
                 //certificateChain[0] = serverCertificate;
@@ -202,7 +202,7 @@ public class TFMSecurityManager {
 
                 // Load Server Private Key from assets : needed to encrypt, will be changed for user private key
                 Log.i(TAG,"Loading Server Private Key from assets...");
-                InputStream isServerKey = InvoiceApp.getContext().getAssets().open(Configuration.SERVER_KEY_P12); //.getResources().openRawResource(R.raw.serverkey);
+                InputStream isServerKey = InvoiceApp.getContext().getAssets().open(Constants.SERVER_KEY_P12); //.getResources().openRawResource(R.raw.serverkey);
                 keyStore.load(isServerKey, keystorePassword);
                 isServerKey.close();
                 showAliasesInKeyStore(keyStore);
@@ -251,7 +251,7 @@ public class TFMSecurityManager {
             String status = "";
             while (!"ACTIVE".equals(status)) {
                 GetServerStatusTask getServerStatusTask = new GetServerStatusTask();
-                status = getServerStatusTask.execute(Configuration.URL_STATUS).get();
+                status = getServerStatusTask.execute(Constants.URL_STATUS).get();
                 Log.i(TAG, "Server status : " + status);
             }
 
@@ -283,7 +283,7 @@ public class TFMSecurityManager {
                 Map<String, String> params = new HashMap<>();
                 params.put("csr", sw.toString());
                 GetCertificateFromServerTask getCertificateFromServerTask = new GetCertificateFromServerTask(params);
-                String response_server = getCertificateFromServerTask.execute(Configuration.URL_CERT).get();
+                String response_server = getCertificateFromServerTask.execute(Constants.URL_CERT).get();
                 String decoded = new String(java.util.Base64.getDecoder().decode(response_server.getBytes()));
                 Log.i(TAG, "CSRder.Response : " + decoded);
 
@@ -326,14 +326,14 @@ public class TFMSecurityManager {
             deleteAllLocalSymKeys();
 
             String[] fields = {
-                    Configuration.UID_FACTURA,
-                    Configuration.TAX_IDENTIFICATION_NUMBER,
-                    Configuration.CORPORATE_NAME,
-                    Configuration.INVOICE_NUMBER,
-                    Configuration.INVOICE_TOTAL,
-                    Configuration.TOTAL_GROSS_AMOUNT,
-                    Configuration.TOTAL_TAX_OUTPUTS,
-                    Configuration.ISSUE_DATE
+                    Constants.UID_FACTURA,
+                    Constants.TAX_IDENTIFICATION_NUMBER,
+                    Constants.CORPORATE_NAME,
+                    Constants.INVOICE_NUMBER,
+                    Constants.INVOICE_TOTAL,
+                    Constants.TOTAL_GROSS_AMOUNT,
+                    Constants.TOTAL_TAX_OUTPUTS,
+                    Constants.ISSUE_DATE
             };
 
             getSymmetricKeys(fields);
@@ -392,7 +392,7 @@ public class TFMSecurityManager {
                     Log.i(TAG, "Buscando [" + str + "] en la base de datos REMOTA...");
                     GetByFRemoteSymKeyTask getByFRemoteSymKeyTask = new GetByFRemoteSymKeyTask();
 
-                    String url = Configuration.URL_KEYS + "/" + str;
+                    String url = Constants.URL_KEYS + "/" + str;
                     String res = getByFRemoteSymKeyTask.execute(url).get();
 
                     if(res == null || res.isEmpty()){
@@ -466,7 +466,7 @@ public class TFMSecurityManager {
 
         PostDataToUrlTask getData = new PostDataToUrlTask(params);
 
-        String res = getData.execute(Configuration.URL_KEYS).get();
+        String res = getData.execute(Constants.URL_KEYS).get();
         Log.i(TAG, "res : " + res);
 
         this.getSimKeys().put(str, simKey);

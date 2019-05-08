@@ -13,10 +13,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.apptestvalidationandroid44.config.Configuration;
+import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
 import com.example.apptestvalidationandroid44.crypto.EnvelopedSignature;
 import com.example.apptestvalidationandroid44.crypto.SymmetricEncryptor;
+import com.example.apptestvalidationandroid44.invoicedatatasks.GetByBatchIdentifierInvoiceDataTask;
 import com.example.apptestvalidationandroid44.invoicedatatasks.InsertInvoiceDataTask;
 import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.InvoiceData;
@@ -50,9 +51,9 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
     // Constants
     private static final String TAG = "ReceivedInvoicesRAV";
 
-    public static final String INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA = "INFO: La factura  %s ha quedado correctamente registrada en el sistema!";
-    public static final String ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA = "ALERTA: La factura  %s ya está registrada en el sistema!";
-    public static final String ALERTA_LA_FIRMA_NO_ES_VALIDA = "ALERTA: La firma NO es válida!";
+    public static final String INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA = "Remote backup. INFO: Invoice  %s correctly backep up!";
+    public static final String ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA = "Remote backup. ALERT: Invoice  %s already backed up in system!";
+    public static final String ALERTA_LA_FIRMA_NO_ES_VALIDA = "ALERT: Invoice signature NOT valid!";
 
     // Widgets
     private RecyclerView.Adapter mAdapter;
@@ -94,7 +95,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                     public void onItemClick(int position, View v) {
                         Log.i(TAG, " Clicked on Item " + position);
                         Toast.makeText(InvoiceApp.getContext(),
-                                "Factura " + signedInvoices.get(position).getFileName(),
+                                "Invoice " + signedInvoices.get(position).getFileName(),
                                 Toast.LENGTH_SHORT).show();
 
                         customDialog("Verify and Upload Invoice?",
@@ -131,11 +132,11 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
             throw new FileNotFoundException();
         }
 
-        Toast.makeText(InvoiceApp.getContext(), "Cargando el fichero firmado...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(InvoiceApp.getContext(), "Loading signed file...", Toast.LENGTH_SHORT).show();
         InputStream isSignedInvoice = new FileInputStream(file);
 
         byte[] baInvoiceSigned = IOUtils.toByteArray(isSignedInvoice);
-        Toast.makeText(InvoiceApp.getContext(), "Longitud del fichero firmado : ["+baInvoiceSigned.length+"]", Toast.LENGTH_SHORT).show();
+        Toast.makeText(InvoiceApp.getContext(), "Info: file signed long : ["+baInvoiceSigned.length+"]", Toast.LENGTH_SHORT).show();
 
         isSignedInvoice = new FileInputStream(file);
         return UtilDocument.getDocument(isSignedInvoice);
@@ -149,7 +150,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
             throw new FileNotFoundException();
         }
 
-        Toast.makeText(InvoiceApp.getContext(), "Cargando el fichero firmado...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(InvoiceApp.getContext(), "Loading signed file...", Toast.LENGTH_SHORT).show();
         InputStream isSignedInvoice = new FileInputStream(file);
 
         return IOUtils.toByteArray(isSignedInvoice);
@@ -159,7 +160,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         try {
              Document doc = getDocumentFromSignedInvoice(position);
 
-            Toast.makeText(InvoiceApp.getContext(), "Documento factura procesado!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(InvoiceApp.getContext(), "Invoice processed!", Toast.LENGTH_SHORT).show();
 
             boolean valid = validateSignedInvoice(doc);
 
@@ -184,7 +185,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 Toast.makeText(InvoiceApp.getContext(), "Encriptando datos de factura...", Toast.LENGTH_SHORT).show();
 
                 // Encriptación de los datos
-                Log.i(TAG, "Inici...");
+                Log.i(TAG, "Encryption...");
                 RandomStringGenerator rsg = new RandomStringGenerator();
 
                 String iv = rsg.getRandomString(16);
@@ -203,31 +204,21 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 // taxIdentificationNumber
                 String taxIdentificationNumberEncrypted = simEnc.encrypt(
                         facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber(),
-                        tfmSecurityManager.getSimKeys().get(Configuration.TAX_IDENTIFICATION_NUMBER));
+                        tfmSecurityManager.getSimKeys().get(Constants.TAX_IDENTIFICATION_NUMBER));
 
                 // invoiceNumber
                 String invoiceNumberEncrypted = simEnc.encrypt(
                         facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber(),
-                        tfmSecurityManager.getSimKeys().get(Configuration.INVOICE_NUMBER));
+                        tfmSecurityManager.getSimKeys().get(Constants.INVOICE_NUMBER));
 
 
                 String dataEncrypted   = simEnc.encrypt(
                         ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate(),
-                        tfmSecurityManager.getSimKeys().get(Configuration.ISSUE_DATE));
+                        tfmSecurityManager.getSimKeys().get(Constants.ISSUE_DATE));
 
                 String signedInvoiceEncrypted   = simEnc.encrypt(getByteArrayFromSignedInvoice(position));
 
-                StringBuilder sb = new StringBuilder();
-                sb.append(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
-                sb.append("|");
-                sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
-                sb.append("|");
-                sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
-                sb.append("|");
-                sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
-
-                Log.i(TAG, "UIDFacturaHash : ["+sb.toString()+"]");
-                String UIDFacturaHash = UIDGenerator.generate(sb.toString());
+                String UIDFacturaHash = UIDGenerator.generate(facturae);
                 Log.i(TAG, "UIDFacturaHash : ["+UIDFacturaHash+"]");
 
                 // Encriptació amb clau pública de iv i simKey
@@ -254,7 +245,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
                 PostDataToUrlTask getData = new PostDataToUrlTask(params);
 
-                String res = getData.execute(Configuration.URL).get();
+                String res = getData.execute(Constants.URL_FACTURAS).get();
                 Log.i(TAG, "res : " + res);
 
                 JSONObject receivedInvoice = new JSONObject(res);
@@ -262,16 +253,16 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
                 if (getData.getResponseCode() == HttpURLConnection.HTTP_OK){
 
-                    alertShow(String.format(INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA, id));
+                    infoShow(String.format(INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA, id));
 
                 }else if (getData.getResponseCode() == HttpURLConnection.HTTP_CONFLICT){
 
-                    message += Configuration.CR_LF + String.format(ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA, id);
+                    message += Constants.CR_LF + String.format(ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA, id);
                     alertShow(message);
 
                 }else if (getData.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR){
 
-                    message += Configuration.CR_LF + "ERROR de Servidor";
+                    message += Constants.CR_LF + "ERROR de Servidor";
                     alertShow(message);
                 }
 
@@ -280,34 +271,49 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 boolean ret = EnvelopedSignature.signXMLFile(document);
                 Log.i(TAG, "EnvelopedSignature.signXMLFile..." + (ret ? "Firmada!!" : "Sin firmar..."));
 
+                InvoiceData invoiceData = getInvoiceData(facturae, UIDFacturaHash);
 
-                InvoiceData invoiceData = new InvoiceData();
+                GetByBatchIdentifierInvoiceDataTask getByBatchIdentifierInvoiceDataTask = new GetByBatchIdentifierInvoiceDataTask();
+                List<InvoiceData> alreadySaved = getByBatchIdentifierInvoiceDataTask.execute(invoiceData.getBatchIdentifier()).get();
+                if(alreadySaved.size()>0){
 
-                invoiceData.setBatchIdentifier(UIDFacturaHash);
+                    Log.i(TAG, "InvoiceData already in system : nothing to be done!" + invoiceData.toString());
+                    alertShow( "Local Database: Invoice "+ invoiceData.getInvoiceNumber() +" already in system : nothing to be done!" );
+                }else{
 
-                invoiceData.setTaxIdentificationNumber(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
-                invoiceData.setCorporateName(facturae.getParties().getSellerParty().getLegalEntity().getCorporateName());
-
-                invoiceData.setInvoiceNumber(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
-
-                invoiceData.setTaxAmount(facturae.getInvoices().getInvoiceList().get(0).getTaxesOutputList().get(0).getTaxAmount().getTotalAmount());
-                invoiceData.setTaxBase(facturae.getInvoices().getInvoiceList().get(0).getTaxesOutputList().get(0).getTaxableBase().getTotalAmount());
-                invoiceData.setTotalAmount(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
-                invoiceData.setTotalGrossAmount(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount());
-
-                invoiceData.setIssueDate(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
-                invoiceData.setStartDate(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getInvoicingPeriod().getStartDate());
-                invoiceData.setEndDate(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getInvoicingPeriod().getStartDate());
-
-                InsertInvoiceDataTask insertInvoiceDataTask = new InsertInvoiceDataTask(invoiceData);
-                InvoiceData invoiceDataInserted = insertInvoiceDataTask.execute().get();
-                Log.i(TAG, "InvoiceData ingresada: " + invoiceDataInserted.toString());
+                    InsertInvoiceDataTask insertInvoiceDataTask = new InsertInvoiceDataTask(invoiceData);
+                    InvoiceData invoiceDataInserted = insertInvoiceDataTask.execute().get();
+                    infoShow( "Local Database: Invoice "+ invoiceData.getInvoiceNumber() +" loaded in system!" );
+                    Log.i(TAG, "InvoiceData ingresada: " + invoiceDataInserted.toString());
+                }
 
             } // if(valid)
         }catch (Exception e){
             Toast.makeText(InvoiceApp.getContext(), "ERROR:" + e.getMessage(), Toast.LENGTH_LONG).show();
             Log.e(TAG, "ERROR:" + e.getMessage());
         }
+    }
+
+    private InvoiceData getInvoiceData(Facturae facturae, String UIDFacturaHash) {
+
+        InvoiceData invoiceData = new InvoiceData();
+
+        invoiceData.setBatchIdentifier(UIDFacturaHash);
+
+        invoiceData.setTaxIdentificationNumber(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
+        invoiceData.setCorporateName(facturae.getParties().getSellerParty().getLegalEntity().getCorporateName());
+
+        invoiceData.setInvoiceNumber(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
+
+        invoiceData.setTaxAmount(facturae.getInvoices().getInvoiceList().get(0).getTaxesOutputList().get(0).getTaxAmount().getTotalAmount());
+        invoiceData.setTaxBase(facturae.getInvoices().getInvoiceList().get(0).getTaxesOutputList().get(0).getTaxableBase().getTotalAmount());
+        invoiceData.setTotalAmount(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+        invoiceData.setTotalGrossAmount(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount());
+
+        invoiceData.setIssueDate(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
+        invoiceData.setStartDate(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getInvoicingPeriod().getStartDate());
+        invoiceData.setEndDate(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getInvoicingPeriod().getStartDate());
+        return invoiceData;
     }
 
     private void customDialog(
@@ -355,7 +361,23 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         AlertDialog alertDialog = new AlertDialog.Builder(this).create();
         alertDialog.setTitle("Alert!");
         alertDialog.setMessage(message);
-        alertDialog.setIcon(R.drawable.ic_launcher_foreground);
+        alertDialog.setIcon(R.drawable.ic_stat_name);
+
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                //Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "You clicked on OK");
+            }
+        });
+
+        alertDialog.show();
+    }
+
+    private void infoShow( String message ) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setTitle("Info");
+        alertDialog.setMessage(message);
+        alertDialog.setIcon(R.drawable.ic_info_name);
 
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {

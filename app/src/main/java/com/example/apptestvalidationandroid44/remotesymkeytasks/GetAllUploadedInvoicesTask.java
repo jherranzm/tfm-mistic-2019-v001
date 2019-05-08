@@ -4,7 +4,7 @@ import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
 
-import com.example.apptestvalidationandroid44.config.Configuration;
+import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
 import com.example.apptestvalidationandroid44.https.UtilConnection;
@@ -53,7 +53,7 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
             String server_response;
 
             url = new URL(params[0]);
-            Log.i(TAG, "URL:" + url.toString());
+            Log.i(TAG, "URL_FACTURAS:" + url.toString());
 
             HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url);
             urlConnection.setRequestMethod("GET");
@@ -164,13 +164,13 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
 
                 String taxIdentificationNumberDecrypted = simDec.decrypt(
                         taxIdentificationNumber,
-                        tfmSecurityManager.getSimKeys().get(Configuration.TAX_IDENTIFICATION_NUMBER));
+                        tfmSecurityManager.getSimKeys().get(Constants.TAX_IDENTIFICATION_NUMBER));
                 String invoiceNumberDecrypted = simDec.decrypt(
                         invoiceNumber,
-                        tfmSecurityManager.getSimKeys().get(Configuration.INVOICE_NUMBER));
+                        tfmSecurityManager.getSimKeys().get(Constants.INVOICE_NUMBER));
                 String issueDateDecrypted = simDec.decrypt(
                         issueDate,
-                        tfmSecurityManager.getSimKeys().get(Configuration.ISSUE_DATE));
+                        tfmSecurityManager.getSimKeys().get(Constants.ISSUE_DATE));
 
                 Invoice invoice = new Invoice(uid
                         , taxIdentificationNumberDecrypted

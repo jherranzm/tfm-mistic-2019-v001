@@ -53,7 +53,7 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
             String server_response;
 
             url = new URL(params[0]);
-            Log.i(TAG, "POST URL : " +url.toString());
+            Log.i(TAG, "POST URL_FACTURAS : " +url.toString());
 
             HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url);
 

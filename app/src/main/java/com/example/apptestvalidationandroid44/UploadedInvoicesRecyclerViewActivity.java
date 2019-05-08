@@ -13,7 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.apptestvalidationandroid44.config.Configuration;
+import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
 import com.example.apptestvalidationandroid44.invoicetasks.GetInvoiceByIdTask;
@@ -96,7 +96,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
     private void downloadInvoice(int position) {
         try{
-            String url = Configuration.URL + "/" + (position+1);
+            String url = Constants.URL_FACTURAS + "/" + (position+1);
             GetInvoiceByIdTask getInvoiceByIdTask = new GetInvoiceByIdTask();
 
             String res = getInvoiceByIdTask.execute(url).get();
@@ -150,28 +150,28 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
             Log.i(TAG, "Received from server [facturae]: TotalCost       : " + facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getTotalCost());
 
             StringBuilder sb = new StringBuilder();
-            sb.append(Configuration.CR_LF);
+            sb.append(Constants.CR_LF);
             sb.append("InvoiceNumber:");
             sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
-            sb.append(Configuration.CR_LF);
+            sb.append(Constants.CR_LF);
             sb.append("ItemDescription:");
             sb.append(facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getItemDescription());
-            sb.append(Configuration.CR_LF);
+            sb.append(Constants.CR_LF);
             sb.append("Quantity        : ");
             sb.append(facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getQuantity());
-            sb.append(Configuration.CR_LF);
+            sb.append(Constants.CR_LF);
             sb.append("UnitOfMeasure   : ");
             sb.append(facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getUnitOfMeasure().toString());
-            sb.append(Configuration.CR_LF);
+            sb.append(Constants.CR_LF);
             sb.append("GrossAmount   : ");
             sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount());
-            sb.append(Configuration.CR_LF);
+            sb.append(Constants.CR_LF);
             sb.append("TaxAmount   : ");
             sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
-            sb.append(Configuration.CR_LF);
+            sb.append(Constants.CR_LF);
             sb.append("TotalCost   : ");
             sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
-            sb.append(Configuration.CR_LF);
+            sb.append(Constants.CR_LF);
 
             infoDialog(
                     "Invoice Info",

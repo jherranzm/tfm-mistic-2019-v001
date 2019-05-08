@@ -15,7 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 
-import com.example.apptestvalidationandroid44.config.Configuration;
+import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.invoicedatatasks.DeleteAllInvoiceDataTask;
 import com.example.apptestvalidationandroid44.invoicedatatasks.GetAllInvoiceDataTask;
 import com.example.apptestvalidationandroid44.model.FileDataObject;
@@ -77,7 +77,7 @@ public class MainActivity
                 try {
                     GetAllUploadedInvoicesTask getAllUploadedInvoicesTask = new GetAllUploadedInvoicesTask();
 
-                    List<Invoice> invoices = getAllUploadedInvoicesTask.execute(Configuration.URL).get();
+                    List<Invoice> invoices = getAllUploadedInvoicesTask.execute(Constants.URL_FACTURAS).get();
 
                     Log.i(TAG, "getAllUploadedInvoicesTask : " + invoices.size());
 

@@ -13,8 +13,6 @@ public class GetByBatchIdentifierInvoiceDataTask extends AsyncTask<String, Void,
 
     private static final String TAG = "GetByBatchIdentifierInvoiceDataTask";
 
-    private InvoiceData invoiceData;
-
     public GetByBatchIdentifierInvoiceDataTask(){
     }
 

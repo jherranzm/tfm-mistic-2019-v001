@@ -5,12 +5,14 @@ import android.util.Log;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
-public class NullHostNameVerifier implements HostnameVerifier {
+public class CustomHostNameVerifier implements HostnameVerifier {
+
+    public static final String TAG = "CustomHostNameVerifier";
 
     @Override
     public boolean verify(String hostname, SSLSession session) {
-        Log.i("RestUtilImpl", "Approving certificate for " + hostname);
-        return true;
+        Log.i(TAG, "Approving certificate for " + hostname);
+        return "10.0.2.2".equals(hostname);
     }
 
 }

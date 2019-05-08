@@ -14,7 +14,7 @@ public class UtilConnection {
     public static HttpsURLConnection getHttpsURLConnection(URL url) throws IOException, GeneralSecurityException {
 
         HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-        HttpsURLConnection.setDefaultHostnameVerifier(new NullHostNameVerifier());
+        HttpsURLConnection.setDefaultHostnameVerifier(new CustomHostNameVerifier());
 
         urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
         urlConnection.setConnectTimeout(20000);

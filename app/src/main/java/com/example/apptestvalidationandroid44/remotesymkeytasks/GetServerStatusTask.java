@@ -33,7 +33,7 @@ public class GetServerStatusTask extends AsyncTask<String, Void, String> {
             String server_response;
 
             url = new URL(params[0]);
-            Log.i(TAG, "URL:" + url.toString());
+            Log.i(TAG, "URL_FACTURAS:" + url.toString());
 
             HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url);
             urlConnection.setRequestMethod("GET");
