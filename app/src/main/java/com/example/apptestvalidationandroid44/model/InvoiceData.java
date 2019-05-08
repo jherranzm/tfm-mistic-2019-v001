@@ -3,6 +3,7 @@ package com.example.apptestvalidationandroid44.model;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.TypeConverters;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -29,12 +30,15 @@ public class InvoiceData implements Serializable {
     private String invoiceNumber;
 
     @ColumnInfo(name = "issueDate")
+    @TypeConverters({DateTypeConverter.class})
     private Date issueDate;
 
     @ColumnInfo(name = "startDate")
+    @TypeConverters({DateTypeConverter.class})
     private Date startDate;
 
     @ColumnInfo(name = "endDate")
+    @TypeConverters({DateTypeConverter.class})
     private Date endDate;
 
     @ColumnInfo(name = "taxBase")

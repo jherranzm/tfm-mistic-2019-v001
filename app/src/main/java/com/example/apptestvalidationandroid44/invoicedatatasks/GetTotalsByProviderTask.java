@@ -6,11 +6,11 @@ import android.util.Log;
 import com.example.apptestvalidationandroid44.InvoiceApp;
 import com.example.apptestvalidationandroid44.model.DatabaseClient;
 import com.example.apptestvalidationandroid44.model.InvoiceData;
-import com.example.apptestvalidationandroid44.model.TotalByProvider;
+import com.example.apptestvalidationandroid44.model.TotalByProviderVO;
 
 import java.util.List;
 
-public class GetTotalsByProviderTask extends AsyncTask<String, Void, List<TotalByProvider>> {
+public class GetTotalsByProviderTask extends AsyncTask<String, Void, List<TotalByProviderVO>> {
 
     private static final String TAG = "GetTotalsByProviderTask";
 
@@ -20,15 +20,15 @@ public class GetTotalsByProviderTask extends AsyncTask<String, Void, List<TotalB
     }
 
     @Override
-    protected List<TotalByProvider> doInBackground(String... params) {
+    protected List<TotalByProviderVO> doInBackground(String... params) {
 
-        List<TotalByProvider> totalsByProvider = DatabaseClient
+        List<TotalByProviderVO> totalsByProvider = DatabaseClient
                 .getInstance(InvoiceApp.getContext())
                 .getAppDatabase()
                 .invoiceDataDao()
                 .findTotalsByProvider();
 
-        Log.i(TAG, "TotalByProvider.length : " + totalsByProvider.size());
+        Log.i(TAG, "TotalByProviderVO.length : " + totalsByProvider.size());
 
         return totalsByProvider;
     }

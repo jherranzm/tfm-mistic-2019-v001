@@ -7,24 +7,37 @@ import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
 import com.example.apptestvalidationandroid44.model.InvoiceData;
-import com.example.apptestvalidationandroid44.model.TotalByProvider;
+import com.example.apptestvalidationandroid44.model.TotalByProviderByYearVO;
+import com.example.apptestvalidationandroid44.model.TotalByProviderVO;
 
 import java.util.List;
 
 @Dao
 public interface InvoiceDataDao {
 
-        @Query("SELECT * FROM InvoiceData")
+        @Query("SELECT * " +
+                "FROM InvoiceData")
         List<InvoiceData> getAll();
 
-        @Query("SELECT * FROM InvoiceData WHERE taxIdentificationNumber = :theTIN")
+        @Query("SELECT * " +
+                "FROM InvoiceData " +
+                "WHERE taxIdentificationNumber = :theTIN")
         List<InvoiceData> findAllInvoiceDataTaxIdentificationNumber(String theTIN);
 
-        @Query("SELECT * FROM InvoiceData WHERE batchIdentifier = :bi")
+        @Query("SELECT * " +
+                "FROM InvoiceData " +
+                "WHERE batchIdentifier = :bi")
         List<InvoiceData> findByBatchIdentifierInvoiceData(String bi);
 
-        @Query("SELECT taxIdentificationNumber, corporateName, SUM(totalAmount) as totalAmount FROM InvoiceData GROUP BY taxIdentificationNumber, corporateName")
-        List<TotalByProvider> findTotalsByProvider();
+        @Query("SELECT taxIdentificationNumber, corporateName, SUM(totalAmount) as totalAmount " +
+                "FROM InvoiceData " +
+                "GROUP BY taxIdentificationNumber, corporateName")
+        List<TotalByProviderVO> findTotalsByProvider();
+
+        @Query("SELECT taxIdentificationNumber, corporateName, CAST(strftime('%Y', datetime(issueDate/1000, 'unixepoch')) AS int) AS year, SUM(totalAmount) as totalAmount " +
+                "FROM InvoiceData " +
+                "GROUP BY taxIdentificationNumber, corporateName, CAST(strftime('%Y', datetime(issueDate/1000, 'unixepoch')) AS int)")
+        List<TotalByProviderByYearVO> findTotalsByProviderAndYear();
 
         @Query("DELETE FROM InvoiceData")
         void deleteAll();
