@@ -42,6 +42,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
+import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -52,6 +53,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -67,8 +71,8 @@ public class TFMSecurityManager {
     private TrustManagerFactory tmf;
 
     private static TFMSecurityManager instance;
+    private KeyStore keyStore;
 
-    // Pendiente de generar un Singleton
     private TFMSecurityManager(){}
 
     public static TFMSecurityManager getInstance(){
@@ -83,50 +87,28 @@ public class TFMSecurityManager {
         return instance;
     }
 
-    public X509Certificate getCertificate() {
-        return certificate;
-    }
 
-    private void setCertificate(X509Certificate certificate) {
-        this.certificate = certificate;
-    }
-
-    public PrivateKey getPrivateKey() {
-        return privateKey;
-    }
-
-    private void setPrivateKey(PrivateKey privateKey) {
-        this.privateKey = privateKey;
-    }
-
-    public PrivateKeyEntry getPke() { return pke; }
-
-    public void setPke(PrivateKeyEntry pke) { this.pke = pke; }
-
-    public TrustManagerFactory getTmf() {
-        return tmf;
-    }
-
-    public Map<String, String> getSimKeys() {
-        return simKeys;
-    }
-
+    /**
+     *
+     */
     private void manageSecurity() {
 
         char[] keystorePassword = Constants.PKCS12_PASSWORD.toCharArray();
         char[] keyPassword = Constants.PKCS12_PASSWORD.toCharArray();
-        //X509Certificate[] certificateChain = new X509Certificate[2];
-
 
         // Security
         try {
 
-
             CertificateFactory certFactory = CertificateFactory.getInstance(Constants.X_509, Constants.BC);
+            Log.i(TAG, "KeyStore.getDefaultType() : " + KeyStore.getDefaultType());
 
-            KeyStore keyStore = KeyStore.getInstance(Constants.PKCS_12, Constants.BC);
+            // Keystore creation
+            //keyStore = KeyStore.getInstance(Constants.PKCS_12, Constants.BC);
+            keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            Log.i(TAG, "KeyStore.getType() : " + keyStore.getType());
             KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(keystorePassword);
 
+            // Load Keystore if exists...
             File keyStoreFile = new File(InvoiceApp.getAppDir(), "keyStoreInvoiceApp");
             if(keyStoreFile.exists()){
                 Log.i(TAG,"KeyStore file already exists in : " + keyStoreFile.getAbsolutePath());
@@ -154,6 +136,8 @@ public class TFMSecurityManager {
                 this.setCertificate(serverCertificate);
 
             }else{
+
+                // First time initialization...
                 Log.i(TAG,"KeyStore: creating file in  : " + keyStoreFile.getAbsolutePath());
                 if(!keyStoreFile.createNewFile()){
                     throw new Exception("ERROR : Can NOT create KeyStore!");
@@ -171,7 +155,6 @@ public class TFMSecurityManager {
                     throw new Exception("ERROR : NO CA Certificate in "+ Constants.CA_CERTIFICATE_FILE+"!");
                 }
                 Log.i(TAG,"Retrieved CA Certificate from file in assets! SubjectDN : " + caCertificate.getSubjectDN().getName());
-                //certificateChain[1] = caCertificate;
                 keyStore.setCertificateEntry("ca", caCertificate);
                 showAliasesInKeyStore(keyStore);
 
@@ -190,7 +173,6 @@ public class TFMSecurityManager {
                     throw new Exception("ERROR : NO Server Certificate in "+ Constants.SERVER_CERTIFICATE_FILE+"!");
                 }
                 Log.i(TAG,"Retrieved Server Certificate from file in assets! SubjectDN : " + serverCertificate.getSubjectDN().getName());
-                //certificateChain[0] = serverCertificate;
                 keyStore.setCertificateEntry("Server", serverCertificate);
                 showAliasesInKeyStore(keyStore);
 
@@ -201,27 +183,33 @@ public class TFMSecurityManager {
                 Log.i(TAG,"serverCertificateAlias : " + serverCertificateAlias);
 
                 // Load Server Private Key from assets : needed to encrypt, will be changed for user private key
-                Log.i(TAG,"Loading Server Private Key from assets...");
-                InputStream isServerKey = InvoiceApp.getContext().getAssets().open(Constants.SERVER_KEY_P12); //.getResources().openRawResource(R.raw.serverkey);
-                keyStore.load(isServerKey, keystorePassword);
-                isServerKey.close();
-                showAliasesInKeyStore(keyStore);
-
+                if(!keyStore.getType().equals("BKS")) {
+                    Log.i(TAG, "Loading Server Private Key from assets...");
+                    InputStream isServerKey = InvoiceApp.getContext().getAssets().open(Constants.SERVER_KEY_P12); //.getResources().openRawResource(R.raw.serverkey);
+                    keyStore.load(isServerKey, keystorePassword);
+                    isServerKey.close();
+                    showAliasesInKeyStore(keyStore);
+                }
                 // Certificate with PublicKey to encrypt or decrypt
                 this.setCertificate(serverCertificate);
             }
 
+
             saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
+
 
             // Retrieve Server Certificate from KeyStore
             X509Certificate serverCertificate = (X509Certificate) keyStore.getCertificate("Server");
             if(serverCertificate == null){
                 throw new Exception("ERROR : NO Server Certificate in KeyStore!");
             }
-            //X509Certificate caCertificate = (X509Certificate) keyStore.getCertificate("ca");
-            X509Certificate caCertificate = (X509Certificate) keyStore.getCertificate("CA TFM");
+            X509Certificate caCertificate = (X509Certificate) keyStore.getCertificate("ca");
+            //X509Certificate caCertificate = (X509Certificate) keyStore.getCertificate("CA TFM");
             if(caCertificate == null){
-                throw new Exception("ERROR : NO CA Certificate in KeyStore!");
+                caCertificate = (X509Certificate) keyStore.getCertificate("CA TFM");
+                if(caCertificate == null) {
+                    throw new Exception("ERROR : NO CA Certificate in KeyStore!");
+                }
             }
 
 
@@ -235,7 +223,7 @@ public class TFMSecurityManager {
                 Log.i(TAG,"TrustManager  Item : " + tm.toString());
             }
 
-
+/**
             this.pke = (PrivateKeyEntry) keyStore.getEntry("Server", protParam);
 
 
@@ -246,16 +234,25 @@ public class TFMSecurityManager {
             }
             Log.i(TAG,"Tenemos clave privada!");
             this.setPrivateKey(key);
+*/
 
             // First connection to server
             String status = "";
-            while (!"ACTIVE".equals(status)) {
+            int max_attemps = 10;
+            int current_attemp = 0;
+            while (!"ACTIVE".equals(status) && current_attemp < max_attemps) {
                 GetServerStatusTask getServerStatusTask = new GetServerStatusTask();
                 status = getServerStatusTask.execute(Constants.URL_STATUS).get();
                 Log.i(TAG, "Server status : " + status);
+                current_attemp++;
+            }
+
+            if(!"ACTIVE".equals(status)){
+                throw new Exception("Server NOT active");
             }
 
 
+            // User certificate
             X509Certificate userCertificate = (X509Certificate) keyStore.getCertificate("UsuarioApp");
             //if(keyStore.containsAlias("UsuarioApp")){
             if(userCertificate == null){
@@ -316,13 +313,14 @@ public class TFMSecurityManager {
                 Log.i(TAG, "");
             }
 
-            KeyStore.PrivateKeyEntry retrievedPrivateKeyEntry = (KeyStore.PrivateKeyEntry)keyStore.getEntry("UsuarioApp", protParam);
+            KeyStore.PrivateKeyEntry retrievedPrivateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry("UsuarioApp", protParam);
             PrivateKey retrievedPrivateKey = retrievedPrivateKeyEntry.getPrivateKey();
 
             this.setCertificate(userCertificate);
             this.setPrivateKey(retrievedPrivateKey);
 
 
+            // TODO: load SymKeys into KeyStore
             deleteAllLocalSymKeys();
 
             String[] fields = {
@@ -338,7 +336,7 @@ public class TFMSecurityManager {
 
             getSymmetricKeys(fields);
 
-
+            saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
 
 
         }catch(Exception e){
@@ -347,6 +345,16 @@ public class TFMSecurityManager {
         }
     }
 
+    /**
+     *
+     * @param keystorePassword
+     * @param keyStore
+     * @param keyStoreFile
+     * @throws CertificateException
+     * @throws IOException
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     */
     private void saveKeyStoreToFileSystem(char[] keystorePassword, KeyStore keyStore, File keyStoreFile)
             throws
             CertificateException,
@@ -360,6 +368,11 @@ public class TFMSecurityManager {
         Log.i(TAG, "KeyStore: Guardado!");
     }
 
+    /**
+     *
+     * @param keyStore
+     * @throws KeyStoreException
+     */
     private void showAliasesInKeyStore(KeyStore keyStore)
             throws
             KeyStoreException {
@@ -370,6 +383,16 @@ public class TFMSecurityManager {
         }
     }
 
+    /**
+     *
+     * @param fields
+     * @throws ExecutionException
+     * @throws InterruptedException
+     * @throws CertificateEncodingException
+     * @throws CMSException
+     * @throws IOException
+     * @throws JSONException
+     */
     private void getSymmetricKeys(String[] fields)
             throws
             ExecutionException,
@@ -426,6 +449,12 @@ public class TFMSecurityManager {
         }
     }
 
+    /**
+     *
+     * @param str the local symmetric key name
+     * @param lskF1 LocalSymKey
+     * @throws CMSException
+     */
     private void getLocalSymKey(String str, LocalSymKey lskF1)
             throws
             CMSException {
@@ -441,6 +470,16 @@ public class TFMSecurityManager {
         this.getSimKeys().put(str, strKey);
     }
 
+    /**
+     *
+     * @param rsg
+     * @param str
+     * @throws CertificateEncodingException
+     * @throws CMSException
+     * @throws IOException
+     * @throws java.util.concurrent.ExecutionException
+     * @throws InterruptedException
+     */
     private void createLocalSymKey(RandomStringGenerator rsg, String str) throws
             CertificateEncodingException,
             CMSException,
@@ -470,8 +509,64 @@ public class TFMSecurityManager {
         Log.i(TAG, "res : " + res);
 
         this.getSimKeys().put(str, simKey);
+
+
+        try {
+            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+            SecureRandom secureRandom = new SecureRandom();
+            int keyBitSize = 128;
+
+            keyGenerator.init(keyBitSize, secureRandom);
+
+            SecretKey secretKey = keyGenerator.generateKey();
+
+
+            byte[] data = secretKey.getEncoded();
+            String keyString = java.util.Base64.getEncoder().encodeToString(data);
+            Log.i(TAG, "keyString : " + keyString);
+
+            byte[] data2 = java.util.Base64.getDecoder().decode(keyString);
+            SecretKey key2 = new SecretKeySpec(data2, 0, data.length, "AES");
+            byte[] data3 = key2.getEncoded();
+            String keyString3 = java.util.Base64.getEncoder().encodeToString(data3);
+
+            if(secretKey.equals(key2)){
+                Log.i(TAG, String.format("Bien! [%s] : [%s]", keyString, keyString3));
+
+                KeyStore.ProtectionParameter protParam =
+                        new KeyStore.PasswordProtection(Constants.PKCS12_PASSWORD.toCharArray());
+                keyStore.setEntry(
+                        str,
+                        new KeyStore.SecretKeyEntry(secretKey),
+                        protParam);
+                showAliasesInKeyStore(keyStore);
+
+                String recoveredSecret = "";
+                KeyStore.SecretKeyEntry recoveredEntry = (KeyStore.SecretKeyEntry)keyStore.getEntry(str, protParam);
+                byte[] bytes = recoveredEntry.getSecretKey().getEncoded();
+                recoveredSecret = java.util.Base64.getEncoder().encodeToString(bytes);
+                Log.i(TAG, "recovered " + recoveredSecret);
+
+            }else{
+                Log.i(TAG, "Mal!" + keyString);
+            }
+
+
+        } catch (UnrecoverableEntryException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
     }
 
+    /**
+     *
+     * @throws java.util.concurrent.ExecutionException
+     * @throws InterruptedException
+     */
     private void deleteAllLocalSymKeys()
             throws
             java.util.concurrent.ExecutionException,
@@ -485,5 +580,35 @@ public class TFMSecurityManager {
         }
     }
 
+
+    // Getters and Setters
+
+    public X509Certificate getCertificate() {
+        return certificate;
+    }
+
+    private void setCertificate(X509Certificate certificate) {
+        this.certificate = certificate;
+    }
+
+    public PrivateKey getPrivateKey() {
+        return privateKey;
+    }
+
+    private void setPrivateKey(PrivateKey privateKey) {
+        this.privateKey = privateKey;
+    }
+
+    public PrivateKeyEntry getPke() { return pke; }
+
+    public void setPke(PrivateKeyEntry pke) { this.pke = pke; }
+
+    public TrustManagerFactory getTmf() {
+        return tmf;
+    }
+
+    public Map<String, String> getSimKeys() {
+        return simKeys;
+    }
 
 }
