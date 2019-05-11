@@ -64,6 +64,9 @@ public class MainActivity
         Button goToLocalInvoices = findViewById(R.id.buttonShowInvoices);
         Button goToDeleteAllInvoices = findViewById(R.id.buttonDeleteAllInvoices);
 
+        Button goToSignUp = findViewById(R.id.buttonGoToSignUp);
+        Button goToLogIn = findViewById(R.id.buttonGoToLogin);
+
         // 2019-03-30
         // Check whether this app has write external storage permission or not.
         int writeExternalStoragePermission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -230,6 +233,34 @@ public class MainActivity
                     Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
                     e.printStackTrace();
                 }
+
+                mProgressBar.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        goToSignUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mProgressBar.setVisibility(View.VISIBLE);
+
+                    Intent intent = new Intent(InvoiceApp.getContext(), SignUpActivity.class);
+
+                    startActivity(intent);
+
+
+                mProgressBar.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        goToLogIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mProgressBar.setVisibility(View.VISIBLE);
+
+                    Intent intent = new Intent(InvoiceApp.getContext(), LogInActivity.class);
+
+                    startActivity(intent);
+
 
                 mProgressBar.setVisibility(View.INVISIBLE);
             }

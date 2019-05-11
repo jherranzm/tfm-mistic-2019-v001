@@ -116,13 +116,13 @@ public class TFMSecurityManager {
 
                 showAliasesInKeyStore(keyStore);
 
-                // Retrieve CA Certificate from KeyStore
-                X509Certificate caCertificate = (X509Certificate) keyStore.getCertificate("CA TFM");
-                if(caCertificate == null){
-                    throw new Exception("ERROR : NO CA Certificate in KeyStore!");
-                }
-                //certificateChain[1] = caCertificate;
-                Log.i(TAG,"Retrieved CA Certificate from KeyStore! SubjectDN : " + caCertificate.getSubjectDN().getName());
+//                // Retrieve CA Certificate from KeyStore
+//                X509Certificate caCertificate = (X509Certificate) keyStore.getCertificate("CA TFM");
+//                if(caCertificate == null){
+//                    throw new Exception("ERROR : NO CA Certificate in KeyStore!");
+//                }
+//                //certificateChain[1] = caCertificate;
+//                Log.i(TAG,"Retrieved CA Certificate from KeyStore! SubjectDN : " + caCertificate.getSubjectDN().getName());
 
                 // Retrieve Server Certificate from KeyStore
                 X509Certificate serverCertificate = (X509Certificate) keyStore.getCertificate("Server");
@@ -158,11 +158,11 @@ public class TFMSecurityManager {
                 keyStore.setCertificateEntry("ca", caCertificate);
                 showAliasesInKeyStore(keyStore);
 
-                String caCertificateAlias = keyStore.getCertificateAlias(caCertificate);
-                if(caCertificateAlias == null){
-                    throw new Exception("ERROR : NO CA Certificate in KeyStore!");
-                }
-                Log.i(TAG,"caCertificateAlias : " + caCertificateAlias);
+//                String caCertificateAlias = keyStore.getCertificateAlias(caCertificate);
+//                if(caCertificateAlias == null){
+//                    throw new Exception("ERROR : NO CA Certificate in KeyStore!");
+//                }
+//                Log.i(TAG,"caCertificateAlias : " + caCertificateAlias);
 
                 // Load Server Certificate from assets
                 Log.i(TAG,"Retrieving Server Certificate from file in assets...");
@@ -419,6 +419,7 @@ public class TFMSecurityManager {
                     String res = getByFRemoteSymKeyTask.execute(url).get();
 
                     if(res == null || res.isEmpty()){
+                        Log.i(TAG, "LocalSymKey NO localizada: " + str);
                         createLocalSymKey(rsg, str);
                     }else{
                         Log.i(TAG, "Recibida del servidor la clave : ["+str+"]" );
@@ -429,14 +430,11 @@ public class TFMSecurityManager {
                         lskReceived.setF(receivedRemoteSymKey.getString("f"));
                         lskReceived.setK(receivedRemoteSymKey.getString("k"));
 
-                        Log.i(TAG, "Recibida del servidor la clave : ["+str+"]" );
-
                         if(lskReceived.getF().isEmpty() || lskReceived.getK().isEmpty()){
                             createLocalSymKey(rsg, str);
                         }else{
                             getLocalSymKey(str, lskReceived);
                         }
-
                     }
 
                 }else{
@@ -487,7 +485,7 @@ public class TFMSecurityManager {
             java.util.concurrent.ExecutionException,
             InterruptedException {
 
-        Log.i(TAG, "LocalSymKey NO localizada: " + str);
+
         LocalSymKey lsk = new LocalSymKey();
         lsk.setF(str);
         String simKey = rsg.getRandomString(16);
@@ -511,8 +509,18 @@ public class TFMSecurityManager {
         this.getSimKeys().put(str, simKey);
 
 
+        createSymmetricKeyInKeyStore(str);
+
+    }
+
+    /**
+     *
+     * @param str
+     */
+    private void createSymmetricKeyInKeyStore(String str){
+
         try {
-            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+            KeyGenerator keyGenerator = KeyGenerator.getInstance(Constants.AES);
             SecureRandom secureRandom = new SecureRandom();
             int keyBitSize = 128;
 
@@ -520,13 +528,12 @@ public class TFMSecurityManager {
 
             SecretKey secretKey = keyGenerator.generateKey();
 
-
             byte[] data = secretKey.getEncoded();
             String keyString = java.util.Base64.getEncoder().encodeToString(data);
             Log.i(TAG, "keyString : " + keyString);
 
             byte[] data2 = java.util.Base64.getDecoder().decode(keyString);
-            SecretKey key2 = new SecretKeySpec(data2, 0, data.length, "AES");
+            SecretKey key2 = new SecretKeySpec(data2, 0, data.length, Constants.AES);
             byte[] data3 = key2.getEncoded();
             String keyString3 = java.util.Base64.getEncoder().encodeToString(data3);
 
@@ -541,25 +548,42 @@ public class TFMSecurityManager {
                         protParam);
                 showAliasesInKeyStore(keyStore);
 
-                String recoveredSecret = "";
-                KeyStore.SecretKeyEntry recoveredEntry = (KeyStore.SecretKeyEntry)keyStore.getEntry(str, protParam);
-                byte[] bytes = recoveredEntry.getSecretKey().getEncoded();
-                recoveredSecret = java.util.Base64.getEncoder().encodeToString(bytes);
-                Log.i(TAG, "recovered " + recoveredSecret);
+                String symmetricKeyStored = getSymmetricKeyFromKeyStore(str, protParam);
+                Log.i(TAG, String.format("symmetricKeyStored [%s] : [%s]. Original : [%s]", str, symmetricKeyStored, keyString));
 
             }else{
-                Log.i(TAG, "Mal!" + keyString);
+                Log.e(TAG, String.format("ERROR : Something went really wrong... Keys are not equal!!"));
             }
-
-
-        } catch (UnrecoverableEntryException e) {
+        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (KeyStoreException e) {
             e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
+        } catch (UnrecoverableEntryException e) {
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     *
+     * @param str
+     * @param protParam
+     * @return
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     * @throws UnrecoverableEntryException
+     */
+    private String getSymmetricKeyFromKeyStore(String str, KeyStore.ProtectionParameter protParam)
+            throws
+            KeyStoreException,
+            NoSuchAlgorithmException,
+            UnrecoverableEntryException {
+        String recoveredSecret = "";
+        KeyStore.SecretKeyEntry recoveredEntry = (KeyStore.SecretKeyEntry)keyStore.getEntry(str, protParam);
+        byte[] bytes = recoveredEntry.getSecretKey().getEncoded();
+        recoveredSecret = java.util.Base64.getEncoder().encodeToString(bytes);
+        Log.i(TAG, "recovered " + recoveredSecret);
+        return recoveredSecret;
     }
 
     /**

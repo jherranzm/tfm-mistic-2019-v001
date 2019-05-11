@@ -19,6 +19,14 @@
     <string name="showLocalInvoices">Received Invoices</string>
     <string name="showInvoices">Invoices</string>
     <string name="deleteAllInvoices">Delete all Invoices</string>
+    <string name="getAllByProvider">Get totals by provider</string>
+    <string name="byProvider">By Provider</string>
+    <string name="getAllByProviderAndYear">By Provider And Year</string>
+    <string name="singUp">Sign Up</string>
+    <string name="logIn">Log In</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="paswordAgain">Password Again</string>
 
 
 </resources>
