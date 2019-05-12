@@ -1,5 +1,6 @@
 package com.example.apptestvalidationandroid44;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -10,6 +11,9 @@ import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.config.Constants;
 
+import org.json.JSONObject;
+
+import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -82,6 +86,40 @@ public class SignUpActivity extends AppCompatActivity {
 
                         String res = getData.execute(Constants.URL_SIGNUP).get();
                         Log.i(TAG, "res : " + res);
+
+                        JSONObject receivedAnswer = new JSONObject(res);
+
+                        if (receivedAnswer.has("responseCode")) {
+                            int responseCode = (Integer)receivedAnswer.get("responseCode");
+
+                            switch (responseCode){
+                                case HttpURLConnection.HTTP_OK:
+                                    Toast.makeText(InvoiceApp.getContext(),
+                                            "OK : Username " + username.getText().toString()+ " registered correctly!.", Toast.LENGTH_LONG).show();
+                                    Log.i(TAG, "OK : Username " + username.getText().toString()+ " registered correctly!.");
+                                    infoDialog(
+                                            "User correctly registered in system",
+                                            "OK : Username " + username.getText().toString()+ " registered correctly!. A message has been sent to the users email to confirm the registration. Please review your inbox. The email is valid for 60 minutes.",
+                                    "OK");
+
+                                    break;
+                                case HttpURLConnection.HTTP_CONFLICT:
+                                    Toast.makeText(InvoiceApp.getContext(),
+                                            "ERROR : Username " + username.getText().toString()+ " already registered.", Toast.LENGTH_LONG).show();
+                                    Log.e(TAG, "ERROR : " + "ERROR : Username " + username.getText().toString()+ " already registered.");
+                                    break;
+                                default:
+                                    Toast.makeText(InvoiceApp.getContext(),
+                                            "ERROR : Unexpected behaviour. Please see logs.", Toast.LENGTH_LONG).show();
+                                    Log.e(TAG, "ERROR : Unexpected behaviour. Please see logs." + receivedAnswer.toString());
+                                    break;
+                            }
+
+                        }else{
+                            throw new Exception("ERROR: Answer type not expected!");
+                        }
+
+
                     } catch (Exception e) {
                         Toast.makeText(InvoiceApp.getContext(),
                                 "ERROR : " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
@@ -99,5 +137,32 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void infoDialog(
+            String title,
+            String message,
+            final String okMethod){
+        final android.support.v7.app.AlertDialog.Builder builderSingle = new android.support.v7.app.AlertDialog.Builder(this);
+        builderSingle.setIcon(R.mipmap.ic_launcher_round);
+        builderSingle.setTitle("Info");
+        builderSingle.setMessage(message);
+
+
+        builderSingle.setPositiveButton(
+                "OK",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Log.d(TAG, "onClick: OK Called.");
+                        if(okMethod.equals("ok")){
+                            Log.d(TAG, "onClick: OK Called.");
+
+                        }
+                    }
+                });
+
+
+        builderSingle.show();
     }
 }

@@ -85,8 +85,8 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
                 return server_response;
             }else if(responseCode == HttpURLConnection.HTTP_CONFLICT){
                 server_response = readStream(urlConnection.getErrorStream());
-                Log.i(TAG, "Factura ya registrada en el sistema!");
-                Log.i(TAG, "Respuesta servidor: " + server_response);
+                Log.e(TAG, "ERROR: Item already in system...");
+                Log.e(TAG, "Respuesta servidor: " + server_response);
                 urlConnection.disconnect();
                 return server_response;
             }else if(responseCode == HttpURLConnection.HTTP_INTERNAL_ERROR) {

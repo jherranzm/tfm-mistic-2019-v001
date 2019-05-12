@@ -1,6 +1,5 @@
 package com.example.apptestvalidationandroid44;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,6 +25,7 @@ import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 import com.example.apptestvalidationandroid44.util.UIDGenerator;
 import com.example.apptestvalidationandroid44.util.UtilDocument;
 import com.example.apptestvalidationandroid44.util.UtilFacturae;
+import com.example.apptestvalidationandroid44.util.UtilScreenMessages;
 import com.example.apptestvalidationandroid44.util.UtilValidator;
 
 import org.apache.commons.io.IOUtils;
@@ -168,7 +168,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
             if(!valid){
                 //Toast.makeText(mContext, "ERROR : La firma NO es válida!", Toast.LENGTH_LONG).show();
-                alertShow(ALERTA_LA_FIRMA_NO_ES_VALIDA);
+                UtilScreenMessages.alertShow(ALERTA_LA_FIRMA_NO_ES_VALIDA);
             }else{
                 Toast.makeText(InvoiceApp.getContext(), "Documento factura válida!", Toast.LENGTH_SHORT).show();
 
@@ -253,17 +253,17 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
                 if (getData.getResponseCode() == HttpURLConnection.HTTP_OK){
 
-                    infoShow(String.format(INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA, id));
+                    UtilScreenMessages.infoShow(String.format(INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA, id));
 
                 }else if (getData.getResponseCode() == HttpURLConnection.HTTP_CONFLICT){
 
                     message += Constants.CR_LF + String.format(ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA, id);
-                    alertShow(message);
+                    UtilScreenMessages.alertShow(message);
 
                 }else if (getData.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR){
 
                     message += Constants.CR_LF + "ERROR de Servidor";
-                    alertShow(message);
+                    UtilScreenMessages.alertShow(message);
                 }
 
                 Log.i(TAG, "Respuesta del Servidor : ["+res+"]");
@@ -278,12 +278,12 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 if(alreadySaved.size()>0){
 
                     Log.i(TAG, "InvoiceData already in system : nothing to be done!" + invoiceData.toString());
-                    alertShow( "Local Database: Invoice "+ invoiceData.getInvoiceNumber() +" already in system : nothing to be done!" );
+                    UtilScreenMessages.alertShow( "Local Database: Invoice "+ invoiceData.getInvoiceNumber() +" already in system : nothing to be done!" );
                 }else{
 
                     InsertInvoiceDataTask insertInvoiceDataTask = new InsertInvoiceDataTask(invoiceData);
                     InvoiceData invoiceDataInserted = insertInvoiceDataTask.execute().get();
-                    infoShow( "Local Database: Invoice "+ invoiceData.getInvoiceNumber() +" loaded in system!" );
+                    UtilScreenMessages.infoShow( "Local Database: Invoice "+ invoiceData.getInvoiceNumber() +" loaded in system!" );
                     Log.i(TAG, "InvoiceData ingresada: " + invoiceDataInserted.toString());
                 }
 
@@ -357,35 +357,5 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         builderSingle.show();
     }
 
-    private void alertShow( String message ) {
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle("Alert!");
-        alertDialog.setMessage(message);
-        alertDialog.setIcon(R.drawable.ic_stat_name);
 
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                //Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
-                Log.i(TAG, "You clicked on OK");
-            }
-        });
-
-        alertDialog.show();
-    }
-
-    private void infoShow( String message ) {
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle("Info");
-        alertDialog.setMessage(message);
-        alertDialog.setIcon(R.drawable.ic_info_name);
-
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                //Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
-                Log.i(TAG, "You clicked on OK");
-            }
-        });
-
-        alertDialog.show();
-    }
 }
