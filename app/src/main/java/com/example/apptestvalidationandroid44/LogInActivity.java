@@ -1,5 +1,7 @@
 package com.example.apptestvalidationandroid44;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -9,6 +11,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.config.Constants;
+
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,11 +29,11 @@ public class LogInActivity
 
         setContentView(R.layout.log_in_activity);
 
-        final EditText username = (EditText)findViewById(R.id.editTextUserName);
-        final EditText password = (EditText)findViewById(R.id.editTextPassword);
+        final EditText username = findViewById(R.id.editTextUserName);
+        final EditText password = findViewById(R.id.editTextPassword);
 
-        Button login =(Button)findViewById(R.id.buttonLogin);
-        Button cancel =(Button)findViewById(R.id.buttonCancel);
+        Button login = findViewById(R.id.buttonLogin);
+        Button cancel = findViewById(R.id.buttonCancel);
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,14 +54,31 @@ public class LogInActivity
                 if(formValid){
                     Map<String, String> params = new HashMap<>();
                     params.put("op", "login");
-                    params.put("username", username.getText().toString());
-                    params.put("pass", password.getText().toString());
+                    //params.put("username", username.getText().toString());
+                    //params.put("pass", password.getText().toString());
 
                     try {
-                        PostDataToUrlTask getData = new PostDataToUrlTask(params);
+                        PostDataWithUserPassToUrlTask getData = new PostDataWithUserPassToUrlTask(params);
 
                         String res = getData.execute(Constants.URL_LOGIN, username.getText().toString(), password.getText().toString()).get();
                         Log.i(TAG, "res : " + res);
+
+                        JSONObject jsonResponse = new JSONObject(res);
+                        int responseCode = jsonResponse.getInt("responseCode");
+
+                        if(responseCode == 200){
+                            infoDialog(
+                                    "User correctly logged in system!",
+                                    "OK : Username " + username.getText().toString()+ " logged correctly!.",
+                                    "OK");
+                        }else{
+                            errorDialog(
+                                    "User NOT logged in system!",
+                                    "ERROR : Username " + username.getText().toString()+ " NOT logged correctly!.",
+                                    "OK");
+                        }
+
+
                     } catch (Exception e) {
                         Toast.makeText(InvoiceApp.getContext(),
                                 "ERROR : " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
@@ -74,5 +95,64 @@ public class LogInActivity
                 finish();
             }
         });
+    }
+
+    private void infoDialog(
+            String title,
+            String message,
+            final String okMethod){
+        final android.support.v7.app.AlertDialog.Builder builderSingle = new android.support.v7.app.AlertDialog.Builder(this);
+        builderSingle.setIcon(R.mipmap.ic_launcher_round);
+        builderSingle.setTitle("Info");
+        builderSingle.setMessage(message);
+
+        builderSingle.setPositiveButton(
+                "OK",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                        Intent intent = new Intent(InvoiceApp.getContext(), MainActivity.class);
+                        startActivity(intent);
+
+                        Log.d(TAG, "onClick: OK Called.");
+                        if(okMethod.equals("ok")){
+                            Log.d(TAG, "onClick: OK Called.");
+
+                            Log.d(TAG, "Did NOT go to Log In.");
+
+
+                        }
+                    }
+                });
+
+
+        builderSingle.show();
+    }
+
+    private void errorDialog(
+            String title,
+            String message,
+            final String okMethod){
+        final android.support.v7.app.AlertDialog.Builder builderSingle = new android.support.v7.app.AlertDialog.Builder(this);
+        builderSingle.setIcon(R.mipmap.ic_launcher);
+        builderSingle.setTitle("ERROR");
+        builderSingle.setMessage(message);
+
+        builderSingle.setPositiveButton(
+                "OK",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                        Log.d(TAG, "onClick: OK Called.");
+                        if(okMethod.equals("ok")){
+                            Log.d(TAG, "onClick: OK Called.");
+                        }
+                    }
+                });
+
+
+        builderSingle.show();
     }
 }
