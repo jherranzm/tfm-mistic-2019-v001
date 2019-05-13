@@ -7,7 +7,7 @@ public class Constants {
 
     public static final String URL_FACTURAS = "https://"+ REMOTE_HOST+":"+REMOTE_PORT+"/facturas";
     public static final String URL_KEYS     = "https://"+ REMOTE_HOST+":"+REMOTE_PORT+"/keys";
-    public static final String URL_CERT     = "https://"+ REMOTE_HOST+":"+REMOTE_PORT+"/csr";
+    public static final String URL_CERT     = "https://"+ REMOTE_HOST+":"+REMOTE_PORT+"/cert/csr";
     public static final String URL_STATUS   = "https://"+ REMOTE_HOST+":"+REMOTE_PORT+"/status";
     public static final String URL_SIGNUP   = "https://"+ REMOTE_HOST+":"+REMOTE_PORT+"/signup";
     public static final String URL_LOGIN    = "https://"+ REMOTE_HOST+":"+REMOTE_PORT+"/login";

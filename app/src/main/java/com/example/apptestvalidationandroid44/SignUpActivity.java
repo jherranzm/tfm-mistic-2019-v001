@@ -1,6 +1,7 @@
 package com.example.apptestvalidationandroid44;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -101,7 +102,6 @@ public class SignUpActivity extends AppCompatActivity {
                                             "User correctly registered in system",
                                             "OK : Username " + username.getText().toString()+ " registered correctly!. A message has been sent to the users email to confirm the registration. Please review your inbox. The email is valid for 60 minutes.",
                                     "OK");
-
                                     break;
                                 case HttpURLConnection.HTTP_CONFLICT:
                                     Toast.makeText(InvoiceApp.getContext(),
@@ -154,9 +154,17 @@ public class SignUpActivity extends AppCompatActivity {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+
+                        Intent intent = new Intent(InvoiceApp.getContext(), LogInActivity.class);
+                        startActivity(intent);
+
+
                         Log.d(TAG, "onClick: OK Called.");
                         if(okMethod.equals("ok")){
                             Log.d(TAG, "onClick: OK Called.");
+
+                            Log.d(TAG, "Did NOT go to Log In.");
+
 
                         }
                     }

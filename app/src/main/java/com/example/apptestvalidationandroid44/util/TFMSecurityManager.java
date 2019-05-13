@@ -109,7 +109,7 @@ public class TFMSecurityManager {
             KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(keystorePassword);
 
             // Load Keystore if exists...
-            File keyStoreFile = new File(InvoiceApp.getAppDir(), "keyStoreInvoiceApp");
+            File keyStoreFile = new File(InvoiceApp.getAppDir(), "keyStoreInvoiceApp.bks");
             if(keyStoreFile.exists()){
                 Log.i(TAG,"KeyStore file already exists in : " + keyStoreFile.getAbsolutePath());
                 keyStore.load(new FileInputStream(keyStoreFile), keystorePassword);

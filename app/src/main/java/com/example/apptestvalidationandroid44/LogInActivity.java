@@ -56,7 +56,7 @@ public class LogInActivity
                     try {
                         PostDataToUrlTask getData = new PostDataToUrlTask(params);
 
-                        String res = getData.execute(Constants.URL_LOGIN).get();
+                        String res = getData.execute(Constants.URL_LOGIN, username.getText().toString(), password.getText().toString()).get();
                         Log.i(TAG, "res : " + res);
                     } catch (Exception e) {
                         Toast.makeText(InvoiceApp.getContext(),
