@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.spongycastle.cms.CMSException;
 import org.spongycastle.openssl.jcajce.JcaPEMWriter;
+import org.spongycastle.operator.OperatorCreationException;
 import org.spongycastle.pkcs.PKCS10CertificationRequest;
 import org.spongycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 
@@ -94,7 +95,6 @@ public class TFMSecurityManager {
     private void manageSecurity() {
 
         char[] keystorePassword = Constants.PKCS12_PASSWORD.toCharArray();
-        char[] keyPassword = Constants.PKCS12_PASSWORD.toCharArray();
 
         // Security
         try {
@@ -103,10 +103,9 @@ public class TFMSecurityManager {
             Log.i(TAG, "KeyStore.getDefaultType() : " + KeyStore.getDefaultType());
 
             // Keystore creation
-            //keyStore = KeyStore.getInstance(Constants.PKCS_12, Constants.BC);
             keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             Log.i(TAG, "KeyStore.getType() : " + keyStore.getType());
-            KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(keystorePassword);
+
 
             // Load Keystore if exists...
             File keyStoreFile = new File(InvoiceApp.getAppDir(), "keyStoreInvoiceApp.bks");
@@ -115,25 +114,6 @@ public class TFMSecurityManager {
                 keyStore.load(new FileInputStream(keyStoreFile), keystorePassword);
 
                 showAliasesInKeyStore(keyStore);
-
-//                // Retrieve CA Certificate from KeyStore
-//                X509Certificate caCertificate = (X509Certificate) keyStore.getCertificate("CA TFM");
-//                if(caCertificate == null){
-//                    throw new Exception("ERROR : NO CA Certificate in KeyStore!");
-//                }
-//                //certificateChain[1] = caCertificate;
-//                Log.i(TAG,"Retrieved CA Certificate from KeyStore! SubjectDN : " + caCertificate.getSubjectDN().getName());
-
-                // Retrieve Server Certificate from KeyStore
-                X509Certificate serverCertificate = (X509Certificate) keyStore.getCertificate("Server");
-                if(serverCertificate == null){
-                    throw new Exception("ERROR : NO Server Certificate in KeyStore!");
-                }
-                //certificateChain[0] = serverCertificate;
-                Log.i(TAG,"Retrieved Server Certificate from KeyStore! SubjectDN : " + serverCertificate.getSubjectDN().getName());
-
-                // Certificate with PublicKey to encrypt or decrypt
-                this.setCertificate(serverCertificate);
 
             }else{
 
@@ -146,41 +126,8 @@ public class TFMSecurityManager {
                 keyStore.load(null, null);
                 showAliasesInKeyStore(keyStore);
 
-                // Load CA Certificate from assets
-                Log.i(TAG,"Retrieving CA Certificate from file in assets...");
-                InputStream isCACrt = InvoiceApp.getContext().getAssets().open(Constants.CA_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
-                X509Certificate caCertificate = (X509Certificate) certFactory.generateCertificate(isCACrt);
-                isCACrt.close();
-                if(caCertificate == null){
-                    throw new Exception("ERROR : NO CA Certificate in "+ Constants.CA_CERTIFICATE_FILE+"!");
-                }
-                Log.i(TAG,"Retrieved CA Certificate from file in assets! SubjectDN : " + caCertificate.getSubjectDN().getName());
-                keyStore.setCertificateEntry("ca", caCertificate);
-                showAliasesInKeyStore(keyStore);
-
-//                String caCertificateAlias = keyStore.getCertificateAlias(caCertificate);
-//                if(caCertificateAlias == null){
-//                    throw new Exception("ERROR : NO CA Certificate in KeyStore!");
-//                }
-//                Log.i(TAG,"caCertificateAlias : " + caCertificateAlias);
-
-                // Load Server Certificate from assets
-                Log.i(TAG,"Retrieving Server Certificate from file in assets...");
-                InputStream isServerCrt = InvoiceApp.getContext().getAssets().open(Constants.SERVER_CERTIFICATE_FILE); // .getResources().openRawResource(R.raw.server);
-                X509Certificate serverCertificate = (X509Certificate) certFactory.generateCertificate(isServerCrt);
-                isServerCrt.close();
-                if(serverCertificate == null){
-                    throw new Exception("ERROR : NO Server Certificate in "+ Constants.SERVER_CERTIFICATE_FILE+"!");
-                }
-                Log.i(TAG,"Retrieved Server Certificate from file in assets! SubjectDN : " + serverCertificate.getSubjectDN().getName());
-                keyStore.setCertificateEntry("Server", serverCertificate);
-                showAliasesInKeyStore(keyStore);
-
-                String serverCertificateAlias = keyStore.getCertificateAlias(serverCertificate);
-                if(serverCertificateAlias == null){
-                    throw new Exception("ERROR : NO Server Certificate in KeyStore!");
-                }
-                Log.i(TAG,"serverCertificateAlias : " + serverCertificateAlias);
+                loadCertificateFromAssets(certFactory, Constants.CA_CERTIFICATE_FILE, "ca");
+                loadCertificateFromAssets(certFactory, Constants.SERVER_CERTIFICATE_FILE, "Server");
 
                 // Load Server Private Key from assets : needed to encrypt, will be changed for user private key
                 if(!keyStore.getType().equals("BKS")) {
@@ -190,21 +137,18 @@ public class TFMSecurityManager {
                     isServerKey.close();
                     showAliasesInKeyStore(keyStore);
                 }
-                // Certificate with PublicKey to encrypt or decrypt
-                this.setCertificate(serverCertificate);
             }
 
-
             saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
-
 
             // Retrieve Server Certificate from KeyStore
             X509Certificate serverCertificate = (X509Certificate) keyStore.getCertificate("Server");
             if(serverCertificate == null){
                 throw new Exception("ERROR : NO Server Certificate in KeyStore!");
             }
+
+            // Retrieve CA Certificate from KeyStore
             X509Certificate caCertificate = (X509Certificate) keyStore.getCertificate("ca");
-            //X509Certificate caCertificate = (X509Certificate) keyStore.getCertificate("CA TFM");
             if(caCertificate == null){
                 caCertificate = (X509Certificate) keyStore.getCertificate("CA TFM");
                 if(caCertificate == null) {
@@ -212,115 +156,29 @@ public class TFMSecurityManager {
                 }
             }
 
+            this.setCertificate(serverCertificate);
 
             // Create a TrustManager that trusts the CAs in our KeyStore
             String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
             tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
             tmf.init(keyStore);
-            Log.i(TAG,"TrustManager : Algoritmo : " + tmfAlgorithm);
+            Log.i(TAG,"TrustManager : Algorithm : " + tmfAlgorithm);
             Log.i(TAG,"TrustManager : numItems : " + tmf.getTrustManagers().length);
             for(TrustManager tm : tmf.getTrustManagers()){
                 Log.i(TAG,"TrustManager  Item : " + tm.toString());
             }
 
-/**
-            this.pke = (PrivateKeyEntry) keyStore.getEntry("Server", protParam);
-
-
-            PrivateKey key = (PrivateKey) keyStore.getKey("Server", keyPassword);
-            if(key == null) {
-                Log.e(TAG,"ERROR: NO hay clave privada!");
-                throw new Exception("ERROR NO hay clave privada!");
-            }
-            Log.i(TAG,"Tenemos clave privada!");
-            this.setPrivateKey(key);
-*/
-
             // First connection to server
-            String status = "";
-            int max_attemps = 10;
-            int current_attemp = 0;
-            while (!"ACTIVE".equals(status) && current_attemp < max_attemps) {
-                GetServerStatusTask getServerStatusTask = new GetServerStatusTask();
-                status = getServerStatusTask.execute(Constants.URL_STATUS).get();
-                Log.i(TAG, "Server status : " + status);
-                current_attemp++;
-            }
+            String status = getStatusFromServer();
 
             if(!"ACTIVE".equals(status)){
                 throw new Exception("Server NOT active");
             }
 
+            String defaultUser = "UsuarioApp";
 
-            // User certificate
-            X509Certificate userCertificate = (X509Certificate) keyStore.getCertificate("UsuarioApp");
-            //if(keyStore.containsAlias("UsuarioApp")){
-            if(userCertificate == null){
-                //Generate KeyPair
-                Log.i(TAG,"KeyPair : generating...");
-                KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-                keyGen.initialize(4096, new SecureRandom());
-                KeyPair keyPair = keyGen.generateKeyPair();
-                Log.i(TAG,"KeyPair : generated!");
-                Log.i(TAG, "KeyPair.getPrivate() : " + keyPair.getPrivate().toString());
+            setCertificateAndPrivateKey(keystorePassword, certFactory, keyStoreFile, defaultUser);
 
-                //Generate CSR in PKCS#10 format encoded in DER
-                PKCS10CertificationRequest csr = CsrHelper.generateCSR(keyPair, "UsuarioApp");
-
-                JcaPKCS10CertificationRequest req2 = new JcaPKCS10CertificationRequest(csr.getEncoded()).setProvider("SC");
-
-                StringWriter sw = new StringWriter();
-                JcaPEMWriter pemWriter = new JcaPEMWriter(sw);
-                pemWriter.writeObject(req2);
-                pemWriter.close();
-
-                Log.i(TAG, "Request : " + sw.toString());
-
-
-                Map<String, String> params = new HashMap<>();
-                params.put("csr", sw.toString());
-                GetCertificateFromServerTask getCertificateFromServerTask = new GetCertificateFromServerTask(params);
-                String response_server = getCertificateFromServerTask.execute(Constants.URL_CERT).get();
-                String decoded = new String(java.util.Base64.getDecoder().decode(response_server.getBytes()));
-                Log.i(TAG, "CSRder.Response : " + decoded);
-
-                InputStream isReceivedCertificate = IOUtils.toInputStream(decoded, "UTF-8");
-                X509Certificate receivedCertificate = (X509Certificate) certFactory.generateCertificate(isReceivedCertificate);
-                isReceivedCertificate.close();
-                Log.i(TAG, "receivedCertificate Subject : " + receivedCertificate.getSubjectDN().getName());
-                Log.i(TAG, "receivedCertificate Issuer  : " + receivedCertificate.getIssuerDN().getName());
-
-                keyStore.setCertificateEntry("UsuarioApp", receivedCertificate);
-
-                userCertificate = (X509Certificate) keyStore.getCertificate("UsuarioApp");
-
-                //
-                Log.i(TAG, "privateKey : saving...");
-                keyStore.setKeyEntry("UsuarioApp",
-                        keyPair.getPrivate(),
-                        keystorePassword,
-                        new java.security.cert.Certificate[]{receivedCertificate});
-                Log.i(TAG, "privateKey : saved!");
-
-
-                saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
-
-            }else{
-                Log.i(TAG,"Tenemos el certificado de usuario!");
-                //X509Certificate certificate = (X509Certificate) keyStore.getCertificate("UsuarioApp");
-                Log.i(TAG, "User Certificate Subject : " + userCertificate.getSubjectDN().getName());
-                Log.i(TAG, "User Certificate Issuer  : " + userCertificate.getIssuerDN().getName());
-                Log.i(TAG, "");
-            }
-
-            KeyStore.PrivateKeyEntry retrievedPrivateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry("UsuarioApp", protParam);
-            PrivateKey retrievedPrivateKey = retrievedPrivateKeyEntry.getPrivateKey();
-
-            this.setCertificate(userCertificate);
-            this.setPrivateKey(retrievedPrivateKey);
-
-
-            // TODO: load SymKeys into KeyStore
             deleteAllLocalSymKeys();
 
             String[] fields = {
@@ -343,6 +201,94 @@ public class TFMSecurityManager {
             Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             Toast.makeText(InvoiceApp.getContext(), "ERROR : "+e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage() , Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void setCertificateAndPrivateKey(
+            char[] keystorePassword,
+            CertificateFactory certFactory,
+            File keyStoreFile, String defaultUser)
+            throws KeyStoreException, NoSuchAlgorithmException, IOException, OperatorCreationException, ExecutionException, InterruptedException, CertificateException, UnrecoverableEntryException {
+
+        KeyStore.ProtectionParameter protectionParameter = new KeyStore.PasswordProtection(keystorePassword);
+        // User certificate
+        X509Certificate userCertificate = (X509Certificate) keyStore.getCertificate(defaultUser);
+
+        if(userCertificate == null){
+            //Generate KeyPair
+            Log.i(TAG,"KeyPair : generating...");
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+            keyGen.initialize(4096, new SecureRandom());
+            KeyPair keyPair = keyGen.generateKeyPair();
+            Log.i(TAG,"KeyPair : generated!");
+            Log.i(TAG, "KeyPair.getPrivate() : " + keyPair.getPrivate().toString());
+
+            //Generate CSR in PKCS#10 format encoded in DER
+            PKCS10CertificationRequest csr = CsrHelper.generateCSR(keyPair, defaultUser);
+
+            JcaPKCS10CertificationRequest req2 = new JcaPKCS10CertificationRequest(csr.getEncoded()).setProvider("SC");
+
+            StringWriter sw = new StringWriter();
+            JcaPEMWriter pemWriter = new JcaPEMWriter(sw);
+            pemWriter.writeObject(req2);
+            pemWriter.close();
+
+            Log.i(TAG, "Request : " + sw.toString());
+
+
+            Map<String, String> params = new HashMap<>();
+            params.put("csr", sw.toString());
+
+            GetCertificateFromServerTask getCertificateFromServerTask = new GetCertificateFromServerTask(params);
+
+            String response_server = getCertificateFromServerTask.execute(Constants.URL_CERT).get();
+            String decoded = new String(java.util.Base64.getDecoder().decode(response_server.getBytes()));
+            Log.i(TAG, "CSRder.Response : " + decoded);
+
+            InputStream isReceivedCertificate = IOUtils.toInputStream(decoded, "UTF-8");
+            X509Certificate receivedCertificate = (X509Certificate) certFactory.generateCertificate(isReceivedCertificate);
+            isReceivedCertificate.close();
+            Log.i(TAG, "receivedCertificate Subject : " + receivedCertificate.getSubjectDN().getName());
+            Log.i(TAG, "receivedCertificate Issuer  : " + receivedCertificate.getIssuerDN().getName());
+
+            keyStore.setCertificateEntry(defaultUser, receivedCertificate);
+
+            userCertificate = (X509Certificate) keyStore.getCertificate(defaultUser);
+
+            //
+            Log.i(TAG, "privateKey : saving...");
+            keyStore.setKeyEntry(defaultUser,
+                    keyPair.getPrivate(),
+                    keystorePassword,
+                    new java.security.cert.Certificate[]{receivedCertificate});
+            Log.i(TAG, "privateKey : saved!");
+
+
+            saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
+
+        }else{
+            Log.i(TAG,"Tenemos el certificado de usuario!");
+            Log.i(TAG, "User Certificate Subject : " + userCertificate.getSubjectDN().getName());
+            Log.i(TAG, "User Certificate Issuer  : " + userCertificate.getIssuerDN().getName());
+        }
+
+        PrivateKeyEntry retrievedPrivateKeyEntry = (PrivateKeyEntry) keyStore.getEntry(defaultUser, protectionParameter);
+        PrivateKey retrievedPrivateKey = retrievedPrivateKeyEntry.getPrivateKey();
+
+        this.setCertificate(userCertificate);
+        this.setPrivateKey(retrievedPrivateKey);
+    }
+
+    private String getStatusFromServer() throws ExecutionException, InterruptedException {
+        String status = "";
+        int max_attempts = 10;
+        int current_attempt = 0;
+        while (!"ACTIVE".equals(status) && current_attempt < max_attempts) {
+            GetServerStatusTask getServerStatusTask = new GetServerStatusTask();
+            status = getServerStatusTask.execute(Constants.URL_STATUS).get();
+            Log.i(TAG, "Server status : " + status);
+            current_attempt++;
+        }
+        return status;
     }
 
     /**
@@ -602,6 +548,78 @@ public class TFMSecurityManager {
             LocalSymKey deleted = dlskTask.execute().get();
             Log.i(TAG, "Deleted: " + deleted.toString());
         }
+    }
+
+
+    private void loadCertificateFromAssets(CertificateFactory certFactory, String certFile, String alias)
+            throws
+            Exception {
+
+        // Load Certificate from assets
+        Log.i(TAG,"Retrieving " + alias + " Certificate from file in assets...");
+        InputStream isCrt = InvoiceApp.getContext().getAssets().open(certFile);
+        X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isCrt);
+        isCrt.close();
+        if(certificate == null){
+            throw new Exception("ERROR : NO " + alias + " Certificate in "+ certFile +"!");
+        }
+        Log.i(TAG,"Retrieved " + alias + " Certificate from file in assets! SubjectDN : " + certificate.getSubjectDN().getName());
+        keyStore.setCertificateEntry(alias, certificate);
+        showAliasesInKeyStore(keyStore);
+    }
+
+    /**
+     *
+     * @param str
+     * @param secret
+     */
+    public void saveUserLoggedDataInKeyStore(String str, String secret){
+
+        try {
+            Log.i(TAG, String.format("saveUserLoggedDataInKeyStore : [%s] : [%s]", str, secret));
+            byte[] data2 = secret.getBytes();
+            SecretKey key2 = new SecretKeySpec(data2, 0, data2.length, Constants.AES);
+
+            KeyStore.ProtectionParameter protParam =
+                    new KeyStore.PasswordProtection(Constants.PKCS12_PASSWORD.toCharArray());
+            keyStore.setEntry(
+                    str,
+                    new KeyStore.SecretKeyEntry(key2),
+                    protParam);
+            showAliasesInKeyStore(keyStore);
+
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     *
+     * @param str
+     * @return
+     */
+    public String getUserLoggedDataFromKeyStore(String str){
+
+        try {
+            Log.i(TAG, String.format("getUserLoggedDataFromKeyStore : [%s]", str));
+            KeyStore.ProtectionParameter protParam =
+                    new KeyStore.PasswordProtection(Constants.PKCS12_PASSWORD.toCharArray());
+
+            KeyStore.SecretKeyEntry recoveredEntry = (KeyStore.SecretKeyEntry)keyStore.getEntry(str, protParam);
+            byte[] bytes = recoveredEntry.getSecretKey().getEncoded();
+            return new String(bytes);
+
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (UnrecoverableEntryException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
     }
 
 
