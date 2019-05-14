@@ -83,7 +83,16 @@ public class CsrHelper {
         }
     }
 
-    //Create the certificate signing request (CSR) from private and public keys
+    /**
+     *
+     * Create the certificate signing request (CSR) from private and public keys
+     *
+     * @param keyPair, private and public key
+     * @param cn, common name
+     * @return
+     * @throws IOException
+     * @throws OperatorCreationException
+     */
     public static PKCS10CertificationRequest generateCSR(KeyPair keyPair, String cn) throws IOException,
             OperatorCreationException {
         String principal = String.format(CN_PATTERN, cn);

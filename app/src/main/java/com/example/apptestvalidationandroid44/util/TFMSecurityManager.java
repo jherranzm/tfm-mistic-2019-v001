@@ -176,8 +176,9 @@ public class TFMSecurityManager {
             }
 
             String defaultUser = "UsuarioApp";
+            String label = "UsuarioApp";
 
-            setCertificateAndPrivateKey(keystorePassword, certFactory, keyStoreFile, defaultUser);
+            setCertificateAndPrivateKey(keystorePassword, certFactory, keyStoreFile, label, defaultUser);
 
             deleteAllLocalSymKeys();
 
@@ -206,12 +207,22 @@ public class TFMSecurityManager {
     private void setCertificateAndPrivateKey(
             char[] keystorePassword,
             CertificateFactory certFactory,
-            File keyStoreFile, String defaultUser)
-            throws KeyStoreException, NoSuchAlgorithmException, IOException, OperatorCreationException, ExecutionException, InterruptedException, CertificateException, UnrecoverableEntryException {
+            File keyStoreFile,
+            String label,
+            String defaultUser)
+            throws
+            KeyStoreException,
+            NoSuchAlgorithmException,
+            IOException,
+            OperatorCreationException,
+            ExecutionException,
+            InterruptedException,
+            CertificateException,
+            UnrecoverableEntryException {
 
         KeyStore.ProtectionParameter protectionParameter = new KeyStore.PasswordProtection(keystorePassword);
         // User certificate
-        X509Certificate userCertificate = (X509Certificate) keyStore.getCertificate(defaultUser);
+        X509Certificate userCertificate = (X509Certificate) keyStore.getCertificate(label);
 
         if(userCertificate == null){
             //Generate KeyPair
@@ -250,13 +261,13 @@ public class TFMSecurityManager {
             Log.i(TAG, "receivedCertificate Subject : " + receivedCertificate.getSubjectDN().getName());
             Log.i(TAG, "receivedCertificate Issuer  : " + receivedCertificate.getIssuerDN().getName());
 
-            keyStore.setCertificateEntry(defaultUser, receivedCertificate);
+            keyStore.setCertificateEntry(label, receivedCertificate);
 
-            userCertificate = (X509Certificate) keyStore.getCertificate(defaultUser);
+            userCertificate = (X509Certificate) keyStore.getCertificate(label);
 
             //
             Log.i(TAG, "privateKey : saving...");
-            keyStore.setKeyEntry(defaultUser,
+            keyStore.setKeyEntry(label,
                     keyPair.getPrivate(),
                     keystorePassword,
                     new java.security.cert.Certificate[]{receivedCertificate});

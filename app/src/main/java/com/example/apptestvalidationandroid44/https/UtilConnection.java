@@ -20,8 +20,9 @@ public class UtilConnection {
         urlConnection.setConnectTimeout(20000);
         urlConnection.setReadTimeout(20000);
 
-        String userpass = "user" + ":" + "user";
-        String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
+        //String userPass = "user" + ":" + "user";
+        String userPass = "UsuarioApp" + ":" + "UsuarioApp";
+        String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userPass.getBytes()));
         urlConnection.setRequestProperty ("Authorization", basicAuth);
         return urlConnection;
     }
