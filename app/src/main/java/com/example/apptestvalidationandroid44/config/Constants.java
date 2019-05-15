@@ -34,4 +34,5 @@ public class Constants {
 
     public static final String AES = "AES";
 
+    public static final String KEY_STORE_BKS_FILE = "keyStoreInvoiceApp.bks";
 }

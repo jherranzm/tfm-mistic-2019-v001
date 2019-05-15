@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
+
 import net.glxn.qrgen.android.QRCode;
 
 public class SplashActivity extends AppCompatActivity {
@@ -25,8 +27,9 @@ public class SplashActivity extends AppCompatActivity {
             public void run() {
                 try {
 
+                    TFMSecurityManager tfmSecurityManager = TFMSecurityManager.getInstance();
 
-                    sleep(3000);
+                    sleep(1000);
                 } catch (InterruptedException e) {
                     Log.d("Exception", "Exception" + e);
                 } finally {

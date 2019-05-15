@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.invoicedatatasks.DeleteAllInvoiceDataTask;
@@ -26,9 +27,17 @@ import com.example.apptestvalidationandroid44.model.InvoiceData;
 import com.example.apptestvalidationandroid44.model.TotalByProviderByYearVO;
 import com.example.apptestvalidationandroid44.model.TotalByProviderVO;
 import com.example.apptestvalidationandroid44.remotesymkeytasks.GetAllUploadedInvoicesTask;
+import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
+
+import org.spongycastle.asn1.x500.RDN;
+import org.spongycastle.asn1.x500.X500Name;
+import org.spongycastle.asn1.x500.style.BCStyle;
+import org.spongycastle.asn1.x500.style.IETFUtils;
+import org.spongycastle.cert.jcajce.JcaX509CertificateHolder;
 
 import java.io.File;
 import java.security.Security;
+import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -46,12 +55,15 @@ public class MainActivity
     // Widgets
     private ProgressBar mProgressBar;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        TFMSecurityManager tfmSecurityManager = TFMSecurityManager.getInstance();
 
         // Get the application context
         mProgressBar = findViewById(R.id.progressBar1);
@@ -66,6 +78,19 @@ public class MainActivity
 
         Button goToSignUp = findViewById(R.id.buttonGoToSignUp);
         Button goToLogIn = findViewById(R.id.buttonGoToLogin);
+
+        // Show who is logged
+        TextView textViewUserLogged = findViewById(R.id.textViewUserLogged);
+
+        String commonName = "Default User";
+        try {
+            X500Name x500name = new JcaX509CertificateHolder(tfmSecurityManager.getCertificate()).getSubject();
+            RDN cn = x500name.getRDNs(BCStyle.CN)[0];
+            commonName = IETFUtils.valueToString(cn.getFirst().getValue());
+        } catch (CertificateEncodingException e) {
+            e.printStackTrace();
+        }
+        textViewUserLogged.setText(commonName);
 
         // 2019-03-30
         // Check whether this app has write external storage permission or not.

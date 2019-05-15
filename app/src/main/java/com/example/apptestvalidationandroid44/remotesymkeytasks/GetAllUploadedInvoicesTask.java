@@ -162,6 +162,7 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
                 simDec.setIv(ivStringDec);
                 simDec.setKey(simKeyStringDec);
 
+                Log.i(TAG, Constants.TAX_IDENTIFICATION_NUMBER + ":" + tfmSecurityManager.getSimKeys().get(Constants.TAX_IDENTIFICATION_NUMBER));
                 String taxIdentificationNumberDecrypted = simDec.decrypt(
                         taxIdentificationNumber,
                         tfmSecurityManager.getSimKeys().get(Constants.TAX_IDENTIFICATION_NUMBER));

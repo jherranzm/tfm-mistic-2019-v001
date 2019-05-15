@@ -107,37 +107,7 @@ public class TFMSecurityManager {
             Log.i(TAG, "KeyStore.getType() : " + keyStore.getType());
 
 
-            // Load Keystore if exists...
-            File keyStoreFile = new File(InvoiceApp.getAppDir(), "keyStoreInvoiceApp.bks");
-            if(keyStoreFile.exists()){
-                Log.i(TAG,"KeyStore file already exists in : " + keyStoreFile.getAbsolutePath());
-                keyStore.load(new FileInputStream(keyStoreFile), keystorePassword);
-
-                showAliasesInKeyStore(keyStore);
-
-            }else{
-
-                // First time initialization...
-                Log.i(TAG,"KeyStore: creating file in  : " + keyStoreFile.getAbsolutePath());
-                if(!keyStoreFile.createNewFile()){
-                    throw new Exception("ERROR : Can NOT create KeyStore!");
-                }
-
-                keyStore.load(null, null);
-                showAliasesInKeyStore(keyStore);
-
-                loadCertificateFromAssets(certFactory, Constants.CA_CERTIFICATE_FILE, "ca");
-                loadCertificateFromAssets(certFactory, Constants.SERVER_CERTIFICATE_FILE, "Server");
-
-                // Load Server Private Key from assets : needed to encrypt, will be changed for user private key
-                if(!keyStore.getType().equals("BKS")) {
-                    Log.i(TAG, "Loading Server Private Key from assets...");
-                    InputStream isServerKey = InvoiceApp.getContext().getAssets().open(Constants.SERVER_KEY_P12); //.getResources().openRawResource(R.raw.serverkey);
-                    keyStore.load(isServerKey, keystorePassword);
-                    isServerKey.close();
-                    showAliasesInKeyStore(keyStore);
-                }
-            }
+            File keyStoreFile = loadOrCreateKeyStore(keystorePassword, certFactory);
 
             saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
 
@@ -202,6 +172,56 @@ public class TFMSecurityManager {
             Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             Toast.makeText(InvoiceApp.getContext(), "ERROR : "+e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage() , Toast.LENGTH_LONG).show();
         }
+    }
+
+    /**
+     *
+     * If KeyStore file exists, load it. Else, create and load the CA and Server Certificates from assets
+     *
+     * @param keystorePassword
+     * @param certFactory
+     * @return
+     * @throws Exception
+     */
+    private File loadOrCreateKeyStore(
+            char[] keystorePassword,
+            CertificateFactory certFactory)
+            throws
+            Exception {
+
+        // Load Keystore if exists...
+        File keyStoreFile = new File(InvoiceApp.getAppDir(), Constants.KEY_STORE_BKS_FILE);
+
+        if(keyStoreFile.exists()){
+            Log.i(TAG,"KeyStore file already exists in : " + keyStoreFile.getAbsolutePath());
+            keyStore.load(new FileInputStream(keyStoreFile), keystorePassword);
+
+            showAliasesInKeyStore(keyStore);
+
+        }else{
+
+            // First time initialization...
+            Log.i(TAG,"KeyStore: creating file in  : " + keyStoreFile.getAbsolutePath());
+            if(!keyStoreFile.createNewFile()){
+                throw new Exception("ERROR : Can NOT create KeyStore!");
+            }
+
+            keyStore.load(null, null);
+            showAliasesInKeyStore(keyStore);
+
+            loadCertificateFromAssets(certFactory, Constants.CA_CERTIFICATE_FILE, "ca");
+            loadCertificateFromAssets(certFactory, Constants.SERVER_CERTIFICATE_FILE, "Server");
+
+            // Load Server Private Key from assets : needed to encrypt, will be changed for user private key
+            if(!keyStore.getType().equals("BKS")) {
+                Log.i(TAG, "Loading Server Private Key from assets...");
+                InputStream isServerKey = InvoiceApp.getContext().getAssets().open(Constants.SERVER_KEY_P12); //.getResources().openRawResource(R.raw.serverkey);
+                keyStore.load(isServerKey, keystorePassword);
+                isServerKey.close();
+                showAliasesInKeyStore(keyStore);
+            }
+        }
+        return keyStoreFile;
     }
 
     private void setCertificateAndPrivateKey(
@@ -450,8 +470,8 @@ public class TFMSecurityManager {
         String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
         lsk.setK(simKeyStringEnc);
 
-        InsertLocalSymKeyTask ilskTask = new InsertLocalSymKeyTask(lsk);
-        LocalSymKey lskF = ilskTask.execute().get();
+        InsertLocalSymKeyTask insertLocalSymKeyTask = new InsertLocalSymKeyTask(lsk);
+        LocalSymKey lskF = insertLocalSymKeyTask.execute().get();
         Log.i(TAG, "LocalSymKey ingresada: " + lskF.toString());
 
         Map<String, String> params = new HashMap<>();
@@ -464,7 +484,6 @@ public class TFMSecurityManager {
         Log.i(TAG, "res : " + res);
 
         this.getSimKeys().put(str, simKey);
-
 
         createSymmetricKeyInKeyStore(str);
 
