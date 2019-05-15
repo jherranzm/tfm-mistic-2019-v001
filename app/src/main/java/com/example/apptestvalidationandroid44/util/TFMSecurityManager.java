@@ -41,6 +41,7 @@ import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
@@ -73,12 +74,24 @@ public class TFMSecurityManager {
 
     private static TFMSecurityManager instance;
     private KeyStore keyStore;
+    private static CertificateFactory certFactory;
+
+    private char[] keystorePassword = Constants.PKCS12_PASSWORD.toCharArray();
 
     private TFMSecurityManager(){}
 
     public static TFMSecurityManager getInstance(){
         if (instance == null){
             Log.i(TAG, "Inicialización de TFMSecurityManager");
+
+            try {
+                certFactory = CertificateFactory.getInstance(Constants.X_509, Constants.BC);
+            } catch (CertificateException e) {
+                e.printStackTrace();
+            } catch (NoSuchProviderException e) {
+                e.printStackTrace();
+            }
+
             // if instance is null, initialize
             instance = new TFMSecurityManager();
             instance.manageSecurity();
@@ -94,12 +107,10 @@ public class TFMSecurityManager {
      */
     private void manageSecurity() {
 
-        char[] keystorePassword = Constants.PKCS12_PASSWORD.toCharArray();
-
         // Security
         try {
 
-            CertificateFactory certFactory = CertificateFactory.getInstance(Constants.X_509, Constants.BC);
+            //CertificateFactory certFactory = CertificateFactory.getInstance(Constants.X_509, Constants.BC);
             Log.i(TAG, "KeyStore.getDefaultType() : " + KeyStore.getDefaultType());
 
             // Keystore creation
@@ -107,7 +118,7 @@ public class TFMSecurityManager {
             Log.i(TAG, "KeyStore.getType() : " + keyStore.getType());
 
 
-            File keyStoreFile = loadOrCreateKeyStore(keystorePassword, certFactory);
+            File keyStoreFile = loadOrCreateKeyStore(keystorePassword);
 
             saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
 
@@ -148,7 +159,7 @@ public class TFMSecurityManager {
             String defaultUser = "UsuarioApp";
             String label = "UsuarioApp";
 
-            setCertificateAndPrivateKey(keystorePassword, certFactory, keyStoreFile, label, defaultUser);
+            setCertificateAndPrivateKey(keystorePassword, keyStoreFile, label, defaultUser);
 
             saveUserLoggedDataInKeyStore("userLogged", defaultUser);
             saveUserLoggedDataInKeyStore("userPass", defaultUser);
@@ -183,13 +194,11 @@ public class TFMSecurityManager {
      * If KeyStore file exists, load it. Else, create and load the CA and Server Certificates from assets
      *
      * @param keystorePassword
-     * @param certFactory
      * @return
      * @throws Exception
      */
     private File loadOrCreateKeyStore(
-            char[] keystorePassword,
-            CertificateFactory certFactory)
+            char[] keystorePassword)
             throws
             Exception {
 
@@ -213,8 +222,8 @@ public class TFMSecurityManager {
             keyStore.load(null, null);
             showAliasesInKeyStore(keyStore);
 
-            loadCertificateFromAssets(certFactory, Constants.CA_CERTIFICATE_FILE, "ca");
-            loadCertificateFromAssets(certFactory, Constants.SERVER_CERTIFICATE_FILE, "Server");
+            loadCertificateFromAssets(Constants.CA_CERTIFICATE_FILE, "ca");
+            loadCertificateFromAssets(Constants.SERVER_CERTIFICATE_FILE, "Server");
 
             // Load Server Private Key from assets : needed to encrypt, will be changed for user private key
             if(!keyStore.getType().equals("BKS")) {
@@ -230,7 +239,6 @@ public class TFMSecurityManager {
 
     private void setCertificateAndPrivateKey(
             char[] keystorePassword,
-            CertificateFactory certFactory,
             File keyStoreFile,
             String label,
             String defaultUser)
@@ -472,6 +480,7 @@ public class TFMSecurityManager {
         String simKey = rsg.getRandomString(16);
         byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), this.getCertificate());
         String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
+        lsk.setUser(getUserLoggedDataFromKeyStore("userLogged"));
         lsk.setK(simKeyStringEnc);
 
         InsertLocalSymKeyTask insertLocalSymKeyTask = new InsertLocalSymKeyTask(lsk);
@@ -585,7 +594,7 @@ public class TFMSecurityManager {
     }
 
 
-    private void loadCertificateFromAssets(CertificateFactory certFactory, String certFile, String alias)
+    private void loadCertificateFromAssets(String certFile, String alias)
             throws
             Exception {
 
@@ -637,10 +646,10 @@ public class TFMSecurityManager {
 
         try {
             Log.i(TAG, String.format("getUserLoggedDataFromKeyStore : [%s]", str));
-            KeyStore.ProtectionParameter protParam =
+            KeyStore.ProtectionParameter protectionParameter =
                     new KeyStore.PasswordProtection(Constants.PKCS12_PASSWORD.toCharArray());
 
-            KeyStore.SecretKeyEntry recoveredEntry = (KeyStore.SecretKeyEntry)keyStore.getEntry(str, protParam);
+            KeyStore.SecretKeyEntry recoveredEntry = (KeyStore.SecretKeyEntry)keyStore.getEntry(str, protectionParameter);
             byte[] bytes = recoveredEntry.getSecretKey().getEncoded();
             return new String(bytes);
 

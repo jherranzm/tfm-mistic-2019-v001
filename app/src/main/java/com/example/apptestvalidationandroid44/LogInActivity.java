@@ -60,7 +60,9 @@ public class LogInActivity
                     try {
                         PostDataWithUserPassToUrlTask getData = new PostDataWithUserPassToUrlTask(params);
 
-                        String res = getData.execute(Constants.URL_LOGIN, username.getText().toString(), password.getText().toString()).get();
+                        String res = getData.execute(Constants.URL_LOGIN,
+                                username.getText().toString(),
+                                password.getText().toString()).get();
                         Log.i(TAG, "res : " + res);
 
                         JSONObject jsonResponse = new JSONObject(res);
@@ -71,6 +73,11 @@ public class LogInActivity
                                     "User correctly logged in system!",
                                     "OK : Username " + username.getText().toString()+ " logged correctly!.",
                                     "OK");
+
+                            // Create KeyPair
+                            // Ask for Certificate through CSR
+                            // Save Received Certificate in KeyStore
+                            // Save PrivateKey in KeyStore
                         }else{
                             errorDialog(
                                     "User NOT logged in system!",

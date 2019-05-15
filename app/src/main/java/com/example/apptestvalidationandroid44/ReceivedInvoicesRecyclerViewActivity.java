@@ -272,6 +272,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 Log.i(TAG, "EnvelopedSignature.signXMLFile..." + (ret ? "Firmada!!" : "Sin firmar..."));
 
                 InvoiceData invoiceData = getInvoiceData(facturae, UIDFacturaHash);
+                invoiceData.setUser(tfmSecurityManager.getUserLoggedDataFromKeyStore("userLogged"));
 
                 GetByBatchIdentifierInvoiceDataTask getByBatchIdentifierInvoiceDataTask = new GetByBatchIdentifierInvoiceDataTask();
                 List<InvoiceData> alreadySaved = getByBatchIdentifierInvoiceDataTask.execute(invoiceData.getBatchIdentifier()).get();

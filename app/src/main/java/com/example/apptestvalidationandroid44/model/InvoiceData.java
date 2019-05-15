@@ -14,6 +14,9 @@ public class InvoiceData implements Serializable {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
+    @ColumnInfo(name = "user")
+    private String user;
+
     @ColumnInfo(name = "batchIdentifier")
     private String batchIdentifier;
 
@@ -56,6 +59,14 @@ public class InvoiceData implements Serializable {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
     }
 
     public String getBatchIdentifier() {
@@ -151,6 +162,7 @@ public class InvoiceData implements Serializable {
     public String toString() {
         final StringBuffer sb = new StringBuffer("InvoiceData{");
         sb.append("id=").append(id);
+        sb.append(", user='").append(user).append('\'');
         sb.append(", batchIdentifier='").append(batchIdentifier).append('\'').append("\n");
         sb.append(", totalAmount=").append(totalAmount).append("\n");
         sb.append(", taxIdentificationNumber='").append(taxIdentificationNumber).append('\'').append("\n");
