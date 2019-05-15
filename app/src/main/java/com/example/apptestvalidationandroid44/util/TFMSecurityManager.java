@@ -150,6 +150,10 @@ public class TFMSecurityManager {
 
             setCertificateAndPrivateKey(keystorePassword, certFactory, keyStoreFile, label, defaultUser);
 
+            saveUserLoggedDataInKeyStore("userLogged", defaultUser);
+            saveUserLoggedDataInKeyStore("userPass", defaultUser);
+
+
             deleteAllLocalSymKeys();
 
             String[] fields = {

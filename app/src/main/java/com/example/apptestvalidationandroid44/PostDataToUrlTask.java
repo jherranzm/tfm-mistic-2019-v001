@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.example.apptestvalidationandroid44.https.UtilConnection;
+import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 
 import org.json.JSONObject;
 
@@ -28,6 +29,8 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
 
     public PostDataToUrlTask(){}
 
+    private TFMSecurityManager tfmSecurityManager;
+
     // This is the JSON body of the post
     private JSONObject postData;
 
@@ -36,6 +39,9 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
 
     // This is a constructor that allows you to pass in the JSON body
     public PostDataToUrlTask(Map<String, String> postData) {
+
+        tfmSecurityManager = TFMSecurityManager.getInstance();
+
         if (postData != null) {
             this.postData = new JSONObject(postData);
         }
@@ -55,7 +61,9 @@ public class PostDataToUrlTask extends AsyncTask<String, Void, String> {
             url = new URL(params[0]);
             Log.i(TAG, "POST : " +url.toString());
 
-            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url);
+            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url,
+                    tfmSecurityManager.getUserLoggedDataFromKeyStore("userLogged"),
+                    tfmSecurityManager.getUserLoggedDataFromKeyStore("userPass"));
 
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);

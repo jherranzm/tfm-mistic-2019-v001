@@ -55,7 +55,9 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
             url = new URL(params[0]);
             Log.i(TAG, "URL_FACTURAS:" + url.toString());
 
-            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url);
+            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url,
+                    tfmSecurityManager.getUserLoggedDataFromKeyStore("userLogged"),
+                    tfmSecurityManager.getUserLoggedDataFromKeyStore("userPass"));
             urlConnection.setRequestMethod("GET");
 
             int responseCode = urlConnection.getResponseCode();
