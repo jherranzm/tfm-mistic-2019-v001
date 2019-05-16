@@ -3,6 +3,7 @@ package com.example.apptestvalidationandroid44;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.https.UtilConnection;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 
@@ -61,8 +62,8 @@ public class PostDataWithUserPassToUrlTask extends AsyncTask<String, Void, Strin
             Log.i(TAG, "POST : " +url.toString());
 
             HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url,
-                    tfmSecurityManager.getUserLoggedDataFromKeyStore("userLogged"),
-                    tfmSecurityManager.getUserLoggedDataFromKeyStore("userPass"));
+                    tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED),
+                    tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_PASS));
 
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);

@@ -77,6 +77,7 @@ public class TFMSecurityManager {
     private static CertificateFactory certFactory;
 
     private char[] keystorePassword = Constants.PKCS12_PASSWORD.toCharArray();
+    private File keyStoreFile;
 
     private TFMSecurityManager(){}
 
@@ -118,7 +119,7 @@ public class TFMSecurityManager {
             Log.i(TAG, "KeyStore.getType() : " + keyStore.getType());
 
 
-            File keyStoreFile = loadOrCreateKeyStore(keystorePassword);
+            keyStoreFile = loadOrCreateKeyStore(keystorePassword);
 
             saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
 
@@ -157,28 +158,10 @@ public class TFMSecurityManager {
             }
 
             String defaultUser = "UsuarioApp";
+            String userPass = "UsuarioApp";
             String label = "UsuarioApp";
 
-            setCertificateAndPrivateKey(keystorePassword, keyStoreFile, label, defaultUser);
-
-            saveUserLoggedDataInKeyStore("userLogged", defaultUser);
-            saveUserLoggedDataInKeyStore("userPass", defaultUser);
-
-
-            deleteAllLocalSymKeys();
-
-            String[] fields = {
-                    Constants.UID_FACTURA,
-                    Constants.TAX_IDENTIFICATION_NUMBER,
-                    Constants.CORPORATE_NAME,
-                    Constants.INVOICE_NUMBER,
-                    Constants.INVOICE_TOTAL,
-                    Constants.TOTAL_GROSS_AMOUNT,
-                    Constants.TOTAL_TAX_OUTPUTS,
-                    Constants.ISSUE_DATE
-            };
-
-            getSymmetricKeys(fields);
+            setCertificatePrivateKeyAndSymmetricKeysForUserLogged(defaultUser, userPass, label);
 
             saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
 
@@ -187,6 +170,44 @@ public class TFMSecurityManager {
             Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             Toast.makeText(InvoiceApp.getContext(), "ERROR : "+e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage() , Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void setCertificatePrivateKeyAndSymmetricKeysForUserLogged(
+            String defaultUser,
+            String userPass,
+            String label)
+            throws
+            KeyStoreException,
+            NoSuchAlgorithmException,
+            IOException,
+            OperatorCreationException,
+            ExecutionException,
+            InterruptedException,
+            CertificateException,
+            UnrecoverableEntryException,
+            CMSException,
+            JSONException {
+
+        setCertificateAndPrivateKey(keystorePassword, keyStoreFile, label, defaultUser);
+
+        saveUserLoggedDataInKeyStore(Constants.USER_LOGGED, defaultUser);
+        saveUserLoggedDataInKeyStore(Constants.USER_PASS, userPass);
+
+
+        deleteAllLocalSymKeys();
+
+        String[] fields = {
+                Constants.UID_FACTURA,
+                Constants.TAX_IDENTIFICATION_NUMBER,
+                Constants.CORPORATE_NAME,
+                Constants.INVOICE_NUMBER,
+                Constants.INVOICE_TOTAL,
+                Constants.TOTAL_GROSS_AMOUNT,
+                Constants.TOTAL_TAX_OUTPUTS,
+                Constants.ISSUE_DATE
+        };
+
+        getSymmetricKeys(fields);
     }
 
     /**
@@ -476,11 +497,12 @@ public class TFMSecurityManager {
 
 
         LocalSymKey lsk = new LocalSymKey();
+        lsk.setUser(getUserLoggedDataFromKeyStore(Constants.USER_LOGGED));
         lsk.setF(str);
+
         String simKey = rsg.getRandomString(16);
         byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), this.getCertificate());
         String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
-        lsk.setUser(getUserLoggedDataFromKeyStore("userLogged"));
         lsk.setK(simKeyStringEnc);
 
         InsertLocalSymKeyTask insertLocalSymKeyTask = new InsertLocalSymKeyTask(lsk);

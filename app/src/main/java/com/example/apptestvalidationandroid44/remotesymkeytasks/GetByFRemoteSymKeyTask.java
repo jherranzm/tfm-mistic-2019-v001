@@ -3,7 +3,9 @@ package com.example.apptestvalidationandroid44.remotesymkeytasks;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.https.UtilConnection;
+import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,7 +20,9 @@ public class GetByFRemoteSymKeyTask  extends AsyncTask<String, Void, String> {
 
     private static final String TAG = "GetByFRemoteSymKeyTask";
 
-    public GetByFRemoteSymKeyTask(){}
+    private TFMSecurityManager tfmSecurityManager;
+
+    public GetByFRemoteSymKeyTask(){ tfmSecurityManager = TFMSecurityManager.getInstance(); }
 
     @Override
     protected void onPreExecute() {
@@ -34,7 +38,9 @@ public class GetByFRemoteSymKeyTask  extends AsyncTask<String, Void, String> {
             url = new URL(params[0]);
             Log.i(TAG, url.toString());
 
-            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url);
+            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url,
+                    tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED),
+                    tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_PASS));
             urlConnection.setRequestMethod("GET");
 
             int responseCode = urlConnection.getResponseCode();
@@ -61,8 +67,13 @@ public class GetByFRemoteSymKeyTask  extends AsyncTask<String, Void, String> {
     }
 
 
-    // Converting InputStream to String
-
+    /**
+     *
+     * Converting InputStream to String
+     *
+     * @param in
+     * @return
+     */
     private String readStream(InputStream in) {
         BufferedReader reader = null;
         StringBuffer response;
