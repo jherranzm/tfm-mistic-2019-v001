@@ -204,17 +204,23 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 // taxIdentificationNumber
                 String taxIdentificationNumberEncrypted = simEnc.encrypt(
                         facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber(),
-                        tfmSecurityManager.getSimKeys().get(Constants.TAX_IDENTIFICATION_NUMBER));
+                        //tfmSecurityManager.getSimKeys().get(Constants.TAX_IDENTIFICATION_NUMBER)
+                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TAX_IDENTIFICATION_NUMBER)
+                );
 
                 // invoiceNumber
                 String invoiceNumberEncrypted = simEnc.encrypt(
                         facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber(),
-                        tfmSecurityManager.getSimKeys().get(Constants.INVOICE_NUMBER));
+                        //tfmSecurityManager.getSimKeys().get(Constants.INVOICE_NUMBER)
+                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.INVOICE_NUMBER)
+                );
 
 
                 String dataEncrypted   = simEnc.encrypt(
                         ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate(),
-                        tfmSecurityManager.getSimKeys().get(Constants.ISSUE_DATE));
+                        //tfmSecurityManager.getSimKeys().get(Constants.ISSUE_DATE)
+                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.ISSUE_DATE)
+                );
 
                 String signedInvoiceEncrypted   = simEnc.encrypt(getByteArrayFromSignedInvoice(position));
 

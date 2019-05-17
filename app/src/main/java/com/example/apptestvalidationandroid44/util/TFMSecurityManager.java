@@ -83,7 +83,7 @@ public class TFMSecurityManager {
 
     public static TFMSecurityManager getInstance(){
         if (instance == null){
-            Log.i(TAG, "Inicialización de TFMSecurityManager");
+            Log.i(TAG, "TFMSecurityManager initialization: begin...");
 
             try {
                 certFactory = CertificateFactory.getInstance(Constants.X_509, Constants.BC);
@@ -96,8 +96,10 @@ public class TFMSecurityManager {
             // if instance is null, initialize
             instance = new TFMSecurityManager();
             instance.manageSecurity();
+
+            Log.i(TAG, "TFMSecurityManager initialization: end...");
         }else{
-            Log.i(TAG, "TFMSecurityManager ya inicializado...");
+            Log.i(TAG, "TFMSecurityManager already initialized!");
         }
         return instance;
     }
@@ -306,7 +308,7 @@ public class TFMSecurityManager {
 
             String response_server = getCertificateFromServerTask.execute(Constants.URL_CERT).get();
             String decoded = new String(java.util.Base64.getDecoder().decode(response_server.getBytes()));
-            Log.i(TAG, "CSRder.Response : " + decoded);
+            Log.i(TAG, "CSR.Response : " + decoded);
 
             InputStream isReceivedCertificate = IOUtils.toInputStream(decoded, "UTF-8");
             X509Certificate receivedCertificate = (X509Certificate) certFactory.generateCertificate(isReceivedCertificate);
@@ -330,7 +332,7 @@ public class TFMSecurityManager {
             saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
 
         }else{
-            Log.i(TAG,"Tenemos el certificado de usuario!");
+            Log.i(TAG,"We've got user's certificate!");
             Log.i(TAG, "User Certificate Subject : " + userCertificate.getSubjectDN().getName());
             Log.i(TAG, "User Certificate Issuer  : " + userCertificate.getIssuerDN().getName());
         }
@@ -419,20 +421,20 @@ public class TFMSecurityManager {
                 Log.i(TAG, "LocalSymKey : " + str);
                 LocalSymKey lskF1 = getByFLocalSymKeyTask.execute(str).get();
                 if(lskF1 == null){
-                    Log.i(TAG, "LocalSymKey : [" + str + "] NO està a la base de datos local!");
+                    Log.i(TAG, "LocalSymKey : [" + str + "] NOT in LOCAL database!");
 
                     // Recuperem la clau del servidor
-                    Log.i(TAG, "Buscando [" + str + "] en la base de datos REMOTA...");
+                    Log.i(TAG, "Searching [" + str + "] in REMOTE database...");
                     GetByFRemoteSymKeyTask getByFRemoteSymKeyTask = new GetByFRemoteSymKeyTask();
 
                     String url = Constants.URL_KEYS + "/" + str;
                     String res = getByFRemoteSymKeyTask.execute(url).get();
 
                     if(res == null || res.isEmpty()){
-                        Log.i(TAG, "LocalSymKey NO localizada: " + str);
+                        Log.i(TAG, "LocalSymKey NOT located in REMOTE: " + str);
                         createLocalSymKey(rsg, str);
                     }else{
-                        Log.i(TAG, "Recibida del servidor la clave : ["+str+"]" );
+                        Log.i(TAG, "LocalSymKey received from REMOTE: ["+str+"]" );
 
                         JSONObject receivedRemoteSymKey = new JSONObject(res);
 
@@ -448,7 +450,7 @@ public class TFMSecurityManager {
                     }
 
                 }else{
-                    Log.i(TAG, "LocalSymKey : [" + str + "] ESTÀ a la base de datos local!");
+                    Log.i(TAG, "LocalSymKey : [" + str + "] IS in LOCAL database!");
                     getLocalSymKey(str, lskF1);
                 }
 
@@ -507,7 +509,7 @@ public class TFMSecurityManager {
 
         InsertLocalSymKeyTask insertLocalSymKeyTask = new InsertLocalSymKeyTask(lsk);
         LocalSymKey lskF = insertLocalSymKeyTask.execute().get();
-        Log.i(TAG, "LocalSymKey ingresada: " + lskF.toString());
+        Log.i(TAG, "LocalSymKey saved: " + lskF.toString());
 
         Map<String, String> params = new HashMap<>();
         params.put("f", str);
@@ -516,11 +518,16 @@ public class TFMSecurityManager {
         PostDataToUrlTask getData = new PostDataToUrlTask(params);
 
         String res = getData.execute(Constants.URL_KEYS).get();
-        Log.i(TAG, "res : " + res);
+        Log.i(TAG, "Insert remote SymKey Task: server response : " + res);
 
         this.getSimKeys().put(str, simKey);
 
-        createSymmetricKeyInKeyStore(str);
+        //createSymmetricKeyInKeyStore(str);
+
+        Log.i(TAG, String.format("Save key/secret in KeyStore : %s / %s ", str, simKey));
+        saveKeyAndSecretInKeyStore(str, simKey);
+        String retrievedSecret = getSecretFromKeyInKeyStore(str);
+        Log.i(TAG, String.format("Retrieved key/secret from KeyStore : %s / %s ", str, retrievedSecret));
 
     }
 
@@ -541,25 +548,26 @@ public class TFMSecurityManager {
 
             byte[] data = secretKey.getEncoded();
             String keyString = java.util.Base64.getEncoder().encodeToString(data);
-            Log.i(TAG, "keyString : " + keyString);
+            Log.i(TAG, "createSymmetricKeyInKeyStore.keyString : " + keyString);
 
             byte[] data2 = java.util.Base64.getDecoder().decode(keyString);
-            SecretKey key2 = new SecretKeySpec(data2, 0, data.length, Constants.AES);
+            SecretKey key2 = new SecretKeySpec(data2, 0, data2.length, Constants.AES);
+
             byte[] data3 = key2.getEncoded();
             String keyString3 = java.util.Base64.getEncoder().encodeToString(data3);
 
             if(secretKey.equals(key2)){
                 Log.i(TAG, String.format("Bien! [%s] : [%s]", keyString, keyString3));
 
-                KeyStore.ProtectionParameter protParam =
+                KeyStore.ProtectionParameter protectionParameter =
                         new KeyStore.PasswordProtection(Constants.PKCS12_PASSWORD.toCharArray());
                 keyStore.setEntry(
                         str,
                         new KeyStore.SecretKeyEntry(secretKey),
-                        protParam);
+                        protectionParameter);
                 showAliasesInKeyStore(keyStore);
 
-                String symmetricKeyStored = getSymmetricKeyFromKeyStore(str, protParam);
+                String symmetricKeyStored = getSymmetricKeyFromKeyStore(str, protectionParameter);
                 Log.i(TAG, String.format("symmetricKeyStored [%s] : [%s]. Original : [%s]", str, symmetricKeyStored, keyString));
 
             }else{
@@ -645,12 +653,12 @@ public class TFMSecurityManager {
             byte[] data2 = secret.getBytes();
             SecretKey key2 = new SecretKeySpec(data2, 0, data2.length, Constants.AES);
 
-            KeyStore.ProtectionParameter protParam =
+            KeyStore.ProtectionParameter protectionParameter =
                     new KeyStore.PasswordProtection(Constants.PKCS12_PASSWORD.toCharArray());
             keyStore.setEntry(
                     str,
                     new KeyStore.SecretKeyEntry(key2),
-                    protParam);
+                    protectionParameter);
             showAliasesInKeyStore(keyStore);
 
         } catch (KeyStoreException e) {
@@ -668,6 +676,61 @@ public class TFMSecurityManager {
 
         try {
             Log.i(TAG, String.format("getUserLoggedDataFromKeyStore : [%s]", str));
+            KeyStore.ProtectionParameter protectionParameter =
+                    new KeyStore.PasswordProtection(Constants.PKCS12_PASSWORD.toCharArray());
+
+            KeyStore.SecretKeyEntry recoveredEntry = (KeyStore.SecretKeyEntry)keyStore.getEntry(str, protectionParameter);
+            byte[] bytes = recoveredEntry.getSecretKey().getEncoded();
+            return new String(bytes);
+
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (UnrecoverableEntryException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+
+    /**
+     *
+     * @param str
+     * @param secret
+     */
+    public void saveKeyAndSecretInKeyStore(String str, String secret){
+
+        try {
+            Log.i(TAG, String.format("saveKeyAndSecretInKeyStore : [%s] : [%s]", str, secret));
+            byte[] secretBytes = secret.getBytes();
+            SecretKey key2 = new SecretKeySpec(secretBytes, 0, secretBytes.length, Constants.AES);
+
+            KeyStore.ProtectionParameter protectionParameter =
+                    new KeyStore.PasswordProtection(Constants.PKCS12_PASSWORD.toCharArray());
+            keyStore.setEntry(
+                    str,
+                    new KeyStore.SecretKeyEntry(key2),
+                    protectionParameter);
+            showAliasesInKeyStore(keyStore);
+
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     *
+     * @param str
+     * @return
+     */
+    public String getSecretFromKeyInKeyStore(String str){
+
+        try {
+            Log.i(TAG, String.format("getSecretFromKeyInKeyStore : [%s]", str));
             KeyStore.ProtectionParameter protectionParameter =
                     new KeyStore.PasswordProtection(Constants.PKCS12_PASSWORD.toCharArray());
 

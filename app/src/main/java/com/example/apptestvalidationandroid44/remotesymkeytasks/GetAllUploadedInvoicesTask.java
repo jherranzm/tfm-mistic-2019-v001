@@ -145,6 +145,7 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
                 String taxIdentificationNumber = factura.getString("taxIdentificationNumber");
                 String invoiceNumber = factura.getString("invoiceNumber");
                 String issueDate = factura.getString("issueDate");
+
                 double invoiceTotal = factura.getDouble("invoiceTotal");
                 double totalTaxOutputs = factura.getDouble("totalTaxOutputs");
 
@@ -164,16 +165,21 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
                 simDec.setIv(ivStringDec);
                 simDec.setKey(simKeyStringDec);
 
-                Log.i(TAG, Constants.TAX_IDENTIFICATION_NUMBER + ":" + tfmSecurityManager.getSimKeys().get(Constants.TAX_IDENTIFICATION_NUMBER));
                 String taxIdentificationNumberDecrypted = simDec.decrypt(
                         taxIdentificationNumber,
-                        tfmSecurityManager.getSimKeys().get(Constants.TAX_IDENTIFICATION_NUMBER));
+                        //tfmSecurityManager.getSimKeys().get(Constants.TAX_IDENTIFICATION_NUMBER)
+                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TAX_IDENTIFICATION_NUMBER)
+                );
                 String invoiceNumberDecrypted = simDec.decrypt(
                         invoiceNumber,
-                        tfmSecurityManager.getSimKeys().get(Constants.INVOICE_NUMBER));
+                        //tfmSecurityManager.getSimKeys().get(Constants.INVOICE_NUMBER)
+                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.INVOICE_NUMBER)
+                );
                 String issueDateDecrypted = simDec.decrypt(
                         issueDate,
-                        tfmSecurityManager.getSimKeys().get(Constants.ISSUE_DATE));
+                        //tfmSecurityManager.getSimKeys().get(Constants.ISSUE_DATE)
+                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.ISSUE_DATE)
+                );
 
                 Invoice invoice = new Invoice(uid
                         , taxIdentificationNumberDecrypted
