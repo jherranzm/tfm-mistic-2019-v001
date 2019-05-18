@@ -249,7 +249,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 params.put("iv", ivStringEnc);
                 params.put("key", simKeyStringEnc);
 
-                PostDataToUrlTask getData = new PostDataToUrlTask(params);
+                PostDataAuthenticatedToUrlTask getData = new PostDataAuthenticatedToUrlTask(params);
 
                 String res = getData.execute(Constants.URL_FACTURAS).get();
                 Log.i(TAG, "res : " + res);
@@ -278,10 +278,14 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 Log.i(TAG, "EnvelopedSignature.signXMLFile..." + (ret ? "Firmada!!" : "Sin firmar..."));
 
                 InvoiceData invoiceData = getInvoiceData(facturae, UIDFacturaHash);
-                invoiceData.setUser(tfmSecurityManager.getUserLoggedDataFromKeyStore("userLogged"));
+                invoiceData.setUser(tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED));
 
                 GetByBatchIdentifierInvoiceDataTask getByBatchIdentifierInvoiceDataTask = new GetByBatchIdentifierInvoiceDataTask();
-                List<InvoiceData> alreadySaved = getByBatchIdentifierInvoiceDataTask.execute(invoiceData.getBatchIdentifier()).get();
+                List<InvoiceData> alreadySaved = getByBatchIdentifierInvoiceDataTask.execute(
+                        invoiceData.getBatchIdentifier(),
+                        tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED)
+                ).get();
+
                 if(alreadySaved.size()>0){
 
                     Log.i(TAG, "InvoiceData already in system : nothing to be done!" + invoiceData.toString());

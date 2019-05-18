@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.config.Constants;
+import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 
 import org.json.JSONObject;
 
@@ -21,6 +22,9 @@ public class LogInActivity
         extends AppCompatActivity {
 
     public static String TAG = "LogInActivity";
+
+    // Security
+    private TFMSecurityManager tfmSecurityManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +62,7 @@ public class LogInActivity
                     //params.put("pass", password.getText().toString());
 
                     try {
-                        PostDataWithUserPassToUrlTask getData = new PostDataWithUserPassToUrlTask(params);
+                        PostDataToUrlTask getData = new PostDataToUrlTask(params);
 
                         String res = getData.execute(Constants.URL_LOGIN,
                                 username.getText().toString(),
@@ -78,6 +82,12 @@ public class LogInActivity
                             // Ask for Certificate through CSR
                             // Save Received Certificate in KeyStore
                             // Save PrivateKey in KeyStore
+
+                            tfmSecurityManager.setCertificatePrivateKeyAndSymmetricKeysForUserLogged(
+                                    username.getText().toString(),
+                                    password.getText().toString(),
+                                    username.getText().toString()
+                            );
                         }else{
                             errorDialog(
                                     "User NOT logged in system!",
@@ -102,6 +112,8 @@ public class LogInActivity
                 finish();
             }
         });
+
+        tfmSecurityManager = TFMSecurityManager.getInstance();
     }
 
     private void infoDialog(

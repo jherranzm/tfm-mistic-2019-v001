@@ -23,7 +23,7 @@ public class GetByBatchIdentifierInvoiceDataTask extends AsyncTask<String, Void,
                 .getInstance(InvoiceApp.getContext())
                 .getAppDatabase()
                 .invoiceDataDao()
-                .findByBatchIdentifierInvoiceData(params[0]);
+                .findByBatchIdentifierAndUser(params[0], params[1]);
 
         Log.i(TAG, "InvoiceData.length : " + taskList.size());
 

@@ -6,7 +6,7 @@ import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.CsrHelper;
 import com.example.apptestvalidationandroid44.InvoiceApp;
-import com.example.apptestvalidationandroid44.PostDataToUrlTask;
+import com.example.apptestvalidationandroid44.PostDataAuthenticatedToUrlTask;
 import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
@@ -121,9 +121,9 @@ public class TFMSecurityManager {
             Log.i(TAG, "KeyStore.getType() : " + keyStore.getType());
 
 
-            keyStoreFile = loadOrCreateKeyStore(keystorePassword);
+            keyStoreFile = loadOrCreateKeyStore();
 
-            saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
+            saveKeyStoreToFileSystem();
 
             // Retrieve Server Certificate from KeyStore
             X509Certificate serverCertificate = (X509Certificate) keyStore.getCertificate("Server");
@@ -159,13 +159,22 @@ public class TFMSecurityManager {
                 throw new Exception("Server NOT active");
             }
 
-            String defaultUser = "UsuarioApp";
-            String userPass = "UsuarioApp";
-            String label = "UsuarioApp";
+            if(getSecretFromKeyInKeyStore(Constants.USER_LOGGED) == null){
+                Log.i(TAG, "NOT a default user logged.");
+            }else{
+                setCertificatePrivateKeyAndSymmetricKeysForUserLogged(
+                        getSecretFromKeyInKeyStore(Constants.USER_LOGGED),
+                        getSecretFromKeyInKeyStore(Constants.USER_PASS),
+                        getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
 
-            setCertificatePrivateKeyAndSymmetricKeysForUserLogged(defaultUser, userPass, label);
+                saveKeyStoreToFileSystem();
 
-            saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
+            }
+
+            //String defaultUser = "UsuarioApp";
+            //String userPass = "UsuarioApp";
+            //String label = "UsuarioApp";
+
 
 
         }catch(Exception e){
@@ -190,10 +199,10 @@ public class TFMSecurityManager {
             CMSException,
             JSONException {
 
-        setCertificateAndPrivateKey(keystorePassword, keyStoreFile, label, defaultUser);
+        setCertificateAndPrivateKey(label, defaultUser);
 
-        saveUserLoggedDataInKeyStore(Constants.USER_LOGGED, defaultUser);
-        saveUserLoggedDataInKeyStore(Constants.USER_PASS, userPass);
+        saveKeyAndSecretInKeyStore(Constants.USER_LOGGED, defaultUser);
+        saveKeyAndSecretInKeyStore(Constants.USER_PASS, userPass);
 
 
         deleteAllLocalSymKeys();
@@ -210,18 +219,18 @@ public class TFMSecurityManager {
         };
 
         getSymmetricKeys(fields);
+
+        saveKeyStoreToFileSystem();
     }
 
     /**
      *
      * If KeyStore file exists, load it. Else, create and load the CA and Server Certificates from assets
      *
-     * @param keystorePassword
      * @return
      * @throws Exception
      */
-    private File loadOrCreateKeyStore(
-            char[] keystorePassword)
+    private File loadOrCreateKeyStore()
             throws
             Exception {
 
@@ -232,7 +241,7 @@ public class TFMSecurityManager {
             Log.i(TAG,"KeyStore file already exists in : " + keyStoreFile.getAbsolutePath());
             keyStore.load(new FileInputStream(keyStoreFile), keystorePassword);
 
-            showAliasesInKeyStore(keyStore);
+            showAliasesInKeyStore();
 
         }else{
 
@@ -243,7 +252,7 @@ public class TFMSecurityManager {
             }
 
             keyStore.load(null, null);
-            showAliasesInKeyStore(keyStore);
+            showAliasesInKeyStore();
 
             loadCertificateFromAssets(Constants.CA_CERTIFICATE_FILE, "ca");
             loadCertificateFromAssets(Constants.SERVER_CERTIFICATE_FILE, "Server");
@@ -254,15 +263,30 @@ public class TFMSecurityManager {
                 InputStream isServerKey = InvoiceApp.getContext().getAssets().open(Constants.SERVER_KEY_P12); //.getResources().openRawResource(R.raw.serverkey);
                 keyStore.load(isServerKey, keystorePassword);
                 isServerKey.close();
-                showAliasesInKeyStore(keyStore);
+                showAliasesInKeyStore();
             }
         }
         return keyStoreFile;
     }
 
+    /**
+     *
+     * GEt Certificate from KeyStore by label.
+     *
+     * If it do not exists then it's created
+     *
+     * @param label
+     * @param defaultUser
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     * @throws OperatorCreationException
+     * @throws ExecutionException
+     * @throws InterruptedException
+     * @throws CertificateException
+     * @throws UnrecoverableEntryException
+     */
     private void setCertificateAndPrivateKey(
-            char[] keystorePassword,
-            File keyStoreFile,
             String label,
             String defaultUser)
             throws
@@ -329,7 +353,7 @@ public class TFMSecurityManager {
             Log.i(TAG, "privateKey : saved!");
 
 
-            saveKeyStoreToFileSystem(keystorePassword, keyStore, keyStoreFile);
+            saveKeyStoreToFileSystem();
 
         }else{
             Log.i(TAG,"We've got user's certificate!");
@@ -359,15 +383,12 @@ public class TFMSecurityManager {
 
     /**
      *
-     * @param keystorePassword
-     * @param keyStore
-     * @param keyStoreFile
      * @throws CertificateException
      * @throws IOException
      * @throws KeyStoreException
      * @throws NoSuchAlgorithmException
      */
-    private void saveKeyStoreToFileSystem(char[] keystorePassword, KeyStore keyStore, File keyStoreFile)
+    private void saveKeyStoreToFileSystem()
             throws
             CertificateException,
             IOException,
@@ -382,10 +403,9 @@ public class TFMSecurityManager {
 
     /**
      *
-     * @param keyStore
      * @throws KeyStoreException
      */
-    private void showAliasesInKeyStore(KeyStore keyStore)
+    private void showAliasesInKeyStore()
             throws
             KeyStoreException {
         Enumeration<String> aliases = keyStore.aliases();
@@ -515,7 +535,7 @@ public class TFMSecurityManager {
         params.put("f", str);
         params.put("k", simKeyStringEnc);
 
-        PostDataToUrlTask getData = new PostDataToUrlTask(params);
+        PostDataAuthenticatedToUrlTask getData = new PostDataAuthenticatedToUrlTask(params);
 
         String res = getData.execute(Constants.URL_KEYS).get();
         Log.i(TAG, "Insert remote SymKey Task: server response : " + res);
@@ -565,13 +585,13 @@ public class TFMSecurityManager {
                         str,
                         new KeyStore.SecretKeyEntry(secretKey),
                         protectionParameter);
-                showAliasesInKeyStore(keyStore);
+                showAliasesInKeyStore();
 
                 String symmetricKeyStored = getSymmetricKeyFromKeyStore(str, protectionParameter);
                 Log.i(TAG, String.format("symmetricKeyStored [%s] : [%s]. Original : [%s]", str, symmetricKeyStored, keyString));
 
             }else{
-                Log.e(TAG, String.format("ERROR : Something went really wrong... Keys are not equal!!"));
+                Log.e(TAG, "ERROR : Something went really wrong... Keys are not equal!!");
             }
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -597,10 +617,10 @@ public class TFMSecurityManager {
             KeyStoreException,
             NoSuchAlgorithmException,
             UnrecoverableEntryException {
-        String recoveredSecret = "";
+
         KeyStore.SecretKeyEntry recoveredEntry = (KeyStore.SecretKeyEntry)keyStore.getEntry(str, protParam);
         byte[] bytes = recoveredEntry.getSecretKey().getEncoded();
-        recoveredSecret = java.util.Base64.getEncoder().encodeToString(bytes);
+        String recoveredSecret = java.util.Base64.getEncoder().encodeToString(bytes);
         Log.i(TAG, "recovered " + recoveredSecret);
         return recoveredSecret;
     }
@@ -638,7 +658,7 @@ public class TFMSecurityManager {
         }
         Log.i(TAG,"Retrieved " + alias + " Certificate from file in assets! SubjectDN : " + certificate.getSubjectDN().getName());
         keyStore.setCertificateEntry(alias, certificate);
-        showAliasesInKeyStore(keyStore);
+        showAliasesInKeyStore();
     }
 
     /**
@@ -659,7 +679,7 @@ public class TFMSecurityManager {
                     str,
                     new KeyStore.SecretKeyEntry(key2),
                     protectionParameter);
-            showAliasesInKeyStore(keyStore);
+            showAliasesInKeyStore();
 
         } catch (KeyStoreException e) {
             e.printStackTrace();
@@ -714,7 +734,7 @@ public class TFMSecurityManager {
                     str,
                     new KeyStore.SecretKeyEntry(key2),
                     protectionParameter);
-            showAliasesInKeyStore(keyStore);
+            showAliasesInKeyStore();
 
         } catch (KeyStoreException e) {
             e.printStackTrace();
@@ -729,7 +749,12 @@ public class TFMSecurityManager {
      */
     public String getSecretFromKeyInKeyStore(String str){
 
+
         try {
+            if(!keyStore.containsAlias(str)){
+                return null;
+            }
+
             Log.i(TAG, String.format("getSecretFromKeyInKeyStore : [%s]", str));
             KeyStore.ProtectionParameter protectionParameter =
                     new KeyStore.PasswordProtection(Constants.PKCS12_PASSWORD.toCharArray());

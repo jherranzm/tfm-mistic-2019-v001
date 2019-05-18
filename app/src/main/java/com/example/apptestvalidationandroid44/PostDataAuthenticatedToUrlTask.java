@@ -24,11 +24,11 @@ import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 
 
-public class PostDataWithUserPassToUrlTask extends AsyncTask<String, Void, String> {
+public class PostDataAuthenticatedToUrlTask extends AsyncTask<String, Void, String> {
 
-    private static final String TAG = "PostDataWithUserPassToUrlTask";
+    private static final String TAG = "PostDataAuthenticatedToUrlTask";
 
-    public PostDataWithUserPassToUrlTask(){}
+    public PostDataAuthenticatedToUrlTask(){}
 
     // This is the JSON body of the post
     private JSONObject postData;
@@ -38,7 +38,7 @@ public class PostDataWithUserPassToUrlTask extends AsyncTask<String, Void, Strin
     private int responseCode;
 
     // This is a constructor that allows you to pass in the JSON body
-    public PostDataWithUserPassToUrlTask(Map<String, String> postData) {
+    public PostDataAuthenticatedToUrlTask(Map<String, String> postData) {
 
         tfmSecurityManager = TFMSecurityManager.getInstance();
 

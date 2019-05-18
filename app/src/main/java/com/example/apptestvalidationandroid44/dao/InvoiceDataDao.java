@@ -26,6 +26,12 @@ public interface InvoiceDataDao {
 
         @Query("SELECT * " +
                 "FROM InvoiceData " +
+                "WHERE batchIdentifier = :bi " +
+                "and user = :u")
+        List<InvoiceData> findByBatchIdentifierAndUser(String bi, String u);
+
+        @Query("SELECT * " +
+                "FROM InvoiceData " +
                 "WHERE batchIdentifier = :bi")
         List<InvoiceData> findByBatchIdentifierInvoiceData(String bi);
 
