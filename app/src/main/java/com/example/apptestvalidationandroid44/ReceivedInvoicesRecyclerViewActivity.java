@@ -43,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import es.facturae.facturae.v3.facturae.Facturae;
@@ -52,8 +53,8 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
     // Constants
     private static final String TAG = "ReceivedInvoicesRAV";
 
-    public static final String INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA = "Remote backup. INFO: Invoice  %s correctly backed up!";
-    public static final String ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA = "Remote backup. ALERT: Invoice  %s already backed up in system!";
+    public static final String INFO_INVOICE_CORRECTLY_BACKED_UP_IN_SERVER = "Remote backup. INFO: Invoice  %s correctly backed up!";
+    public static final String ALERT_INVOICE_ALREADY_IN_SERVER = "Remote backup. ALERT: Invoice  %s already backed up in system!";
     public static final String ALERTA_LA_FIRMA_NO_ES_VALIDA = "ALERT: Invoice signature NOT valid!";
 
     // Widgets
@@ -79,7 +80,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         signedInvoices = getFileInvoicesInSystem();
         mAdapter = new ReceivedInvoicesRecyclerViewAdapter(signedInvoices);
         TextView textViewNumberItems = findViewById(R.id.textViewNumInvoiceFilesInSystem);
-        textViewNumberItems.setText("Number of File Invoices in System " + signedInvoices.size());
+        textViewNumberItems.setText(String.format(Locale.getDefault(), "Number of File Invoices in System [%d]", signedInvoices.size()));
 
 
         mRecyclerView.setAdapter(mAdapter);
@@ -115,7 +116,6 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
     private boolean validateSignedInvoice(Document doc){
         boolean valid = false;
         try {
-            //valid = UtilValidator.isValid(tfmSecurityManager.getCertificate(), doc);
             valid = UtilValidator.isValid(doc);
         } catch (IOException e) {
             Toast.makeText(InvoiceApp.getContext(), "ERROR IO " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
@@ -168,158 +168,35 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
             boolean valid = validateSignedInvoice(doc);
 
-            String message = "";
-
             if(!valid){
                 //Toast.makeText(mContext, "ERROR : La firma NO es válida!", Toast.LENGTH_LONG).show();
                 alertShow(ALERTA_LA_FIRMA_NO_ES_VALIDA);
             }else{
-                Toast.makeText(InvoiceApp.getContext(), "Documento factura válida!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(InvoiceApp.getContext(), "Valid signed document!", Toast.LENGTH_SHORT).show();
 
                 Document document = UtilDocument.removeSignature(doc);
-                Toast.makeText(InvoiceApp.getContext(), "Firma eliminada!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(InvoiceApp.getContext(), "Signature erased!", Toast.LENGTH_SHORT).show();
 
 
-                Toast.makeText(InvoiceApp.getContext(), "Recuperando datos de factura...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(InvoiceApp.getContext(), "Retrieving invoice data...", Toast.LENGTH_SHORT).show();
                 Facturae facturae = UtilFacturae.getFacturaeFromFactura(UtilDocument.documentToString(document));
                 if(facturae == null){
-                    throw new Exception("ERROR:La factura NO es correcta!");
+                    throw new Exception("ERROR: Invoice is NOT correct!");
                 }
 
-                Toast.makeText(InvoiceApp.getContext(), "Encriptando datos de factura...", Toast.LENGTH_SHORT).show();
-
-                // Encriptación de los datos
-                Log.i(TAG, "Encryption...");
-                RandomStringGenerator rsg = new RandomStringGenerator();
-
-                String iv = rsg.getRandomString(16);
-                Log.i(TAG, "iv     : ["+iv+"]");
-                String simKey = rsg.getRandomString(16);
-                Log.i(TAG, "simKey : ["+simKey+"]");
-
-                SymmetricEncryptor simEnc = new SymmetricEncryptor();
-                simEnc.setIv(iv);
-                simEnc.setKey(simKey);
-
-                if(facturae.getParties() == null){
-                    throw new Exception("ERROR en la factura NO vienen informadas las partes.");
-                }
-
-                // taxIdentificationNumber
-                String taxIdentificationNumberEncrypted = simEnc.encrypt(
-                        facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber(),
-                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TAX_IDENTIFICATION_NUMBER)
-                );
-
-                // invoiceNumber
-                String invoiceNumberEncrypted = simEnc.encrypt(
-                        facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber(),
-                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.INVOICE_NUMBER)
-                );
-
-                // total
-                String totalEncrypted = simEnc.encrypt(
-                        ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal(),
-                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.INVOICE_TOTAL)
-                );
-
-                // total_tax_outputs
-                String totalTaxOutputsEncrypted = simEnc.encrypt(
-                        ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs(),
-                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TOTAL_TAX_OUTPUTS)
-                );
-
-                // total_gross_amount
-                String totalGrossAmountEncrypted = simEnc.encrypt(
-                        ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount(),
-                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TOTAL_GROSS_AMOUNT)
-                );
+                Toast.makeText(InvoiceApp.getContext(), "Encrypting invoice data...", Toast.LENGTH_SHORT).show();
 
 
-                String dataEncrypted   = simEnc.encrypt(
-                        ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate(),
-                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.ISSUE_DATE)
-                );
-
-                String signedInvoiceEncrypted   = simEnc.encrypt(getByteArrayFromSignedInvoice(position));
-
-                String UIDFacturaHash = UIDGenerator.generate(facturae);
-                Log.i(TAG, "UIDFacturaHash : ["+UIDFacturaHash+"]");
-
-                // Encriptació amb clau pública de iv i simKey
-                byte[] ivBytesEnc = AsymmetricEncryptor.encryptData(iv.getBytes(), tfmSecurityManager.getCertificate());
-                String ivStringEnc = new String(Base64.encode(ivBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
-                byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), tfmSecurityManager.getCertificate());
-                String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
+                String UIDInvoiceHash = UIDGenerator.generate(facturae);
+                Log.i(TAG, "UIDInvoiceHash : ["+UIDInvoiceHash+"]");
 
 
-                Map<String, String> params = new HashMap<>();
-                params.put("uidfactura", (UIDFacturaHash == null ? "---" : UIDFacturaHash));
-                params.put("tax_identification_number", taxIdentificationNumberEncrypted);
-                params.put("invoice_number", invoiceNumberEncrypted);
-
-                params.put("total", totalEncrypted);
-                params.put("total_tax_outputs", totalTaxOutputsEncrypted);
-                params.put("total_gross_amount", totalGrossAmountEncrypted);
-
-                params.put("issue_data", dataEncrypted);
-                params.put("file", signedInvoiceEncrypted);
-                params.put("iv", ivStringEnc);
-                params.put("key", simKeyStringEnc);
-
-                PostDataAuthenticatedToUrlTask getData = new PostDataAuthenticatedToUrlTask(params);
-
-                String res = getData.execute(Constants.URL_FACTURAS).get();
-                Log.i(TAG, "res : " + res);
-
-                JSONObject receivedInvoice = new JSONObject(res);
-                String id = receivedInvoice.getString("id");
-
-                boolean invoiceBackedUp = false;
-
-                if (getData.getResponseCode() == HttpURLConnection.HTTP_OK){
-
-                    infoShow(String.format(INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA, id));
-                    invoiceBackedUp = true;
-
-                }else if (getData.getResponseCode() == HttpURLConnection.HTTP_CONFLICT){
-
-                    message += Constants.CR_LF + String.format(ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA, id);
-                    alertShow(message);
-                    invoiceBackedUp = true;
-
-                }else if (getData.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR){
-
-                    message += Constants.CR_LF + "ERROR de Servidor";
-                    alertShow(message);
-                }
-
-                Log.i(TAG, "Respuesta del Servidor : ["+res+"]");
+                boolean invoiceBackedUp = encryptAndUploadInvoice(position, facturae, UIDInvoiceHash);
 
                 boolean ret = EnvelopedSignature.signXMLFile(document);
-                Log.i(TAG, "EnvelopedSignature.signXMLFile..." + (ret ? "Firmada!!" : "Sin firmar..."));
+                Log.i(TAG, "EnvelopedSignature.signXMLFile..." + (ret ? "Signed!!" : "NOT signed..."));
 
-                InvoiceData invoiceData = getInvoiceData(facturae, UIDFacturaHash);
-                invoiceData.setUser(tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED));
-                invoiceData.setBackedUp(invoiceBackedUp);
-
-                GetByBatchIdentifierInvoiceDataTask getByBatchIdentifierInvoiceDataTask = new GetByBatchIdentifierInvoiceDataTask();
-                List<InvoiceData> alreadySaved = getByBatchIdentifierInvoiceDataTask.execute(
-                        invoiceData.getBatchIdentifier(),
-                        tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED)
-                ).get();
-
-                if(alreadySaved.size()>0){
-
-                    Log.i(TAG, "InvoiceData already in system : nothing to be done!" + invoiceData.toString());
-                    alertShow( "Local Database: Invoice "+ invoiceData.getInvoiceNumber() +" already in system : nothing to be done!" );
-                }else{
-
-                    InsertInvoiceDataTask insertInvoiceDataTask = new InsertInvoiceDataTask(invoiceData);
-                    InvoiceData invoiceDataInserted = insertInvoiceDataTask.execute().get();
-                    infoShow( "Local Database: Invoice "+ invoiceData.getInvoiceNumber() +" loaded in system!" );
-                    Log.i(TAG, "InvoiceData ingresada: " + invoiceDataInserted.toString());
-                }
+                saveInvoiceDataInLocalDatabase(facturae, UIDInvoiceHash, invoiceBackedUp);
 
             } // if(valid)
         }catch (Exception e){
@@ -328,7 +205,161 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         }
     }
 
-    private InvoiceData getInvoiceData(Facturae facturae, String UIDFacturaHash) {
+    private boolean encryptAndUploadInvoice(
+            int position,
+            Facturae facturae,
+            String UIDInvoiceHash)
+            throws
+            Exception {
+
+
+        // Data encrypting
+        Log.i(TAG, "Encryption...");
+        RandomStringGenerator rsg = new RandomStringGenerator();
+
+        // IV and Symmetric Key
+        String iv = rsg.getRandomString(16);
+        Log.i(TAG, "iv     : ["+iv+"]");
+        String simKey = rsg.getRandomString(16);
+        Log.i(TAG, "simKey : ["+simKey+"]");
+
+
+        SymmetricEncryptor simEnc = new SymmetricEncryptor();
+        simEnc.setIv(iv);
+        simEnc.setKey(simKey);
+
+        if(facturae.getParties() == null){
+            throw new Exception("ERROR: invoice has NOT parties.");
+        }
+
+        // taxIdentificationNumber
+        String taxIdentificationNumberEncrypted = simEnc.encrypt(
+                facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber(),
+                tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TAX_IDENTIFICATION_NUMBER)
+        );
+
+        // invoiceNumber
+        String invoiceNumberEncrypted = simEnc.encrypt(
+                facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber(),
+                tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.INVOICE_NUMBER)
+        );
+
+        // total
+        String totalEncrypted = simEnc.encrypt(
+                ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal(),
+                tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.INVOICE_TOTAL)
+        );
+
+        // total_tax_outputs
+        String totalTaxOutputsEncrypted = simEnc.encrypt(
+                ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs(),
+                tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TOTAL_TAX_OUTPUTS)
+        );
+
+        // total_gross_amount
+        String totalGrossAmountEncrypted = simEnc.encrypt(
+                ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount(),
+                tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TOTAL_GROSS_AMOUNT)
+        );
+
+        // issue Date
+        String dataEncrypted   = simEnc.encrypt(
+                ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate(),
+                tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.ISSUE_DATE)
+        );
+
+        // Encrypt file
+        String signedInvoiceEncrypted   = simEnc.encrypt(getByteArrayFromSignedInvoice(position));
+
+        // Encrypt iv and symmetric key with public key
+        byte[] ivBytesEnc = AsymmetricEncryptor.encryptData(iv.getBytes(), tfmSecurityManager.getCertificate());
+        String ivStringEnc = new String(Base64.encode(ivBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
+
+        byte[] simKeyBytesEnc = AsymmetricEncryptor.encryptData(simKey.getBytes(), tfmSecurityManager.getCertificate());
+        String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
+
+
+        // Prepare data to upload to server
+        Map<String, String> params = new HashMap<>();
+        params.put("uidfactura", (UIDInvoiceHash == null ? "---" : UIDInvoiceHash));
+        params.put("tax_identification_number", taxIdentificationNumberEncrypted);
+        params.put("invoice_number", invoiceNumberEncrypted);
+
+        params.put("total", totalEncrypted);
+        params.put("total_tax_outputs", totalTaxOutputsEncrypted);
+        params.put("total_gross_amount", totalGrossAmountEncrypted);
+
+        params.put("issue_data", dataEncrypted);
+        params.put("file", signedInvoiceEncrypted);
+        params.put("iv", ivStringEnc);
+        params.put("key", simKeyStringEnc);
+
+        PostDataAuthenticatedToUrlTask getData = new PostDataAuthenticatedToUrlTask(params);
+
+        String res = getData.execute(Constants.URL_FACTURAS).get();
+        Log.i(TAG, "Response from server : " + res);
+
+        JSONObject receivedInvoice = new JSONObject(res);
+        String id = receivedInvoice.getString("id");
+
+        boolean invoiceBackedUp = false;
+
+        String message = "";
+
+        if (getData.getResponseCode() == HttpURLConnection.HTTP_OK){
+
+            infoShow(String.format(INFO_INVOICE_CORRECTLY_BACKED_UP_IN_SERVER, id));
+            invoiceBackedUp = true;
+
+        }else if (getData.getResponseCode() == HttpURLConnection.HTTP_CONFLICT){
+
+            message += Constants.CR_LF + String.format(ALERT_INVOICE_ALREADY_IN_SERVER, id);
+            alertShow(message);
+            invoiceBackedUp = true;
+
+        }else if (getData.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR){
+
+            message += Constants.CR_LF + "ERROR: Server error.";
+            alertShow(message);
+        }
+
+        return invoiceBackedUp;
+    }
+
+    private void saveInvoiceDataInLocalDatabase(
+            Facturae facturae,
+            String UIDFacturaHash,
+            boolean invoiceBackedUp)
+            throws
+            java.util.concurrent.ExecutionException,
+            InterruptedException {
+
+        InvoiceData invoiceData = getInvoiceData(facturae, UIDFacturaHash);
+        invoiceData.setUser(tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED));
+        invoiceData.setBackedUp(invoiceBackedUp);
+
+        GetByBatchIdentifierInvoiceDataTask getByBatchIdentifierInvoiceDataTask = new GetByBatchIdentifierInvoiceDataTask();
+        List<InvoiceData> alreadySaved = getByBatchIdentifierInvoiceDataTask.execute(
+                invoiceData.getBatchIdentifier(),
+                tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED)
+        ).get();
+
+        if(alreadySaved.size()>0){
+
+            Log.i(TAG, "InvoiceData already in system : nothing to be done!" + invoiceData.toString());
+            alertShow( "Local Database: Invoice "+ invoiceData.getInvoiceNumber() +" already in system : nothing to be done!" );
+        }else{
+
+            InsertInvoiceDataTask insertInvoiceDataTask = new InsertInvoiceDataTask(invoiceData);
+            InvoiceData invoiceDataInserted = insertInvoiceDataTask.execute().get();
+            infoShow( "Local Database: Invoice "+ invoiceData.getInvoiceNumber() +" loaded in system!" );
+            Log.i(TAG, "InvoiceData ingresada: " + invoiceDataInserted.toString());
+        }
+    }
+
+    private InvoiceData getInvoiceData(
+            Facturae facturae,
+            String UIDFacturaHash) {
 
         InvoiceData invoiceData = new InvoiceData();
 
@@ -356,6 +387,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
             final String cancelMethod,
             final String okMethod,
             final int position){
+
         final android.support.v7.app.AlertDialog.Builder builderSingle = new android.support.v7.app.AlertDialog.Builder(this);
         builderSingle.setIcon(R.mipmap.ic_launcher_round);
         builderSingle.setTitle(title);
@@ -391,7 +423,8 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         builderSingle.show();
     }
 
-    private void infoShow( String message ) {
+    private void infoShow(
+            String message ) {
         AlertDialog alertDialog = new AlertDialog.Builder(this).create();
         alertDialog.setTitle("Info");
         alertDialog.setMessage(message);
@@ -406,7 +439,8 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    private  void alertShow( String message ) {
+    private  void alertShow(
+            String message ) {
         AlertDialog alertDialog = new AlertDialog.Builder(this).create();
         alertDialog.setTitle("Alert!");
         alertDialog.setMessage(message);
