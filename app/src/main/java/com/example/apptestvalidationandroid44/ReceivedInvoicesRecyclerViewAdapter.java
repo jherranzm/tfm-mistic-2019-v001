@@ -33,6 +33,7 @@ public class ReceivedInvoicesRecyclerViewAdapter extends RecyclerView
 
         @Override
         public void onClick(View v) {
+
             theClickListener.onItemClick(getAdapterPosition(), v);
         }
     }

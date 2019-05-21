@@ -16,10 +16,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.apptestvalidationandroid44.model.TotalByProviderByYearVO;
-import com.example.apptestvalidationandroid44.model.TotalByProviderVO;
 import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.DeleteAllInvoiceDataTask;
 import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.GetTotalsByProviderByYearTask;
-import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.GetTotalsByProviderTask;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 
 import org.spongycastle.asn1.x500.RDN;
@@ -161,22 +159,8 @@ public class MainActivity
             public void onClick(View view) {
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                try {
-
-                    GetTotalsByProviderTask getTotalsByProviderTask = new GetTotalsByProviderTask();
-                    List<TotalByProviderVO> totals = getTotalsByProviderTask.execute().get();
-
-                    for(TotalByProviderVO totalByProviderVO : totals){
-                        Log.i(TAG, totalByProviderVO.toString());
-                    }
-
-                    mProgressBar.setVisibility(View.INVISIBLE);
-
-
-                } catch (Exception e) {
-                    Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
-                    e.printStackTrace();
-                }
+                Intent intent = new Intent(InvoiceApp.getContext(), TotalsByProviderRecyclerViewActivity.class);
+                startActivity(intent);
 
                 mProgressBar.setVisibility(View.INVISIBLE);
             }

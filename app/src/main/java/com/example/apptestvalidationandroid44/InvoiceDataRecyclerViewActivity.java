@@ -57,6 +57,8 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
                         Log.i(TAG, " Clicked on Item " + position);
                         Toast.makeText(InvoiceApp.getContext(), "Factura " + invoices.get(position).getInvoiceNumber(), Toast.LENGTH_SHORT).show();
                         Log.i(TAG, " Clicked on Item " + invoices.get(position).toString());
+
+                        customDialog("Plim", "Plam", "cancel", "ok", position);
                     }
                 });
     }

@@ -55,7 +55,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
         RecyclerView.LayoutManager mLayoutManager;
 
         mContext = getApplicationContext();
-        mRecyclerView = findViewById(R.id.my_recycler_view);
+        mRecyclerView = findViewById(R.id.uploaded_invoices_recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);

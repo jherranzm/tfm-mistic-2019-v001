@@ -89,6 +89,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         mRecyclerView.addItemDecoration(itemDecoration);
 
         tfmSecurityManager = TFMSecurityManager.getInstance();
+
     }
 
     @Override

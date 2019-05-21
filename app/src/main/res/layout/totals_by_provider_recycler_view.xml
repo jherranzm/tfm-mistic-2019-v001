@@ -1,21 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.example.apptestvalidationandroid44.UploadedInvoicesRecyclerViewActivity">
+    tools:context=".TotalsByProviderRecyclerViewActivity" >
 
     <TextView
-        android:id="@+id/textViewNumUploadedInvoices"
+        android:id="@+id/textViewTotalsByProvider"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:text="@string/numUploadedInvoices" />
+        android:layout_height="54dp"
+        android:text="@string/totalsByProvider"
+        android:textSize="24sp" />
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/uploaded_invoices_recycler_view"
+        android:id="@+id/totals_by_provider_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"/>
-
 </LinearLayout>

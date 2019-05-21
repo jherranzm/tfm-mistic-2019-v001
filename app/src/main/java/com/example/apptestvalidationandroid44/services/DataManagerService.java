@@ -5,7 +5,9 @@ import android.util.Log;
 import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.model.Invoice;
 import com.example.apptestvalidationandroid44.model.InvoiceData;
+import com.example.apptestvalidationandroid44.model.TotalByProviderVO;
 import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.GetAllInvoiceDataTask;
+import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.GetTotalsByProviderTask;
 import com.example.apptestvalidationandroid44.tasks.remotesymkeytasks.GetAllUploadedInvoicesTask;
 
 import java.util.ArrayList;
@@ -73,6 +75,26 @@ public class DataManagerService {
         }
 
         return invoiceDataList;
+
+    }
+
+    public static List<TotalByProviderVO> getTotalsByProvider() {
+
+        List<TotalByProviderVO> totals = new ArrayList<>();
+        try {
+
+            GetTotalsByProviderTask getTotalsByProviderTask = new GetTotalsByProviderTask();
+            totals = getTotalsByProviderTask.execute().get();
+            for (TotalByProviderVO total : totals){
+                Log.i(TAG, total.toString());
+            }
+
+        } catch (Exception e) {
+            Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+
+        return totals;
 
     }
 }
