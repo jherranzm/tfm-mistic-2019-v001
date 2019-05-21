@@ -1,4 +1,4 @@
-package com.example.apptestvalidationandroid44.invoicedatatasks;
+package com.example.apptestvalidationandroid44.tasks.invoicedatatasks;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -9,14 +9,11 @@ import com.example.apptestvalidationandroid44.model.InvoiceData;
 
 import java.util.List;
 
-public class GetByTaxIdentificationNumberInvoiceDataTask extends AsyncTask<String, Void, List<InvoiceData>> {
+public class GetByBatchIdentifierInvoiceDataTask extends AsyncTask<String, Void, List<InvoiceData>> {
 
-    private static final String TAG = "GetByTaxIdentificationNumberInvoiceDataTask";
+    private static final String TAG = "GetByBatchIdentifierInvoiceDataTask";
 
-    private InvoiceData invoiceData;
-
-    public GetByTaxIdentificationNumberInvoiceDataTask(){
-    }
+    public GetByBatchIdentifierInvoiceDataTask(){}
 
     @Override
     protected List<InvoiceData> doInBackground(String... params) {
@@ -25,7 +22,7 @@ public class GetByTaxIdentificationNumberInvoiceDataTask extends AsyncTask<Strin
                 .getInstance(InvoiceApp.getContext())
                 .getAppDatabase()
                 .invoiceDataDao()
-                .findAllInvoiceDataTaxIdentificationNumber(params[0]);
+                .findByBatchIdentifierAndUser(params[0], params[1]);
 
         Log.i(TAG, "InvoiceData.length : " + taskList.size());
 

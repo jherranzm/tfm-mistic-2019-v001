@@ -17,9 +17,9 @@ import android.widget.Toast;
 import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
-import com.example.apptestvalidationandroid44.invoicetasks.GetInvoiceByIdTask;
 import com.example.apptestvalidationandroid44.model.Invoice;
-import com.example.apptestvalidationandroid44.remotesymkeytasks.GetAllUploadedInvoicesTask;
+import com.example.apptestvalidationandroid44.services.DataManagerService;
+import com.example.apptestvalidationandroid44.tasks.invoicetasks.GetInvoiceByIdTask;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 import com.example.apptestvalidationandroid44.util.UtilDocument;
 import com.example.apptestvalidationandroid44.util.UtilFacturae;
@@ -32,11 +32,9 @@ import org.w3c.dom.Document;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 
 import es.facturae.facturae.v3.facturae.Facturae;
 
@@ -62,7 +60,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        invoices = getUploadedInvoicesFromServer();
+        invoices = DataManagerService.getUploadedInvoicesFromServer();
         mAdapter = new UploadedInvoicesRecyclerViewAdapter(invoices);
 
         TextView textViewNumberItems = findViewById(R.id.textViewNumUploadedInvoices);
@@ -266,23 +264,4 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
     }
 
 
-
-    private List<Invoice> getUploadedInvoicesFromServer() {
-
-        List<Invoice> invoices = new ArrayList<>();
-        try {
-            GetAllUploadedInvoicesTask getAllUploadedInvoicesTask = new GetAllUploadedInvoicesTask();
-
-            invoices = getAllUploadedInvoicesTask.execute(Constants.URL_FACTURAS).get();
-
-            Log.i(TAG, "getAllUploadedInvoicesTask : " + invoices.size());
-
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return invoices;
-    }
 }

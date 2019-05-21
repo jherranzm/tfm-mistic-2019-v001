@@ -49,4 +49,10 @@
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:text="TextView"
         android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <CheckedTextView
+        android:id="@+id/checkedTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="In Local Database" />
 </LinearLayout>

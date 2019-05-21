@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.example.apptestvalidationandroid44.model.InvoiceData;
@@ -32,6 +33,7 @@ public class InvoiceDataRecyclerViewAdapter extends RecyclerView
         TextView totalAmount;
         TextView totalTaxOutputs;
         TextView issueDate;
+        CheckBox cbBackedUpInServer;
 
         DataObjectHolder(View itemView) {
             super(itemView);
@@ -41,6 +43,8 @@ public class InvoiceDataRecyclerViewAdapter extends RecyclerView
             totalAmount = itemView.findViewById(R.id.textViewTotalAmount);
             totalTaxOutputs = itemView.findViewById(R.id.textViewTotalTaxOutputs);
             issueDate = itemView.findViewById(R.id.textViewIssueDate);
+
+            cbBackedUpInServer = itemView.findViewById(R.id.checkBoxRemoteBackUp);
             Log.i(LOG_TAG, "Adding Listener");
             itemView.setOnClickListener(this);
         }
@@ -88,6 +92,7 @@ public class InvoiceDataRecyclerViewAdapter extends RecyclerView
         holder.issueDate.setText(String.format(
                 Locale.forLanguageTag("es-ES"),
                 "Date: %s", DATE_FORMAT.format(mDataset.get(position).getIssueDate())));
+        holder.cbBackedUpInServer.setChecked(mDataset.get(position).isBackedUp());
     }
 
     public void addItem(InvoiceData dataObj, int index) {

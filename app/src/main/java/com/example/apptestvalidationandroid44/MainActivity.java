@@ -15,11 +15,11 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.apptestvalidationandroid44.invoicedatatasks.DeleteAllInvoiceDataTask;
-import com.example.apptestvalidationandroid44.invoicedatatasks.GetTotalsByProviderByYearTask;
-import com.example.apptestvalidationandroid44.invoicedatatasks.GetTotalsByProviderTask;
 import com.example.apptestvalidationandroid44.model.TotalByProviderByYearVO;
 import com.example.apptestvalidationandroid44.model.TotalByProviderVO;
+import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.DeleteAllInvoiceDataTask;
+import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.GetTotalsByProviderByYearTask;
+import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.GetTotalsByProviderTask;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 
 import org.spongycastle.asn1.x500.RDN;

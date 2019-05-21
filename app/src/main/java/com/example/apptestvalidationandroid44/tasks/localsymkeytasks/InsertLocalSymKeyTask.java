@@ -1,4 +1,4 @@
-package com.example.apptestvalidationandroid44.localsymkeytasks;
+package com.example.apptestvalidationandroid44.tasks.localsymkeytasks;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -7,13 +7,13 @@ import com.example.apptestvalidationandroid44.InvoiceApp;
 import com.example.apptestvalidationandroid44.model.DatabaseClient;
 import com.example.apptestvalidationandroid44.model.LocalSymKey;
 
-public class DeleteLocalSymKeyTask extends AsyncTask<Void, Void, LocalSymKey> {
+public class InsertLocalSymKeyTask extends AsyncTask<Void, Void, LocalSymKey> {
 
-    private static final String TAG = "DeleteLocalSymKeyTask";
+    private static final String TAG = "InsertLocalSymKeyTask";
 
     private LocalSymKey lsk;
 
-    public DeleteLocalSymKeyTask(LocalSymKey theLsk){
+    public InsertLocalSymKeyTask(LocalSymKey theLsk){
         this.lsk = theLsk;
     }
 
@@ -25,12 +25,13 @@ public class DeleteLocalSymKeyTask extends AsyncTask<Void, Void, LocalSymKey> {
     @Override
     protected LocalSymKey doInBackground(Void... voids) {
 
-        DatabaseClient
+        //LocalSymKey lsk = new LocalSymKey();
+        long idInserted= DatabaseClient
                     .getInstance(InvoiceApp.getContext())
                     .getAppDatabase()
                     .localSymKeyDao()
-                    .delete(this.lsk);
-            Log.i(TAG, "Deleted : ["+this.lsk+"]" );
+                    .insert(this.lsk);
+            Log.i(TAG, "Inserted! ["+idInserted+"]" );
 
         return lsk;
     }

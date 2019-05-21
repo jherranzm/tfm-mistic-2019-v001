@@ -1,4 +1,4 @@
-package com.example.apptestvalidationandroid44.invoicetasks;
+package com.example.apptestvalidationandroid44.tasks.remotesymkeytasks;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -16,16 +16,13 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class GetInvoiceByIdTask extends AsyncTask<String, Void, String> {
+public class GetByFRemoteSymKeyTask  extends AsyncTask<String, Void, String> {
 
-    private static final String TAG = "GetInvoiceByIdTask";
+    private static final String TAG = "GetByFRemoteSymKeyTask";
 
     private TFMSecurityManager tfmSecurityManager;
 
-    public GetInvoiceByIdTask(){
-        tfmSecurityManager = TFMSecurityManager.getInstance();
-    }
-
+    public GetByFRemoteSymKeyTask(){ tfmSecurityManager = TFMSecurityManager.getInstance(); }
 
     @Override
     protected void onPreExecute() {
@@ -56,7 +53,7 @@ public class GetInvoiceByIdTask extends AsyncTask<String, Void, String> {
 
             return null;
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         }
@@ -70,8 +67,13 @@ public class GetInvoiceByIdTask extends AsyncTask<String, Void, String> {
     }
 
 
-    // Converting InputStream to String
-
+    /**
+     *
+     * Converting InputStream to String
+     *
+     * @param in
+     * @return
+     */
     private String readStream(InputStream in) {
         BufferedReader reader = null;
         StringBuffer response;

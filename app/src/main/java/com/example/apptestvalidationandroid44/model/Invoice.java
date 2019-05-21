@@ -11,6 +11,7 @@ public class Invoice implements Serializable {
     private Double invoiceTotal;
     private Double totalTaxOutputs;
     private java.util.Date issueDate;
+    private boolean isInLocalDatabase;
 
     public Invoice(){}
 
@@ -28,6 +29,7 @@ public class Invoice implements Serializable {
         this.invoiceTotal = invoiceTotal;
         this.totalTaxOutputs = totalTaxOutputs;
         this.issueDate = issueDate;
+        this.isInLocalDatabase = false;
     }
 
     public String getUid() {
@@ -86,16 +88,27 @@ public class Invoice implements Serializable {
         this.issueDate = issueDate;
     }
 
+
+    public boolean isInLocalDatabase() {
+        return isInLocalDatabase;
+    }
+
+    public void setInLocalDatabase(boolean inLocalDatabase) {
+        isInLocalDatabase = inLocalDatabase;
+    }
+
     @Override
     public String toString() {
-        return  "Invoice{" + "uid='" + uid + '\'' +
-                ", taxIdentificationNumber='" + taxIdentificationNumber + '\'' +
-                ", corporateName='" + corporateName + '\'' +
-                ", invoiceNumber='" + invoiceNumber + '\'' +
-                ", invoiceTotal=" + invoiceTotal +
-                ", totalTaxOutputs=" + totalTaxOutputs +
-                ", issueDate=" + issueDate +
-                '}';
-
+        final StringBuffer sb = new StringBuffer("Invoice{");
+        sb.append("uid='").append(uid).append('\'');
+        sb.append(", taxIdentificationNumber='").append(taxIdentificationNumber).append('\'');
+        sb.append(", corporateName='").append(corporateName).append('\'');
+        sb.append(", invoiceNumber='").append(invoiceNumber).append('\'');
+        sb.append(", invoiceTotal=").append(invoiceTotal);
+        sb.append(", totalTaxOutputs=").append(totalTaxOutputs);
+        sb.append(", issueDate=").append(issueDate);
+        sb.append(", isInLocalDatabase=").append(isInLocalDatabase);
+        sb.append('}');
+        return sb.toString();
     }
 }

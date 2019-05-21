@@ -53,6 +53,11 @@ public class InvoiceData implements Serializable {
     @ColumnInfo(name = "totalGrossAmount")
     private double totalGrossAmount;
 
+
+    @ColumnInfo(name = "isBackedUp")
+    private boolean isBackedUp;
+
+
     public int getId() {
         return id;
     }
@@ -157,23 +162,31 @@ public class InvoiceData implements Serializable {
         this.totalGrossAmount = totalGrossAmount;
     }
 
+    public boolean isBackedUp() {
+        return isBackedUp;
+    }
+
+    public void setBackedUp(boolean backedUp) {
+        isBackedUp = backedUp;
+    }
 
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("InvoiceData{");
         sb.append("id=").append(id);
         sb.append(", user='").append(user).append('\'');
-        sb.append(", batchIdentifier='").append(batchIdentifier).append('\'').append("\n");
-        sb.append(", totalAmount=").append(totalAmount).append("\n");
-        sb.append(", taxIdentificationNumber='").append(taxIdentificationNumber).append('\'').append("\n");
-        sb.append(", corporateName='").append(corporateName).append('\'').append("\n");
-        sb.append(", invoiceNumber='").append(invoiceNumber).append('\'').append("\n");
-        sb.append(", issueDate=").append(issueDate).append("\n");
-        sb.append(", startDate=").append(startDate).append("\n");
-        sb.append(", endDate=").append(endDate).append("\n");
-        sb.append(", taxBase=").append(taxBase).append("\n");
-        sb.append(", taxAmount=").append(taxAmount).append("\n");
-        sb.append(", totalGrossAmount=").append(totalGrossAmount).append("\n");
+        sb.append(", batchIdentifier='").append(batchIdentifier).append('\'');
+        sb.append(", totalAmount=").append(totalAmount);
+        sb.append(", taxIdentificationNumber='").append(taxIdentificationNumber).append('\'');
+        sb.append(", corporateName='").append(corporateName).append('\'');
+        sb.append(", invoiceNumber='").append(invoiceNumber).append('\'');
+        sb.append(", issueDate=").append(issueDate);
+        sb.append(", startDate=").append(startDate);
+        sb.append(", endDate=").append(endDate);
+        sb.append(", taxBase=").append(taxBase);
+        sb.append(", taxAmount=").append(taxAmount);
+        sb.append(", totalGrossAmount=").append(totalGrossAmount);
+        sb.append(", isBackedUp=").append(isBackedUp);
         sb.append('}');
         return sb.toString();
     }

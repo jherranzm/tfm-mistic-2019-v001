@@ -1,4 +1,4 @@
-package com.example.apptestvalidationandroid44.remotesymkeytasks;
+package com.example.apptestvalidationandroid44.tasks.remotesymkeytasks;
 
 import android.os.AsyncTask;
 import android.util.Log;

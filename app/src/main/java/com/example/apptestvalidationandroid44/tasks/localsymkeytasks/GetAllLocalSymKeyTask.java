@@ -1,4 +1,4 @@
-package com.example.apptestvalidationandroid44.localsymkeytasks;
+package com.example.apptestvalidationandroid44.tasks.localsymkeytasks;
 
 import android.os.AsyncTask;
 import android.util.Log;

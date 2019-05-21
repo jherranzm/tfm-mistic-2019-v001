@@ -18,10 +18,10 @@ import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
 import com.example.apptestvalidationandroid44.crypto.EnvelopedSignature;
 import com.example.apptestvalidationandroid44.crypto.SymmetricEncryptor;
-import com.example.apptestvalidationandroid44.invoicedatatasks.GetByBatchIdentifierInvoiceDataTask;
-import com.example.apptestvalidationandroid44.invoicedatatasks.InsertInvoiceDataTask;
 import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.InvoiceData;
+import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.GetByBatchIdentifierInvoiceDataTask;
+import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.InsertInvoiceDataTask;
 import com.example.apptestvalidationandroid44.util.RandomStringGenerator;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 import com.example.apptestvalidationandroid44.util.UIDGenerator;
@@ -275,14 +275,18 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 JSONObject receivedInvoice = new JSONObject(res);
                 String id = receivedInvoice.getString("id");
 
+                boolean invoiceBackedUp = false;
+
                 if (getData.getResponseCode() == HttpURLConnection.HTTP_OK){
 
                     infoShow(String.format(INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA, id));
+                    invoiceBackedUp = true;
 
                 }else if (getData.getResponseCode() == HttpURLConnection.HTTP_CONFLICT){
 
                     message += Constants.CR_LF + String.format(ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA, id);
                     alertShow(message);
+                    invoiceBackedUp = true;
 
                 }else if (getData.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR){
 
@@ -297,6 +301,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
                 InvoiceData invoiceData = getInvoiceData(facturae, UIDFacturaHash);
                 invoiceData.setUser(tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED));
+                invoiceData.setBackedUp(invoiceBackedUp);
 
                 GetByBatchIdentifierInvoiceDataTask getByBatchIdentifierInvoiceDataTask = new GetByBatchIdentifierInvoiceDataTask();
                 List<InvoiceData> alreadySaved = getByBatchIdentifierInvoiceDataTask.execute(

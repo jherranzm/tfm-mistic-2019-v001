@@ -56,4 +56,9 @@ public interface InvoiceDataDao {
 
         @Update
         void update(InvoiceData invoiceData);
+
+        @Query("SELECT * " +
+            "FROM InvoiceData " +
+            "WHERE user = :user")
+        List<InvoiceData> getAllByUser(String user);
 }
