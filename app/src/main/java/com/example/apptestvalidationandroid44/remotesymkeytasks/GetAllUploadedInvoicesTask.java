@@ -146,8 +146,8 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
                 String invoiceNumber = factura.getString("invoiceNumber");
                 String issueDate = factura.getString("issueDate");
 
-                double invoiceTotal = factura.getDouble("invoiceTotal");
-                double totalTaxOutputs = factura.getDouble("totalTaxOutputs");
+                String invoiceTotal = factura.getString("invoiceTotal");
+                String totalTaxOutputs = factura.getString("totalTaxOutputs");
 
                 String iv = factura.getString("iv");
                 String simKey = factura.getString("simKey");
@@ -167,17 +167,23 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
 
                 String taxIdentificationNumberDecrypted = simDec.decrypt(
                         taxIdentificationNumber,
-                        //tfmSecurityManager.getSimKeys().get(Constants.TAX_IDENTIFICATION_NUMBER)
                         tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TAX_IDENTIFICATION_NUMBER)
                 );
                 String invoiceNumberDecrypted = simDec.decrypt(
                         invoiceNumber,
-                        //tfmSecurityManager.getSimKeys().get(Constants.INVOICE_NUMBER)
                         tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.INVOICE_NUMBER)
                 );
+                String invoiceTotalDecrypted = simDec.decrypt(
+                        invoiceTotal,
+                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.INVOICE_TOTAL)
+                );
+                String totalTaxOutputsDecrypted = simDec.decrypt(
+                        totalTaxOutputs,
+                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TOTAL_TAX_OUTPUTS)
+                );
+
                 String issueDateDecrypted = simDec.decrypt(
                         issueDate,
-                        //tfmSecurityManager.getSimKeys().get(Constants.ISSUE_DATE)
                         tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.ISSUE_DATE)
                 );
 
@@ -185,8 +191,8 @@ public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Inv
                         , taxIdentificationNumberDecrypted
                         , ""
                         , invoiceNumberDecrypted
-                        , invoiceTotal
-                        , totalTaxOutputs
+                        , Double.parseDouble(invoiceTotalDecrypted)// invoiceTotal
+                        , Double.parseDouble(totalTaxOutputsDecrypted)// totalTaxOutputs
                         , new SimpleDateFormat("yyyy-MM-dd", new Locale("ES-es")).parse(issueDateDecrypted)
                 );
 

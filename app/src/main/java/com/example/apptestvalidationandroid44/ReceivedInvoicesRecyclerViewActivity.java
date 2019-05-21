@@ -208,21 +208,36 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 // taxIdentificationNumber
                 String taxIdentificationNumberEncrypted = simEnc.encrypt(
                         facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber(),
-                        //tfmSecurityManager.getSimKeys().get(Constants.TAX_IDENTIFICATION_NUMBER)
                         tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TAX_IDENTIFICATION_NUMBER)
                 );
 
                 // invoiceNumber
                 String invoiceNumberEncrypted = simEnc.encrypt(
                         facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber(),
-                        //tfmSecurityManager.getSimKeys().get(Constants.INVOICE_NUMBER)
                         tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.INVOICE_NUMBER)
+                );
+
+                // total
+                String totalEncrypted = simEnc.encrypt(
+                        ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal(),
+                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.INVOICE_TOTAL)
+                );
+
+                // total_tax_outputs
+                String totalTaxOutputsEncrypted = simEnc.encrypt(
+                        ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs(),
+                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TOTAL_TAX_OUTPUTS)
+                );
+
+                // total_gross_amount
+                String totalGrossAmountEncrypted = simEnc.encrypt(
+                        ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount(),
+                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TOTAL_GROSS_AMOUNT)
                 );
 
 
                 String dataEncrypted   = simEnc.encrypt(
                         ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate(),
-                        //tfmSecurityManager.getSimKeys().get(Constants.ISSUE_DATE)
                         tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.ISSUE_DATE)
                 );
 
@@ -243,10 +258,9 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 params.put("tax_identification_number", taxIdentificationNumberEncrypted);
                 params.put("invoice_number", invoiceNumberEncrypted);
 
-                // Versió inicial: No s'encripten els imports, ja que si no el sistema NO pot fer càlculs
-                params.put("total", ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
-                params.put("total_tax_outputs", ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
-                params.put("total_gross_amount", ""+facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount());
+                params.put("total", totalEncrypted);
+                params.put("total_tax_outputs", totalTaxOutputsEncrypted);
+                params.put("total_gross_amount", totalGrossAmountEncrypted);
 
                 params.put("issue_data", dataEncrypted);
                 params.put("file", signedInvoiceEncrypted);
