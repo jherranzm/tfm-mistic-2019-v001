@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.config.Constants;
@@ -51,7 +52,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
     // Constants
     private static final String TAG = "ReceivedInvoicesRAV";
 
-    public static final String INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA = "Remote backup. INFO: Invoice  %s correctly backep up!";
+    public static final String INFO_LA_FACTURA_S_HA_QUEDADO_CORRECTAMENTE_REGISTRADA_EN_EL_SISTEMA = "Remote backup. INFO: Invoice  %s correctly backed up!";
     public static final String ALERTA_LA_FACTURA_S_YA_ESTA_REGISTRADA_EN_EL_SISTEMA = "Remote backup. ALERT: Invoice  %s already backed up in system!";
     public static final String ALERTA_LA_FIRMA_NO_ES_VALIDA = "ALERT: Invoice signature NOT valid!";
 
@@ -75,8 +76,11 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        signedInvoices = (ArrayList<FileDataObject>)getIntent().getSerializableExtra(MainActivity.FILE_LIST);
+        signedInvoices = getFileInvoicesInSystem();
         mAdapter = new ReceivedInvoicesRecyclerViewAdapter(signedInvoices);
+        TextView textViewNumberItems = findViewById(R.id.textViewNumInvoiceFilesInSystem);
+        textViewNumberItems.setText("Number of File Invoices in System " + signedInvoices.size());
+
 
         mRecyclerView.setAdapter(mAdapter);
         RecyclerView.ItemDecoration itemDecoration =
@@ -396,5 +400,22 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         });
 
         alertDialog.show();
+    }
+
+    private List<FileDataObject> getFileInvoicesInSystem(){
+        String root_sd = Environment.getExternalStorageDirectory().toString();
+        File file = new File( root_sd + "/Download" ) ;
+        File list[] = file.listFiles();
+
+        List<FileDataObject> signedInvoices = new ArrayList<>();
+
+        for (File f : list) {
+            Log.i(TAG, f.getName());
+            FileDataObject obj = new FileDataObject(f.getName());
+            signedInvoices.add(obj);
+        }
+
+        return signedInvoices;
+
     }
 }

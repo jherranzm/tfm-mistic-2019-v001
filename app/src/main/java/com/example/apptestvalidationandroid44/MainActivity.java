@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -21,7 +20,6 @@ import com.example.apptestvalidationandroid44.invoicedatatasks.DeleteAllInvoiceD
 import com.example.apptestvalidationandroid44.invoicedatatasks.GetAllInvoiceDataTask;
 import com.example.apptestvalidationandroid44.invoicedatatasks.GetTotalsByProviderByYearTask;
 import com.example.apptestvalidationandroid44.invoicedatatasks.GetTotalsByProviderTask;
-import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.Invoice;
 import com.example.apptestvalidationandroid44.model.InvoiceData;
 import com.example.apptestvalidationandroid44.model.TotalByProviderByYearVO;
@@ -35,7 +33,6 @@ import org.spongycastle.asn1.x500.style.BCStyle;
 import org.spongycastle.asn1.x500.style.IETFUtils;
 import org.spongycastle.cert.jcajce.JcaX509CertificateHolder;
 
-import java.io.File;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
@@ -134,20 +131,7 @@ public class MainActivity
             public void onClick(View view) {
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                String root_sd = Environment.getExternalStorageDirectory().toString();
-                File file = new File( root_sd + "/Download" ) ;
-                File list[] = file.listFiles();
-
-                ArrayList<FileDataObject> signedInvoices = new ArrayList<>();
-
-                for (File f : list) {
-                    Log.i(TAG, f.getName());
-                    FileDataObject obj = new FileDataObject(f.getName());
-                    signedInvoices.add(obj);
-                }
-
                 Intent intent = new Intent(InvoiceApp.getContext(), ReceivedInvoicesRecyclerViewActivity.class);
-                intent.putExtra(FILE_LIST, signedInvoices);
                 startActivity(intent);
 
                 mProgressBar.setVisibility(View.INVISIBLE);

@@ -63,7 +63,7 @@ public class InvoiceDataRecyclerViewAdapter extends RecyclerView
     public DataObjectHolder onCreateViewHolder(ViewGroup parent,
                                                int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.invoice_data_recyclerview_item, parent, false);
+                .inflate(R.layout.invoice_data_recycler_view_item, parent, false);
 
         return new DataObjectHolder(view);
     }
