@@ -62,7 +62,7 @@ public class LogInActivity
                     //params.put("pass", password.getText().toString());
 
                     try {
-                        PostDataToUrlTask getData = new PostDataToUrlTask(params);
+                        PostLoginTask getData = new PostLoginTask(params);
 
                         String res = getData.execute(Constants.URL_LOGIN,
                                 username.getText().toString(),
