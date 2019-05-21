@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.config.Constants;
@@ -18,6 +19,7 @@ import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
 import com.example.apptestvalidationandroid44.invoicetasks.GetInvoiceByIdTask;
 import com.example.apptestvalidationandroid44.model.Invoice;
+import com.example.apptestvalidationandroid44.remotesymkeytasks.GetAllUploadedInvoicesTask;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 import com.example.apptestvalidationandroid44.util.UtilDocument;
 import com.example.apptestvalidationandroid44.util.UtilFacturae;
@@ -34,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 import es.facturae.facturae.v3.facturae.Facturae;
 
@@ -48,7 +51,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_recycler_view);
+        setContentView(R.layout.uploaded_invoices_recycler_view);
 
         RecyclerView mRecyclerView;
         RecyclerView.LayoutManager mLayoutManager;
@@ -59,8 +62,11 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        invoices = (ArrayList<Invoice>)getIntent().getSerializableExtra(MainActivity.INVOICE_LIST);
+        invoices = getUploadedInvoicesFromServer();
         mAdapter = new UploadedInvoicesRecyclerViewAdapter(invoices);
+
+        TextView textViewNumberItems = findViewById(R.id.textViewNumUploadedInvoices);
+        textViewNumberItems.setText("Number of Invoices in Server " + invoices.size());
 
         mRecyclerView.setAdapter(mAdapter);
         RecyclerView.ItemDecoration itemDecoration =
@@ -257,5 +263,26 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
 
         builderSingle.show();
+    }
+
+
+
+    private List<Invoice> getUploadedInvoicesFromServer() {
+
+        List<Invoice> invoices = new ArrayList<>();
+        try {
+            GetAllUploadedInvoicesTask getAllUploadedInvoicesTask = new GetAllUploadedInvoicesTask();
+
+            invoices = getAllUploadedInvoicesTask.execute(Constants.URL_FACTURAS).get();
+
+            Log.i(TAG, "getAllUploadedInvoicesTask : " + invoices.size());
+
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return invoices;
     }
 }

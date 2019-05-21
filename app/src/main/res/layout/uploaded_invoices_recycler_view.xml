@@ -1,8 +1,14 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+    android:orientation="vertical"
                 tools:context="com.example.apptestvalidationandroid44.UploadedInvoicesRecyclerViewActivity">
+    <TextView
+        android:id="@+id/textViewNumUploadedInvoices"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:text="@string/numUploadedInvoices" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/my_recycler_view"
@@ -10,4 +16,4 @@
         android:layout_height="match_parent"
         android:scrollbars="vertical"/>
 
-</RelativeLayout>
+</LinearLayout>

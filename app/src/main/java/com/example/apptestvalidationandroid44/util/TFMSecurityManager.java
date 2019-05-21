@@ -140,7 +140,7 @@ public class TFMSecurityManager {
                 }
             }
 
-            this.setCertificate(serverCertificate);
+            //this.setCertificate(serverCertificate);
 
             // Create a TrustManager that trusts the CAs in our KeyStore
             String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();

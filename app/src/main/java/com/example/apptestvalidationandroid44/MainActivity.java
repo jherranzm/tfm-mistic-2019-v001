@@ -15,16 +15,11 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.invoicedatatasks.DeleteAllInvoiceDataTask;
-import com.example.apptestvalidationandroid44.invoicedatatasks.GetAllInvoiceDataTask;
 import com.example.apptestvalidationandroid44.invoicedatatasks.GetTotalsByProviderByYearTask;
 import com.example.apptestvalidationandroid44.invoicedatatasks.GetTotalsByProviderTask;
-import com.example.apptestvalidationandroid44.model.Invoice;
-import com.example.apptestvalidationandroid44.model.InvoiceData;
 import com.example.apptestvalidationandroid44.model.TotalByProviderByYearVO;
 import com.example.apptestvalidationandroid44.model.TotalByProviderVO;
-import com.example.apptestvalidationandroid44.remotesymkeytasks.GetAllUploadedInvoicesTask;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 
 import org.spongycastle.asn1.x500.RDN;
@@ -35,7 +30,6 @@ import org.spongycastle.cert.jcajce.JcaX509CertificateHolder;
 
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -80,12 +74,15 @@ public class MainActivity
         TextView textViewUserLogged = findViewById(R.id.textViewUserLogged);
 
         String commonName = "Default User";
-        try {
-            X500Name x500name = new JcaX509CertificateHolder(tfmSecurityManager.getCertificate()).getSubject();
-            RDN cn = x500name.getRDNs(BCStyle.CN)[0];
-            commonName = IETFUtils.valueToString(cn.getFirst().getValue());
-        } catch (CertificateEncodingException e) {
-            e.printStackTrace();
+
+        if (tfmSecurityManager.getCertificate() != null) {
+            try {
+                X500Name x500name = new JcaX509CertificateHolder(tfmSecurityManager.getCertificate()).getSubject();
+                RDN cn = x500name.getRDNs(BCStyle.CN)[0];
+                commonName = IETFUtils.valueToString(cn.getFirst().getValue());
+            } catch (CertificateEncodingException e) {
+                e.printStackTrace();
+            }
         }
         textViewUserLogged.setText(commonName);
 
@@ -105,24 +102,11 @@ public class MainActivity
 
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                try {
-                    GetAllUploadedInvoicesTask getAllUploadedInvoicesTask = new GetAllUploadedInvoicesTask();
+                Intent intent = new Intent(InvoiceApp.getContext(), UploadedInvoicesRecyclerViewActivity.class);
+                startActivity(intent);
 
-                    List<Invoice> invoices = getAllUploadedInvoicesTask.execute(Constants.URL_FACTURAS).get();
+                mProgressBar.setVisibility(View.INVISIBLE);
 
-                    Log.i(TAG, "getAllUploadedInvoicesTask : " + invoices.size());
-
-                    mProgressBar.setVisibility(View.INVISIBLE);
-
-                    Intent intent = new Intent(InvoiceApp.getContext(), UploadedInvoicesRecyclerViewActivity.class);
-                    intent.putExtra(INVOICE_LIST, new ArrayList<>(invoices));
-                    startActivity(intent);
-
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
@@ -143,24 +127,8 @@ public class MainActivity
             public void onClick(View view) {
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                try {
-                    GetAllInvoiceDataTask getAllInvoiceDataTask = new GetAllInvoiceDataTask();
-
-                    List<InvoiceData> invoices = getAllInvoiceDataTask.execute().get();
-
-                    Log.i(TAG, "GetAllInvoiceDataTask : " + invoices.size());
-
-                    mProgressBar.setVisibility(View.INVISIBLE);
-
-                    Intent intent = new Intent(InvoiceApp.getContext(), InvoiceDataRecyclerViewActivity.class);
-                    intent.putExtra(INVOICE_LIST, new ArrayList<>(invoices));
-                    startActivity(intent);
-
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Intent intent = new Intent(InvoiceApp.getContext(), InvoiceDataRecyclerViewActivity.class);
+                startActivity(intent);
 
                 mProgressBar.setVisibility(View.INVISIBLE);
             }
@@ -173,16 +141,9 @@ public class MainActivity
 
                 try {
                     DeleteAllInvoiceDataTask deleteInvoiceDataTask = new DeleteAllInvoiceDataTask();
-
                     boolean deleted = deleteInvoiceDataTask.execute().get();
 
-
-
                     mProgressBar.setVisibility(View.INVISIBLE);
-
-//                    Intent intent = new Intent(InvoiceApp.getContext(), UploadedInvoicesRecyclerViewActivity.class);
-//                    intent.putExtra(INVOICE_LIST, new ArrayList<>(invoices));
-//                    startActivity(intent);
 
                 } catch (ExecutionException e) {
                     e.printStackTrace();
@@ -252,10 +213,8 @@ public class MainActivity
             public void onClick(View view) {
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                    Intent intent = new Intent(InvoiceApp.getContext(), SignUpActivity.class);
-
-                    startActivity(intent);
-
+                Intent intent = new Intent(InvoiceApp.getContext(), SignUpActivity.class);
+                startActivity(intent);
 
                 mProgressBar.setVisibility(View.INVISIBLE);
             }
@@ -266,10 +225,8 @@ public class MainActivity
             public void onClick(View view) {
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                    Intent intent = new Intent(InvoiceApp.getContext(), LogInActivity.class);
-
-                    startActivity(intent);
-
+                Intent intent = new Intent(InvoiceApp.getContext(), LogInActivity.class);
+                startActivity(intent);
 
                 mProgressBar.setVisibility(View.INVISIBLE);
             }

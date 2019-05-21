@@ -29,6 +29,7 @@
     <string name="paswordAgain">Password Again</string>
     <string name="numInvoiceFilesInSystem">Number of File Invoices in System</string>
     <string name="numInvoiceDataInSystem">Number of Invoices Registered in Local Database</string>
+    <string name="numUploadedInvoices">Number of Uploaded Invoices</string>
 
 
 </resources>

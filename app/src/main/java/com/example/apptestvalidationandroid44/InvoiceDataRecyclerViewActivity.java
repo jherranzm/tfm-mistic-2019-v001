@@ -8,12 +8,15 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.apptestvalidationandroid44.invoicedatatasks.GetAllInvoiceDataTask;
 import com.example.apptestvalidationandroid44.model.InvoiceData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
     private RecyclerView.Adapter mAdapter;
@@ -35,8 +38,10 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        invoices = (ArrayList<InvoiceData>)getIntent().getSerializableExtra(MainActivity.INVOICE_LIST);
+        invoices = getInvoiceDataFromDatabase();
         mAdapter = new InvoiceDataRecyclerViewAdapter(invoices);
+        TextView textViewNumberItems = findViewById(R.id.textViewNumInvoiceFilesInSystem);
+        textViewNumberItems.setText("Number of Invoices Processed in System " + invoices.size());
 
         mRecyclerView.setAdapter(mAdapter);
         RecyclerView.ItemDecoration itemDecoration =
@@ -125,5 +130,25 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
 
 
         builderSingle.show();
+    }
+
+    private List<InvoiceData> getInvoiceDataFromDatabase(){
+
+        List<InvoiceData>  invoiceDataList = new ArrayList<>();
+        try {
+            GetAllInvoiceDataTask getAllInvoiceDataTask = new GetAllInvoiceDataTask();
+
+            invoiceDataList = getAllInvoiceDataTask.execute().get();
+
+            Log.i(TAG, "GetAllInvoiceDataTask : " + invoiceDataList.size());
+
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return invoiceDataList;
+
     }
 }
