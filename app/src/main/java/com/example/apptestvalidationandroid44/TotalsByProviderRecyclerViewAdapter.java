@@ -71,7 +71,7 @@ public class TotalsByProviderRecyclerViewAdapter extends RecyclerView
         holder.textViewCorporateName.setText(String.format(
                 "Company: %s", mDataset.get(position).corporateName));
         holder.textViewTotalAmount.setText(String.format(
-                "Total: %f", mDataset.get(position).totalAmount));
+                "Total: %.2f", mDataset.get(position).totalAmount));
     }
 
     public void addItem(TotalByProviderVO dataObj, int index) {

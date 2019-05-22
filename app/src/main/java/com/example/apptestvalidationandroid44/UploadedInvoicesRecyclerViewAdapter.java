@@ -74,10 +74,10 @@ public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
                 "Invoice: %s", mDataset.get(position).getInvoiceNumber()));
         holder.totalAmount.setText(String.format(
                 Locale.forLanguageTag("es-ES"),
-                "Total: %f", mDataset.get(position).getInvoiceTotal()));
+                "Total: %.2f", mDataset.get(position).getInvoiceTotal()));
         holder.totalTaxOutputs.setText(String.format(
                 Locale.forLanguageTag("es-ES"),
-                "Taxes: %f", mDataset.get(position).getTotalTaxOutputs()));
+                "Taxes: %.2f", mDataset.get(position).getTotalTaxOutputs()));
         holder.issueDate.setText(String.format(
                 Locale.forLanguageTag("es-ES"),
                 "Date: %s", DATE_FORMAT.format(mDataset.get(position).getIssueDate())));

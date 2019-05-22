@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:text="@string/totalsByProvider"
+        android:textAlignment="center"
         android:textSize="24sp" />
 
     <android.support.v7.widget.RecyclerView

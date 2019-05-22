@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.model.TotalByProviderByYearVO;
 import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.DeleteAllInvoiceDataTask;
@@ -38,24 +39,36 @@ public class MainActivity
     // Constants
     private static final String TAG = "MAIN_ACTIVITY";
 
-    public static final String INVOICE_LIST = "INVOICE_LIST";
-    public static final String FILE_LIST = "FILE_LIST";
-
-    // Widgets
-    private ProgressBar mProgressBar;
+    // Security
+    private TFMSecurityManager tfmSecurityManager;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        super.onCreate(savedInstanceState);
+        tfmSecurityManager = TFMSecurityManager.getInstance();
 
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TFMSecurityManager tfmSecurityManager = TFMSecurityManager.getInstance();
+        // 2019-03-30
+        // Check whether this app has write external storage permission or not.
+        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        // If do not grant write external storage permission.
+        if(writeExternalStoragePermission!= PackageManager.PERMISSION_GRANTED)
+        {
+            // Request user to grant write external storage permission.
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
 
-        // Get the application context
-        mProgressBar = findViewById(R.id.progressBar1);
+        initView();
+
+
+    }
+
+    private void initView() {
+        // init View
+        final ProgressBar mProgressBar = findViewById(R.id.progressBar1);
         mProgressBar.setVisibility(View.INVISIBLE);
 
         Button goToShowUploadedInvoices = findViewById(R.id.buttonGoToShowUploadedInvoice);
@@ -83,16 +96,6 @@ public class MainActivity
             }
         }
         textViewUserLogged.setText(commonName);
-
-        // 2019-03-30
-        // Check whether this app has write external storage permission or not.
-        int writeExternalStoragePermission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        // If do not grant write external storage permission.
-        if(writeExternalStoragePermission!= PackageManager.PERMISSION_GRANTED)
-        {
-            // Request user to grant write external storage permission.
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-        }
 
         goToShowUploadedInvoices.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -233,7 +236,10 @@ public class MainActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_uploaded_invoices) {
+            Toast.makeText(MainActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(InvoiceApp.getContext(), UploadedInvoicesRecyclerViewActivity.class);
+            startActivity(intent);
             return true;
         }
 
