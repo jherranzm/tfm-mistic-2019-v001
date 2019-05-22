@@ -6,6 +6,7 @@ import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.model.Invoice;
 import com.example.apptestvalidationandroid44.model.InvoiceData;
 import com.example.apptestvalidationandroid44.model.TotalByProviderVO;
+import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.DeleteInvoiceDataTask;
 import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.GetAllInvoiceDataTask;
 import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.GetTotalsByProviderTask;
 import com.example.apptestvalidationandroid44.tasks.remotesymkeytasks.GetAllUploadedInvoicesTask;
@@ -96,5 +97,19 @@ public class DataManagerService {
 
         return totals;
 
+    }
+
+    public static void deleteInvoiceData(InvoiceData invoiceData) {
+
+
+        try {
+
+            DeleteInvoiceDataTask deleteInvoiceDataTask = new DeleteInvoiceDataTask(invoiceData);
+            deleteInvoiceDataTask.execute().get();
+
+        } catch (Exception e) {
+            Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
+            e.printStackTrace();
+        };
     }
 }

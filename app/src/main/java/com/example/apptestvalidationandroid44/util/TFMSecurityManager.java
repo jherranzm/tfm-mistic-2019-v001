@@ -304,6 +304,12 @@ public class TFMSecurityManager {
         X509Certificate userCertificate = (X509Certificate) keyStore.getCertificate(label);
 
         if(userCertificate == null){
+
+            // Cleaning just in case
+            //TODO: Delete Local Symmetric Keys from Database
+            //TODO: Delete Local Symmetric Keys from KeyStore
+            //TODO: Delete Local Symmetric Keys from RemoteDatabase
+
             //Generate KeyPair
             Log.i(TAG,"KeyPair : generating...");
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");

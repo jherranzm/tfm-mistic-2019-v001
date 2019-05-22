@@ -7,9 +7,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.model.InvoiceData;
 import com.example.apptestvalidationandroid44.services.DataManagerService;
@@ -17,7 +15,9 @@ import com.example.apptestvalidationandroid44.services.DataManagerService;
 import java.util.List;
 
 public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
+
     private static final String TAG = "InvoiceDataRecyclerViewActivity";
+
     private RecyclerView.Adapter mAdapter;
 
     private List<InvoiceData> invoices;
@@ -50,17 +50,12 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        ((InvoiceDataRecyclerViewAdapter) mAdapter).setOnItemClickListener(
-                new InvoiceDataRecyclerViewAdapter.InvoiceDataClickListener() {
-                    @Override
-                    public void onItemClick(int position, View v) {
-                        Log.i(TAG, " Clicked on Item " + position);
-                        Toast.makeText(InvoiceApp.getContext(), "Factura " + invoices.get(position).getInvoiceNumber(), Toast.LENGTH_SHORT).show();
-                        Log.i(TAG, " Clicked on Item " + invoices.get(position).toString());
+        //setContentView(R.layout.invoice_data_recycler_view);
+        invoices = DataManagerService.getInvoiceDataFromDatabase();
+        mAdapter = new InvoiceDataRecyclerViewAdapter(invoices);
+        TextView textViewNumberItems = findViewById(R.id.textViewNumInvoiceFilesInSystem);
+        textViewNumberItems.setText("Number of Invoices Processed in System " + invoices.size());
 
-                        customDialog("Plim", "Plam", "cancel", "ok", position);
-                    }
-                });
     }
 
     private void customDialog(

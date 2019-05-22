@@ -36,6 +36,10 @@
     <string name="menu3">popup_menu_03</string>
     <string name="menu3_1">popup_menu_03_01</string>
     <string name="menu3_2">popup_menu_03_02</string>
+    <string name="deleteInvoiceData">Delete Invoice Data</string>
+    <string name="taxIdentificationNumber">taxIdentificationNumber</string>
+    <string name="corporateName">CorporateName</string>
+    <string name="invoiceNumber">invoiceNumber</string>
 
 
 </resources>
