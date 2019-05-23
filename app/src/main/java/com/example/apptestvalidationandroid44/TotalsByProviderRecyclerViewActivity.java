@@ -11,7 +11,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.model.TotalByProviderVO;
-import com.example.apptestvalidationandroid44.services.DataManagerService;
+import com.example.apptestvalidationandroid44.services.InvoiceDataDataManagerService;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public class TotalsByProviderRecyclerViewActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        totals = DataManagerService.getTotalsByProvider();
+        totals = InvoiceDataDataManagerService.getTotalsByProvider();
         mAdapter = new TotalsByProviderRecyclerViewAdapter(totals);
 
         mRecyclerView.setAdapter(mAdapter);

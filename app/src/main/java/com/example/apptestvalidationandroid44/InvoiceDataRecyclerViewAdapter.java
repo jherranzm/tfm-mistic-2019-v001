@@ -13,7 +13,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.example.apptestvalidationandroid44.model.InvoiceData;
-import com.example.apptestvalidationandroid44.services.DataManagerService;
+import com.example.apptestvalidationandroid44.services.InvoiceDataDataManagerService;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -138,10 +138,10 @@ public class InvoiceDataRecyclerViewAdapter
                                             @Override
                                             public void onClick(DialogInterface dialogInterface, int i) {
                                                 Log.d("deleteInvoiceDataOption", "onClick: OK Called.");
-                                                DataManagerService.deleteInvoiceData(mDataset.get(position));
+                                                InvoiceDataDataManagerService.deleteInvoiceData(mDataset.get(position));
                                                 mDataset.remove(position);
                                                 notifyItemRemoved(position);
-                                                // TODO: refresh info of num invoices in system.
+                                                // TODO: refresh info of number of invoices in system.
                                             }
                                         });
 

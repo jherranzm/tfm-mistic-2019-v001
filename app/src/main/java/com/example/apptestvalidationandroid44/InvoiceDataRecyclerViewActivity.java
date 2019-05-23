@@ -10,7 +10,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.example.apptestvalidationandroid44.model.InvoiceData;
-import com.example.apptestvalidationandroid44.services.DataManagerService;
+import com.example.apptestvalidationandroid44.services.InvoiceDataDataManagerService;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        invoices = DataManagerService.getInvoiceDataFromDatabase();
+        invoices = InvoiceDataDataManagerService.getInvoiceDataFromDatabase();
         mAdapter = new InvoiceDataRecyclerViewAdapter(invoices);
         TextView textViewNumberItems = findViewById(R.id.textViewNumInvoiceFilesInSystem);
         textViewNumberItems.setText("Number of Invoices Processed in System " + invoices.size());
@@ -51,7 +51,7 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         //setContentView(R.layout.invoice_data_recycler_view);
-        invoices = DataManagerService.getInvoiceDataFromDatabase();
+        invoices = InvoiceDataDataManagerService.getInvoiceDataFromDatabase();
         mAdapter = new InvoiceDataRecyclerViewAdapter(invoices);
         TextView textViewNumberItems = findViewById(R.id.textViewNumInvoiceFilesInSystem);
         textViewNumberItems.setText("Number of Invoices Processed in System " + invoices.size());

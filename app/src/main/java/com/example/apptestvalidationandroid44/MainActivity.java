@@ -17,7 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.apptestvalidationandroid44.model.TotalByProviderByYearVO;
-import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.DeleteAllInvoiceDataTask;
+import com.example.apptestvalidationandroid44.services.InvoiceDataDataManagerService;
 import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.GetTotalsByProviderByYearTask;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 
@@ -30,7 +30,6 @@ import org.spongycastle.cert.jcajce.JcaX509CertificateHolder;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 
 public class MainActivity
@@ -140,17 +139,7 @@ public class MainActivity
             public void onClick(View view) {
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                try {
-                    DeleteAllInvoiceDataTask deleteInvoiceDataTask = new DeleteAllInvoiceDataTask();
-                    boolean deleted = deleteInvoiceDataTask.execute().get();
-
-                    mProgressBar.setVisibility(View.INVISIBLE);
-
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                InvoiceDataDataManagerService.deleteAllInvoiceData();
 
                 mProgressBar.setVisibility(View.INVISIBLE);
             }

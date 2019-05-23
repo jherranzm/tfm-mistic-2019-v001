@@ -18,7 +18,7 @@ import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.SymmetricDecryptor;
 import com.example.apptestvalidationandroid44.model.Invoice;
-import com.example.apptestvalidationandroid44.services.DataManagerService;
+import com.example.apptestvalidationandroid44.services.InvoiceDataManagerService;
 import com.example.apptestvalidationandroid44.tasks.invoicetasks.GetInvoiceByIdTask;
 import com.example.apptestvalidationandroid44.util.TFMSecurityManager;
 import com.example.apptestvalidationandroid44.util.UtilDocument;
@@ -60,7 +60,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        invoices = DataManagerService.getUploadedInvoicesFromServer();
+        invoices = InvoiceDataManagerService.getUploadedInvoicesFromServer();
         mAdapter = new UploadedInvoicesRecyclerViewAdapter(invoices);
 
         TextView textViewNumberItems = findViewById(R.id.textViewNumUploadedInvoices);

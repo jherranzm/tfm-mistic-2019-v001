@@ -11,6 +11,7 @@ import com.example.apptestvalidationandroid44.config.Constants;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricDecryptor;
 import com.example.apptestvalidationandroid44.crypto.AsymmetricEncryptor;
 import com.example.apptestvalidationandroid44.model.LocalSymKey;
+import com.example.apptestvalidationandroid44.services.LocalSymKeyDataManagerService;
 import com.example.apptestvalidationandroid44.tasks.localsymkeytasks.DeleteLocalSymKeyTask;
 import com.example.apptestvalidationandroid44.tasks.localsymkeytasks.GetAllLocalSymKeyTask;
 import com.example.apptestvalidationandroid44.tasks.localsymkeytasks.GetByFLocalSymKeyTask;
@@ -307,8 +308,11 @@ public class TFMSecurityManager {
 
             // Cleaning just in case
             //TODO: Delete Local Symmetric Keys from Database
+            LocalSymKeyDataManagerService.deleteAllByUser(defaultUser);
             //TODO: Delete Local Symmetric Keys from KeyStore
+            deleteAllLocalSymKeys();
             //TODO: Delete Local Symmetric Keys from RemoteDatabase
+
 
             //Generate KeyPair
             Log.i(TAG,"KeyPair : generating...");

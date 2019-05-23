@@ -27,5 +27,8 @@ public interface LocalSymKeyDao {
 
     @Update
     void update(LocalSymKey localSimKey);
+
+    @Query("DELETE FROM LocalSymKey WHERE user = :user")
+    void deleteAllByUser(String user);
 }
 
