@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +21,8 @@ import com.example.apptestvalidationandroid44.crypto.EnvelopedSignature;
 import com.example.apptestvalidationandroid44.crypto.SymmetricEncryptor;
 import com.example.apptestvalidationandroid44.model.FileDataObject;
 import com.example.apptestvalidationandroid44.model.InvoiceData;
+import com.example.apptestvalidationandroid44.tasks.filedataobjecttasks.GetFileDataObjectByFilenameTask;
+import com.example.apptestvalidationandroid44.tasks.filedataobjecttasks.InsertFileDataObjectTask;
 import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.GetByBatchIdentifierInvoiceDataTask;
 import com.example.apptestvalidationandroid44.tasks.invoicedatatasks.InsertInvoiceDataTask;
 import com.example.apptestvalidationandroid44.util.RandomStringGenerator;
@@ -45,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import es.facturae.facturae.v3.facturae.Facturae;
 
@@ -71,8 +75,17 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.received_invoices_recycler_view);
 
+        initView();
+    }
+
+    private void initView(){
+
+        ProgressBar spinner;
+        spinner = (ProgressBar)findViewById(R.id.progressBar);
+        spinner.setVisibility(View.VISIBLE);
+
         RecyclerView mRecyclerView = findViewById(R.id.local_invoices_rv);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
@@ -85,11 +98,11 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
         mRecyclerView.setAdapter(mAdapter);
         RecyclerView.ItemDecoration itemDecoration =
-                new DividerItemDecoration(this, LinearLayoutManager.VERTICAL);
+                new DividerItemDecoration(getApplicationContext(), LinearLayoutManager.VERTICAL);
         mRecyclerView.addItemDecoration(itemDecoration);
 
         tfmSecurityManager = TFMSecurityManager.getInstance();
-
+        spinner.setVisibility(View.GONE);
     }
 
     @Override
@@ -465,8 +478,27 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
         for (File f : list) {
             Log.i(TAG, f.getName());
-            FileDataObject obj = new FileDataObject(f.getName());
+            FileDataObject obj = new FileDataObject(f.getName(), "pepe");
             signedInvoices.add(obj);
+
+            try {
+                GetFileDataObjectByFilenameTask getFileDataObjectByFilenameTask = new GetFileDataObjectByFilenameTask();
+                FileDataObject existing = getFileDataObjectByFilenameTask.execute(f.getName()).get();
+
+                if(existing == null){
+                    InsertFileDataObjectTask insertFileDataObjectTask = new InsertFileDataObjectTask(obj);
+                    FileDataObject inserted = insertFileDataObjectTask.execute().get();
+                    Log.i(TAG, inserted.getFileName() + " inserted in local database ");
+                }else{
+                    Log.i(TAG, obj.getFileName() + " ALREADY in local database ");
+                }
+
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
         }
 
         return signedInvoices;

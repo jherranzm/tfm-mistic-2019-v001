@@ -225,12 +225,30 @@ public class MainActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_uploaded_invoices) {
-            Toast.makeText(MainActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(InvoiceApp.getContext(), UploadedInvoicesRecyclerViewActivity.class);
-            startActivity(intent);
-            return true;
+        Intent intent;
+        switch (id){
+            case R.id.action_uploaded_invoices:
+                Toast.makeText(MainActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
+                intent = new Intent(InvoiceApp.getContext(), UploadedInvoicesRecyclerViewActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.action_received_invoices:
+                Toast.makeText(MainActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
+                intent = new Intent(InvoiceApp.getContext(), ReceivedInvoicesRecyclerViewActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.action_local_invoices:
+                Toast.makeText(MainActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
+                intent = new Intent(InvoiceApp.getContext(), InvoiceDataRecyclerViewActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.action_totals_by_provider:
+                Toast.makeText(MainActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
+                intent = new Intent(InvoiceApp.getContext(), TotalsByProviderRecyclerViewActivity.class);
+                startActivity(intent);
+                break;
         }
+
 
         return super.onOptionsItemSelected(item);
     }

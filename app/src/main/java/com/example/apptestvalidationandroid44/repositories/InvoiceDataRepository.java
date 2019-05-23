@@ -15,14 +15,14 @@ public class InvoiceDataRepository {
     public static String DB_NAME = "LocalSimKeyDB";
     private static final String TAG = "InvoiceDataRepository";
 
-    private TFMDatabase tfmDatabase;
+    private static TFMDatabase tfmDatabase;
 
 
     public InvoiceDataRepository(Context context) {
         tfmDatabase = Room.databaseBuilder(context, TFMDatabase.class, DB_NAME).build();
     }
 
-    public void insert(final InvoiceData obj) {
+    public static void insert(final InvoiceData obj) {
 
         new AsyncTask<Void, Void, Long>() {
             @Override
@@ -34,7 +34,7 @@ public class InvoiceDataRepository {
         }.execute();
     }
 
-    public void update(final InvoiceData obj) {
+    public static void update(final InvoiceData obj) {
 
         new AsyncTask<Void, Void, Void>() {
             @Override
@@ -45,7 +45,7 @@ public class InvoiceDataRepository {
         }.execute();
     }
 
-    public void deleteTask(final InvoiceData obj) {
+    public static void deleteTask(final InvoiceData obj) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
