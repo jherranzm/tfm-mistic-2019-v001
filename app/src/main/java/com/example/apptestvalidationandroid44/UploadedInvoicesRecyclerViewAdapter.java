@@ -29,6 +29,7 @@ public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
         TextView totalAmount;
         TextView totalTaxOutputs;
         TextView issueDate;
+        TextView checkedTextView;
 
         DataObjectHolder(View itemView) {
             super(itemView);
@@ -37,6 +38,7 @@ public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
             totalAmount = itemView.findViewById(R.id.textViewTotalAmount);
             totalTaxOutputs = itemView.findViewById(R.id.textViewTotalTaxOutputs);
             issueDate = itemView.findViewById(R.id.textViewIssueDate);
+            checkedTextView = itemView.findViewById(R.id.checkedTextView);
             Log.i(LOG_TAG, "Adding Listener");
             itemView.setOnClickListener(this);
         }
@@ -59,7 +61,7 @@ public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
     public DataObjectHolder onCreateViewHolder(ViewGroup parent,
                                                int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.recyclerview_item, parent, false);
+                .inflate(R.layout.uploaded_invoices_recycler_view_item, parent, false);
 
         return new DataObjectHolder(view);
     }
@@ -81,6 +83,7 @@ public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
         holder.issueDate.setText(String.format(
                 Locale.forLanguageTag("es-ES"),
                 "Date: %s", DATE_FORMAT.format(mDataset.get(position).getIssueDate())));
+        holder.checkedTextView.setText((mDataset.get(position).isInLocalDatabase()) ? "In Local Database" : "NOT in Local Database" );
     }
 
     public void addItem(Invoice dataObj, int index) {

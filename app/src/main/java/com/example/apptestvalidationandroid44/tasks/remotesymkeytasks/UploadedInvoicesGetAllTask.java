@@ -31,13 +31,13 @@ import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class GetAllUploadedInvoicesTask extends AsyncTask<String, Void, List<Invoice>> {
+public class UploadedInvoicesGetAllTask extends AsyncTask<String, Void, List<Invoice>> {
 
-    private static final String TAG = "GetAllUploadedInvoicesTask";
+    private static final String TAG = "UploadedInvoicesGetAllTask";
 
     private TFMSecurityManager tfmSecurityManager;
 
-    public GetAllUploadedInvoicesTask(){
+    public UploadedInvoicesGetAllTask(){
         tfmSecurityManager = TFMSecurityManager.getInstance();
     }
 

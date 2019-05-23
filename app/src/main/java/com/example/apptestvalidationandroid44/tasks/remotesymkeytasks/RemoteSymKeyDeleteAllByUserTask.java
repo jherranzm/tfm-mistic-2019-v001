@@ -16,13 +16,13 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class DeleteByFAndUserRemoteSymKeyTask extends AsyncTask<String, Void, String> {
+public class RemoteSymKeyDeleteAllByUserTask extends AsyncTask<String, Void, String> {
 
-    private static final String TAG = "DeleteByFAndUserRemoteSymKeyTask";
+    private static final String TAG = "RemoteSymKeyDeleteAllByUserTask";
 
     private TFMSecurityManager tfmSecurityManager;
 
-    public DeleteByFAndUserRemoteSymKeyTask(){
+    public RemoteSymKeyDeleteAllByUserTask(){
         tfmSecurityManager = TFMSecurityManager.getInstance();
     }
 
@@ -43,7 +43,7 @@ public class DeleteByFAndUserRemoteSymKeyTask extends AsyncTask<String, Void, St
             HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url,
                     tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED),
                     tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_PASS));
-            urlConnection.setRequestMethod("GET");
+            urlConnection.setRequestMethod("DELETE");
 
             int responseCode = urlConnection.getResponseCode();
 
@@ -51,6 +51,9 @@ public class DeleteByFAndUserRemoteSymKeyTask extends AsyncTask<String, Void, St
                 server_response = readStream(urlConnection.getInputStream());
                 Log.i(TAG,"Respuesta servidor: " + server_response);
                 return server_response;
+            }else{
+                server_response = readStream(urlConnection.getInputStream());
+                Log.i(TAG,"Respuesta servidor: " + server_response);
             }
 
             return null;
