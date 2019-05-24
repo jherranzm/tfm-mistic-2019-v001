@@ -121,7 +121,7 @@ public class InvoiceDataRecyclerViewAdapter
                                 AlertDialog.Builder alertbox = new AlertDialog.Builder(view.getRootView().getContext());
                                 alertbox.setMessage("Do your want to delete this invoice?");
                                 alertbox.setTitle("Warning");
-                                alertbox.setIcon(R.drawable.ic_warning_name);
+                                alertbox.setIcon(R.drawable.ic_launcher_background);
 
                                 alertbox.setNegativeButton(
                                         "Cancel",

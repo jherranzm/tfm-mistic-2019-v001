@@ -15,7 +15,7 @@ public class UtilScreenMessages {
         AlertDialog alertDialog = new AlertDialog.Builder(InvoiceApp.getContext()).create();
         alertDialog.setTitle("Info");
         alertDialog.setMessage(message);
-        alertDialog.setIcon(R.drawable.ic_info_name);
+        alertDialog.setIcon(R.drawable.ic_launcher_background);
 
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -30,7 +30,7 @@ public class UtilScreenMessages {
         AlertDialog alertDialog = new AlertDialog.Builder(InvoiceApp.getContext()).create();
         alertDialog.setTitle("Alert!");
         alertDialog.setMessage(message);
-        alertDialog.setIcon(R.drawable.ic_stat_name);
+        alertDialog.setIcon(R.drawable.ic_launcher_background);
 
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {

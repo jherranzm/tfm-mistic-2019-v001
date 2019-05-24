@@ -122,26 +122,18 @@ public class LogInActivity
             final String okMethod){
         final android.support.v7.app.AlertDialog.Builder builderSingle = new android.support.v7.app.AlertDialog.Builder(this);
         builderSingle.setIcon(R.mipmap.ic_launcher_round);
-        builderSingle.setTitle("Info");
+        builderSingle.setTitle(title);
         builderSingle.setMessage(message);
 
         builderSingle.setPositiveButton(
-                "OK",
+                okMethod,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
 
+                        Log.i(TAG, "onClick: OK Called.");
                         Intent intent = new Intent(InvoiceApp.getContext(), MainActivity.class);
                         startActivity(intent);
-
-                        Log.d(TAG, "onClick: OK Called.");
-                        if(okMethod.equals("ok")){
-                            Log.d(TAG, "onClick: OK Called.");
-
-                            Log.d(TAG, "Did NOT go to Log In.");
-
-
-                        }
                     }
                 });
 
@@ -155,11 +147,11 @@ public class LogInActivity
             final String okMethod){
         final android.support.v7.app.AlertDialog.Builder builderSingle = new android.support.v7.app.AlertDialog.Builder(this);
         builderSingle.setIcon(R.mipmap.ic_launcher);
-        builderSingle.setTitle("ERROR");
+        builderSingle.setTitle(title);
         builderSingle.setMessage(message);
 
         builderSingle.setPositiveButton(
-                "OK",
+                okMethod,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {

@@ -403,7 +403,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
             final int position){
 
         final android.support.v7.app.AlertDialog.Builder builderSingle = new android.support.v7.app.AlertDialog.Builder(this);
-        builderSingle.setIcon(R.mipmap.ic_launcher_round);
+        builderSingle.setIcon(R.mipmap.ic_check);
         builderSingle.setTitle(title);
         builderSingle.setMessage(message);
 
@@ -439,34 +439,37 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
     private void infoShow(
             String message ) {
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle("Info");
-        alertDialog.setMessage(message);
-        alertDialog.setIcon(R.drawable.ic_info_name);
 
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Log.i(TAG, "You clicked on OK");
-            }
-        });
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Log.i(TAG, "alertShow : You clicked on OK!");
+                    }
+                })
+                .setTitle("Info")
+                .setMessage(message)
+                .setIcon(R.drawable.ic_launcher_background);
+        AlertDialog alert = builder.create();
+        alert.show();
 
-        alertDialog.show();
     }
 
     private  void alertShow(
             String message ) {
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle("Alert!");
-        alertDialog.setMessage(message);
-        alertDialog.setIcon(R.drawable.ic_stat_name);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Log.i(TAG, "alertShow : You clicked on OK!");
+                    }
+                })
+                .setTitle("Alert!")
+                .setMessage(message)
+                .setIcon(R.drawable.ic_launcher_background);
 
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Log.i(TAG, "You clicked on OK");
-            }
-        });
-
-        alertDialog.show();
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     private List<FileDataObject> getFileInvoicesInSystem(){
