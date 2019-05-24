@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
-        android:name=".InvoiceApp"
+        android:name="edu.uoc.mistic.tfm.jherranzm.InvoiceApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -17,7 +17,7 @@
 
         <!-- SplashActivity -->
         <activity
-            android:name=".SplashActivity"
+            android:name="edu.uoc.mistic.tfm.jherranzm.SplashActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,7 +28,7 @@
 
         <!-- MainActivity -->
         <activity
-            android:name=".MainActivity"
+            android:name="edu.uoc.mistic.tfm.jherranzm.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -40,9 +40,9 @@
 
         <!-- UploadedInvoicesRecyclerViewActivity -->
         <activity
-            android:name=".UploadedInvoicesRecyclerViewActivity"
+            android:name="edu.uoc.mistic.tfm.jherranzm.UploadedInvoicesRecyclerViewActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName="edu.uoc.mistic.tfm.jherranzm.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -52,9 +52,9 @@
 
         <!-- ReceivedInvoicesRecyclerViewActivity -->
         <activity
-            android:name=".ReceivedInvoicesRecyclerViewActivity"
+            android:name="edu.uoc.mistic.tfm.jherranzm.ReceivedInvoicesRecyclerViewActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName="edu.uoc.mistic.tfm.jherranzm.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -64,9 +64,9 @@
 
         <!-- InvoiceDataRecyclerViewActivity -->
         <activity
-            android:name=".InvoiceDataRecyclerViewActivity"
+            android:name="edu.uoc.mistic.tfm.jherranzm.InvoiceDataRecyclerViewActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName="edu.uoc.mistic.tfm.jherranzm.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -76,9 +76,9 @@
 
         <!-- SignUpActivity -->
         <activity
-            android:name=".SignUpActivity"
+            android:name="edu.uoc.mistic.tfm.jherranzm.SignUpActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName="edu.uoc.mistic.tfm.jherranzm.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -88,9 +88,9 @@
 
         <!-- LogInActivity -->
         <activity
-            android:name=".LogInActivity"
+            android:name="edu.uoc.mistic.tfm.jherranzm.LogInActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName="edu.uoc.mistic.tfm.jherranzm.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -100,9 +100,9 @@
 
         <!-- TotalsByProviderRecyclerViewActivity -->
         <activity
-            android:name=".TotalsByProviderRecyclerViewActivity"
+            android:name="edu.uoc.mistic.tfm.jherranzm.TotalsByProviderRecyclerViewActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName="edu.uoc.mistic.tfm.jherranzm.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -1,0 +1,70 @@
+package edu.uoc.mistic.tfm.jherranzm;
+
+import android.content.Context;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
+
+import com.example.apptestvalidationandroid44.R;
+
+import java.util.List;
+
+import edu.uoc.mistic.tfm.jherranzm.model.TotalByProviderVO;
+import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
+
+public class TotalsByProviderRecyclerViewActivity extends AppCompatActivity {
+
+    private static String TAG = "TotalsByProviderRVA";
+
+    private Context mContext;
+
+    // Widgets
+    private RecyclerView.Adapter mAdapter;
+
+    private List<TotalByProviderVO> totals;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.totals_by_provider_recycler_view);
+
+        RecyclerView mRecyclerView;
+        RecyclerView.LayoutManager mLayoutManager;
+
+        mContext = getApplicationContext();
+        mRecyclerView = findViewById(R.id.totals_by_provider_recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
+        totals = InvoiceDataDataManagerService.getTotalsByProvider();
+        mAdapter = new TotalsByProviderRecyclerViewAdapter(totals);
+
+        mRecyclerView.setAdapter(mAdapter);
+        RecyclerView.ItemDecoration itemDecoration =
+                new DividerItemDecoration(this, LinearLayoutManager.VERTICAL);
+        mRecyclerView.addItemDecoration(itemDecoration);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ((TotalsByProviderRecyclerViewAdapter) mAdapter).setOnItemClickListener(
+                new TotalsByProviderRecyclerViewAdapter.TotalsByProviderClickListener() {
+                    @Override
+                    public void onItemClick(int position, View v) {
+                        Log.i(TAG, " Clicked on Item " + position);
+                        Toast.makeText(mContext, "TIN : " + totals.get(position).taxIdentificationNumber, Toast.LENGTH_SHORT).show();
+                        Log.i(TAG, " Clicked on Item " + totals.get(position).toString());
+
+
+                    }
+                });
+    }
+}
