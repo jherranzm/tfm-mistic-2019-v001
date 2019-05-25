@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystemException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
@@ -259,21 +260,26 @@ public class TFMSecurityManager {
     }
 
     /**
-     *
      * If KeyStore file exists, load it. Else, create and load the CA and Server Certificates from assets
      *
-     * @return
-     * @throws Exception
+     * @return the KeyStore File
+     * @throws IOException
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     * @throws KeyStoreException
      */
     private File loadOrCreateKeyStore()
             throws
-            Exception {
+            IOException,
+            CertificateException,
+            NoSuchAlgorithmException,
+            KeyStoreException {
 
         // Load Keystore if exists...
         File keyStoreFile = new File(InvoiceApp.getAppDir(), Constants.KEY_STORE_BKS_FILE);
 
         if(keyStoreFile.exists()){
-            Log.i(TAG,"KeyStore file already exists in : " + keyStoreFile.getAbsolutePath());
+            Log.i(TAG, String.format("KeyStore file already exists in : [%s]", keyStoreFile.getAbsolutePath()));
             keyStore.load(new FileInputStream(keyStoreFile), keystorePassword);
 
             showAliasesInKeyStore();
@@ -281,9 +287,9 @@ public class TFMSecurityManager {
         }else{
 
             // First time initialization...
-            Log.i(TAG,"KeyStore: creating file in  : " + keyStoreFile.getAbsolutePath());
+            Log.i(TAG, String.format("KeyStore: creating file in  : [%s]", keyStoreFile.getAbsolutePath()));
             if(!keyStoreFile.createNewFile()){
-                throw new Exception("ERROR : Can NOT create KeyStore!");
+                throw new FileSystemException("ERROR : Can NOT create KeyStore!");
             }
 
             keyStore.load(null, null);
@@ -302,8 +308,9 @@ public class TFMSecurityManager {
      *
      * If it do not exists then it's created
      *
-     * @param label
-     * @param defaultUser
+     * @param label, the label used to identify the Certificate and PrivateKey in the KeyStore
+     * @param defaultUser, the name of the current user (email)
+     *
      * @throws KeyStoreException
      * @throws NoSuchAlgorithmException
      * @throws IOException
@@ -333,11 +340,13 @@ public class TFMSecurityManager {
         if(userCertificate == null){
 
             // Cleaning just in case
-            //TODO: Delete Local Symmetric Keys from Database
+            // Delete Local Symmetric Keys from Database
             LocalSymKeyDataManagerService.deleteAllByUser(defaultUser);
-            //TODO: Delete Local Symmetric Keys from KeyStore
+
+            // Delete Local Symmetric Keys from KeyStore
             deleteAllLocalSymKeys();
-            //TODO: Delete Local Symmetric Keys from RemoteDatabase
+
+            //Delete Local Symmetric Keys from RemoteDatabase
             RemoteSymKeyDataManagerService.deleteAllByUser();
 
 
@@ -347,7 +356,6 @@ public class TFMSecurityManager {
             keyGen.initialize(4096, new SecureRandom());
             KeyPair keyPair = keyGen.generateKeyPair();
             Log.i(TAG,"KeyPair : generated!");
-            Log.i(TAG, "KeyPair.getPrivate() : " + keyPair.getPrivate().toString());
 
             //Generate CSR in PKCS#10 format encoded in DER
             PKCS10CertificationRequest csr = CsrHelper.generateCSR(keyPair, defaultUser);
@@ -359,7 +367,7 @@ public class TFMSecurityManager {
             pemWriter.writeObject(req2);
             pemWriter.close();
 
-            Log.i(TAG, "Request : " + sw.toString());
+            Log.i(TAG, String.format("Request : [%s]", sw.toString()));
 
 
             Map<String, String> params = new HashMap<>();
@@ -369,34 +377,34 @@ public class TFMSecurityManager {
 
             String response_server = getCertificateFromServerTask.execute(Constants.URL_CERT).get();
             String decoded = new String(java.util.Base64.getDecoder().decode(response_server.getBytes()));
-            Log.i(TAG, "CSR.Response : " + decoded);
+            Log.i(TAG, String.format("CSR.Response : [%s]", decoded));
 
             InputStream isReceivedCertificate = IOUtils.toInputStream(decoded, "UTF-8");
             X509Certificate receivedCertificate = (X509Certificate) certFactory.generateCertificate(isReceivedCertificate);
             isReceivedCertificate.close();
-            Log.i(TAG, "receivedCertificate Subject : " + receivedCertificate.getSubjectDN().getName());
-            Log.i(TAG, "receivedCertificate Issuer  : " + receivedCertificate.getIssuerDN().getName());
+            Log.i(TAG, String.format("receivedCertificate Subject : [%s]", receivedCertificate.getSubjectDN().getName()));
+            Log.i(TAG, String.format("receivedCertificate Issuer  : [%s]", receivedCertificate.getIssuerDN().getName()));
 
             keyStore.setCertificateEntry(label, receivedCertificate);
 
             userCertificate = (X509Certificate) keyStore.getCertificate(label);
 
             //
-            Log.i(TAG, "privateKey : saving...");
+            Log.i(TAG, String.format("PrivateKey : saving with label [%s]...", label));
             keyStore.setKeyEntry(label,
                     keyPair.getPrivate(),
                     keystorePassword,
                     new java.security.cert.Certificate[]{receivedCertificate});
-            Log.i(TAG, "privateKey : saved!");
+            Log.i(TAG, String.format("PrivateKey : saved label [%s]!", label));
 
 
             saveKeyStoreToFileSystem();
             saveKeyStoreToSDCard();
 
         }else{
-            Log.i(TAG,"We've got user's certificate!");
-            Log.i(TAG, "User Certificate Subject : " + userCertificate.getSubjectDN().getName());
-            Log.i(TAG, "User Certificate Issuer  : " + userCertificate.getIssuerDN().getName());
+            Log.d(TAG,"We've got user's certificate!");
+            Log.d(TAG, String.format("User Certificate Subject : [%s]", userCertificate.getSubjectDN().getName()));
+            Log.d(TAG, String.format("User Certificate Issuer  : [%s]", userCertificate.getIssuerDN().getName()));
         }
 
         PrivateKeyEntry retrievedPrivateKeyEntry = (PrivateKeyEntry) keyStore.getEntry(defaultUser, protectionParameter);
@@ -413,7 +421,7 @@ public class TFMSecurityManager {
         while (!"ACTIVE".equals(status) && current_attempt < max_attempts) {
             GetServerStatusTask getServerStatusTask = new GetServerStatusTask();
             status = getServerStatusTask.execute(Constants.URL_STATUS).get();
-            Log.i(TAG, "Server status : " + status);
+            Log.i(TAG, String.format("Server status : [%s]", status));
             current_attempt++;
         }
         return status;
@@ -432,11 +440,11 @@ public class TFMSecurityManager {
             IOException,
             KeyStoreException,
             NoSuchAlgorithmException {
-        Log.i(TAG, "KeyStore: Guardando...");
+        Log.i(TAG, "KeyStore: Saving in default app directory...");
         FileOutputStream out = new FileOutputStream(keyStoreFile);
         keyStore.store(out, keystorePassword);
         out.close();
-        Log.i(TAG, "KeyStore: Guardado!");
+        Log.i(TAG, "KeyStore: Saved in default app directory!");
     }
 
     /**
@@ -452,7 +460,7 @@ public class TFMSecurityManager {
             IOException,
             KeyStoreException,
             NoSuchAlgorithmException {
-        Log.i(TAG, "KeyStore: Saving in SDCard!");
+        Log.i(TAG, "KeyStore: Saving in SDCard...");
         String root_sd = Environment.getExternalStorageDirectory().toString();
         File keyStoreFile = new File(root_sd, Constants.KEY_STORE_BKS_FILE);
         FileOutputStream out = new FileOutputStream(keyStoreFile);
@@ -472,10 +480,11 @@ public class TFMSecurityManager {
         Log.i(TAG,"Showing aliases in KeyStore...");
         while(aliases.hasMoreElements()){
             String alias = aliases.nextElement();
-            Log.i(TAG, String.format("alias : %s", alias));
-            //if(!keyStore.isCertificateEntry(alias)) {
+
             if(keyStore.isKeyEntry(alias) && alias.startsWith("f")) {
-                Log.i(TAG, String.format("alias : %s : %s", alias, getSecretFromKeyInKeyStore(alias)));
+                Log.i(TAG, String.format("alias : %s : [%s]", alias, getSecretFromKeyInKeyStore(alias)));
+            }else{
+                Log.i(TAG, String.format("alias : [%s]", alias));
             }
         }
     }
@@ -503,23 +512,24 @@ public class TFMSecurityManager {
         for(String str : fields){
             if(this.getSimKeys().get(str) == null){
                 GetByFLocalSymKeyTask getByFLocalSymKeyTask = new GetByFLocalSymKeyTask();
-                Log.i(TAG, "LocalSymKey : " + str);
+                Log.i(TAG, String.format("LocalSymKey : [%s]", str));
+
                 LocalSymKey lskF1 = getByFLocalSymKeyTask.execute(str).get();
                 if(lskF1 == null){
-                    Log.i(TAG, "LocalSymKey : [" + str + "] NOT in LOCAL database!");
+                    Log.i(TAG, String.format("LocalSymKey : [%s] NOT in LOCAL database!", str));
 
                     // Recuperem la clau del servidor
-                    Log.i(TAG, "Searching [" + str + "] in REMOTE database...");
+                    Log.i(TAG, String.format("Searching [%s] in REMOTE database...", str));
                     GetByFRemoteSymKeyTask getByFRemoteSymKeyTask = new GetByFRemoteSymKeyTask();
 
                     String url = Constants.URL_KEYS + "/" + str;
                     String res = getByFRemoteSymKeyTask.execute(url).get();
 
                     if(res == null || res.isEmpty()){
-                        Log.i(TAG, "LocalSymKey NOT located in REMOTE: " + str);
+                        Log.i(TAG, String.format("LocalSymKey NOT located in REMOTE: [%s]", str));
                         createLocalSymKey(rsg, str);
                     }else{
-                        Log.i(TAG, "LocalSymKey received from REMOTE: ["+str+"]" );
+                        Log.i(TAG, String.format("LocalSymKey received from REMOTE: [%s]", str));
 
                         JSONObject receivedRemoteSymKey = new JSONObject(res);
 
@@ -535,7 +545,7 @@ public class TFMSecurityManager {
                     }
 
                 }else{
-                    Log.i(TAG, "LocalSymKey : [" + str + "] IS in LOCAL database!");
+                    Log.i(TAG, String.format("LocalSymKey : [%s] IS in LOCAL database!", str));
                     getLocalSymKey(str, lskF1);
                 }
 
@@ -553,14 +563,14 @@ public class TFMSecurityManager {
     private void getLocalSymKey(String str, LocalSymKey lskF1)
             throws
             CMSException {
-        Log.i(TAG, "LocalSymKey recuperada: ["+lskF1.getF()+"]");
+        Log.i(TAG, String.format("LocalSymKey retrieved: [%s]", lskF1.getF()));
 
         // Desencriptació amb clau privada de iv i simKey
         byte[] simKeyBytesDec = Base64.decode(lskF1.getK(), Base64.NO_WRAP);
         byte[] simKeyStringDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, this.getPrivateKey());
         String strKey = new String(simKeyStringDec);
 
-        Log.i(TAG, "Clave simétrica del campo ["+str+"]: [" + strKey + "]");
+        Log.i(TAG, String.format("Field [%s]: symmetric key [%s]", str, strKey));
 
         this.getSimKeys().put(str, strKey);
     }
@@ -594,7 +604,7 @@ public class TFMSecurityManager {
 
         InsertLocalSymKeyTask insertLocalSymKeyTask = new InsertLocalSymKeyTask(lsk);
         LocalSymKey lskF = insertLocalSymKeyTask.execute().get();
-        Log.i(TAG, "LocalSymKey saved: " + lskF.toString());
+        Log.i(TAG, String.format("LocalSymKey saved: [%s]", lskF.toString()));
 
         Map<String, String> params = new HashMap<>();
         params.put("f", str);
@@ -603,7 +613,7 @@ public class TFMSecurityManager {
         PostDataAuthenticatedToUrlTask getData = new PostDataAuthenticatedToUrlTask(params);
 
         String res = getData.execute(Constants.URL_KEYS).get();
-        Log.i(TAG, "Insert remote SymKey Task: server response : " + res);
+        Log.i(TAG, String.format("Insert remote SymKey Task: server response : [%s]", res));
 
         this.getSimKeys().put(str, simKey);
 
@@ -633,7 +643,7 @@ public class TFMSecurityManager {
 
             byte[] data = secretKey.getEncoded();
             String keyString = java.util.Base64.getEncoder().encodeToString(data);
-            Log.i(TAG, "createSymmetricKeyInKeyStore.keyString : " + keyString);
+            Log.i(TAG, String.format("createSymmetricKeyInKeyStore.keyString : [%s]", keyString));
 
             byte[] data2 = java.util.Base64.getDecoder().decode(keyString);
             SecretKey key2 = new SecretKeySpec(data2, 0, data2.length, Constants.AES);
@@ -671,22 +681,22 @@ public class TFMSecurityManager {
     /**
      *
      * @param str
-     * @param protParam
+     * @param protectionParameter
      * @return
      * @throws KeyStoreException
      * @throws NoSuchAlgorithmException
      * @throws UnrecoverableEntryException
      */
-    private String getSymmetricKeyFromKeyStore(String str, KeyStore.ProtectionParameter protParam)
+    private String getSymmetricKeyFromKeyStore(String str, KeyStore.ProtectionParameter protectionParameter)
             throws
             KeyStoreException,
             NoSuchAlgorithmException,
             UnrecoverableEntryException {
 
-        KeyStore.SecretKeyEntry recoveredEntry = (KeyStore.SecretKeyEntry)keyStore.getEntry(str, protParam);
+        KeyStore.SecretKeyEntry recoveredEntry = (KeyStore.SecretKeyEntry)keyStore.getEntry(str, protectionParameter);
         byte[] bytes = recoveredEntry.getSecretKey().getEncoded();
         String recoveredSecret = java.util.Base64.getEncoder().encodeToString(bytes);
-        Log.i(TAG, "recovered " + recoveredSecret);
+        Log.i(TAG, String.format("recovered [%s]", recoveredSecret));
         return recoveredSecret;
     }
 
@@ -710,20 +720,19 @@ public class TFMSecurityManager {
 
 
     private void loadCertificateFromAssets(String certFile, String alias)
-            throws
-            Exception {
+            throws IOException, CertificateException, KeyStoreException{
 
-        // Load Certificate from assets
-        Log.i(TAG,"Retrieving " + alias + " Certificate from file in assets...");
-        InputStream isCrt = InvoiceApp.getContext().getAssets().open(certFile);
-        X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isCrt);
-        isCrt.close();
-        if(certificate == null){
-            throw new Exception("ERROR : NO " + alias + " Certificate in "+ certFile +"!");
-        }
-        Log.i(TAG,"Retrieved " + alias + " Certificate from file in assets! SubjectDN : " + certificate.getSubjectDN().getName());
-        keyStore.setCertificateEntry(alias, certificate);
-        showAliasesInKeyStore();
+            // Load Certificate from assets
+            Log.i(TAG, String.format("Retrieving %s Certificate from file in assets...", alias));
+            InputStream isCrt = InvoiceApp.getContext().getAssets().open(certFile);
+            X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isCrt);
+            isCrt.close();
+            if(certificate == null){
+                throw new CertificateException(String.format("ERROR : NO %s Certificate in %s!", alias, certFile));
+            }
+            Log.i(TAG, String.format("Retrieved %s Certificate from file in assets! SubjectDN : [%s]", alias, certificate.getSubjectDN().getName()));
+            keyStore.setCertificateEntry(alias, certificate);
+            showAliasesInKeyStore();
     }
 
     /**
