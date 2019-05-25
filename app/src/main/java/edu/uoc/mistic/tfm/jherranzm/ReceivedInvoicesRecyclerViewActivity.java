@@ -1,6 +1,7 @@
 package edu.uoc.mistic.tfm.jherranzm;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -70,6 +72,9 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
     // Security
     private TFMSecurityManager tfmSecurityManager;
+
+    // Context
+    private static WeakReference<Context> sContextReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -486,7 +491,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
             signedInvoices.add(obj);
 
             try {
-                GetFileDataObjectByFilenameTask getFileDataObjectByFilenameTask = new GetFileDataObjectByFilenameTask();
+                GetFileDataObjectByFilenameTask getFileDataObjectByFilenameTask = new GetFileDataObjectByFilenameTask(this);
                 FileDataObject existing = getFileDataObjectByFilenameTask.execute(f.getName()).get();
 
                 if(existing == null){

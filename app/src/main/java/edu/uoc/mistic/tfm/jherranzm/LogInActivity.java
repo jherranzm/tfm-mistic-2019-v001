@@ -1,5 +1,7 @@
 package edu.uoc.mistic.tfm.jherranzm;
 
+
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +16,7 @@ import com.example.apptestvalidationandroid44.R;
 
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,12 +31,17 @@ public class LogInActivity
     // Security
     private TFMSecurityManager tfmSecurityManager;
 
+    // Context
+    private static WeakReference<Context> sContextReference;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.log_in_activity);
+
+        sContextReference = new WeakReference<Context>(this);
 
         final EditText username = findViewById(R.id.editTextUserName);
         final EditText password = findViewById(R.id.editTextPassword);
@@ -48,10 +56,10 @@ public class LogInActivity
                 boolean formValid = false;
 
                 if(username.getText().toString().equals("")){
-                    Toast.makeText(InvoiceApp.getContext(),
+                    Toast.makeText(sContextReference.get(),
                             "Username must not be null or void",Toast.LENGTH_LONG).show();
                 }else if(password.getText().toString().equals("")) {
-                    Toast.makeText(InvoiceApp.getContext(),
+                    Toast.makeText(sContextReference.get(),
                             "Password must not be null or void", Toast.LENGTH_LONG).show();
                 }else{
                     formValid = true;
@@ -99,7 +107,7 @@ public class LogInActivity
 
 
                     } catch (Exception e) {
-                        Toast.makeText(InvoiceApp.getContext(),
+                        Toast.makeText(sContextReference.get(),
                                 "ERROR : " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                         Log.e(TAG, "ERROR : " + e.getClass().getCanonicalName() + " : "+ e.getLocalizedMessage() + " : " + e.getMessage());
                         e.printStackTrace();
@@ -134,7 +142,7 @@ public class LogInActivity
                     public void onClick(DialogInterface dialogInterface, int i) {
 
                         Log.i(TAG, "onClick: OK Called.");
-                        Intent intent = new Intent(InvoiceApp.getContext(), MainActivity.class);
+                        Intent intent = new Intent(sContextReference.get(), MainActivity.class);
                         startActivity(intent);
                     }
                 });

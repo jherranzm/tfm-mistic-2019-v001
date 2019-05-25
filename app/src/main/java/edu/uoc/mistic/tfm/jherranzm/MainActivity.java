@@ -1,6 +1,7 @@
 package edu.uoc.mistic.tfm.jherranzm;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import org.spongycastle.asn1.x500.style.BCStyle;
 import org.spongycastle.asn1.x500.style.IETFUtils;
 import org.spongycastle.cert.jcajce.JcaX509CertificateHolder;
 
+import java.lang.ref.WeakReference;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.util.List;
@@ -43,6 +45,9 @@ public class MainActivity
     // Security
     private TFMSecurityManager tfmSecurityManager;
 
+    // Context
+    private static WeakReference<Context> sContextReference;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +56,8 @@ public class MainActivity
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        sContextReference = new WeakReference<Context>(this);
 
         // 2019-03-30
         // Check whether this app has write external storage permission or not.
@@ -104,7 +111,7 @@ public class MainActivity
 
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                Intent intent = new Intent(InvoiceApp.getContext(), UploadedInvoicesRecyclerViewActivity.class);
+                Intent intent = new Intent(sContextReference.get(), UploadedInvoicesRecyclerViewActivity.class);
                 startActivity(intent);
 
                 mProgressBar.setVisibility(View.INVISIBLE);
@@ -117,7 +124,7 @@ public class MainActivity
             public void onClick(View view) {
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                Intent intent = new Intent(InvoiceApp.getContext(), ReceivedInvoicesRecyclerViewActivity.class);
+                Intent intent = new Intent(sContextReference.get(), ReceivedInvoicesRecyclerViewActivity.class);
                 startActivity(intent);
 
                 mProgressBar.setVisibility(View.INVISIBLE);
@@ -129,7 +136,7 @@ public class MainActivity
             public void onClick(View view) {
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                Intent intent = new Intent(InvoiceApp.getContext(), InvoiceDataRecyclerViewActivity.class);
+                Intent intent = new Intent(sContextReference.get(), InvoiceDataRecyclerViewActivity.class);
                 startActivity(intent);
 
                 mProgressBar.setVisibility(View.INVISIBLE);
@@ -153,7 +160,7 @@ public class MainActivity
             public void onClick(View view) {
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                Intent intent = new Intent(InvoiceApp.getContext(), TotalsByProviderRecyclerViewActivity.class);
+                Intent intent = new Intent(sContextReference.get(), TotalsByProviderRecyclerViewActivity.class);
                 startActivity(intent);
 
                 mProgressBar.setVisibility(View.INVISIBLE);
@@ -191,7 +198,7 @@ public class MainActivity
             public void onClick(View view) {
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                Intent intent = new Intent(InvoiceApp.getContext(), SignUpActivity.class);
+                Intent intent = new Intent(sContextReference.get(), SignUpActivity.class);
                 startActivity(intent);
 
                 mProgressBar.setVisibility(View.INVISIBLE);
@@ -203,7 +210,7 @@ public class MainActivity
             public void onClick(View view) {
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                Intent intent = new Intent(InvoiceApp.getContext(), LogInActivity.class);
+                Intent intent = new Intent(sContextReference.get(), LogInActivity.class);
                 startActivity(intent);
 
                 mProgressBar.setVisibility(View.INVISIBLE);
@@ -230,23 +237,23 @@ public class MainActivity
         Intent intent;
         switch (id){
             case R.id.action_uploaded_invoices:
-                Toast.makeText(MainActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
-                intent = new Intent(InvoiceApp.getContext(), UploadedInvoicesRecyclerViewActivity.class);
+                Toast.makeText(sContextReference.get(), item.getTitle(), Toast.LENGTH_SHORT).show();
+                intent = new Intent(sContextReference.get(), UploadedInvoicesRecyclerViewActivity.class);
                 startActivity(intent);
                 break;
             case R.id.action_received_invoices:
-                Toast.makeText(MainActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
-                intent = new Intent(InvoiceApp.getContext(), ReceivedInvoicesRecyclerViewActivity.class);
+                Toast.makeText(sContextReference.get(), item.getTitle(), Toast.LENGTH_SHORT).show();
+                intent = new Intent(sContextReference.get(), ReceivedInvoicesRecyclerViewActivity.class);
                 startActivity(intent);
                 break;
             case R.id.action_local_invoices:
-                Toast.makeText(MainActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
-                intent = new Intent(InvoiceApp.getContext(), InvoiceDataRecyclerViewActivity.class);
+                Toast.makeText(sContextReference.get(), item.getTitle(), Toast.LENGTH_SHORT).show();
+                intent = new Intent(sContextReference.get(), InvoiceDataRecyclerViewActivity.class);
                 startActivity(intent);
                 break;
             case R.id.action_totals_by_provider:
-                Toast.makeText(MainActivity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
-                intent = new Intent(InvoiceApp.getContext(), TotalsByProviderRecyclerViewActivity.class);
+                Toast.makeText(sContextReference.get(), item.getTitle(), Toast.LENGTH_SHORT).show();
+                intent = new Intent(sContextReference.get(), TotalsByProviderRecyclerViewActivity.class);
                 startActivity(intent);
                 break;
         }

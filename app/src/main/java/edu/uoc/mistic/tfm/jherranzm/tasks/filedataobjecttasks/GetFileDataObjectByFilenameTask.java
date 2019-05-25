@@ -2,7 +2,9 @@ package edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks;
 
 import android.os.AsyncTask;
 
-import edu.uoc.mistic.tfm.jherranzm.InvoiceApp;
+import java.lang.ref.WeakReference;
+
+import edu.uoc.mistic.tfm.jherranzm.ReceivedInvoicesRecyclerViewActivity;
 import edu.uoc.mistic.tfm.jherranzm.model.DatabaseClient;
 import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;
 
@@ -10,7 +12,10 @@ public class GetFileDataObjectByFilenameTask extends AsyncTask<String, Void, Fil
 
     private static final String TAG = "GetFileDataObjectByFilenameTask";
 
-    public GetFileDataObjectByFilenameTask(){
+    private final WeakReference<ReceivedInvoicesRecyclerViewActivity> mActivityRef;
+
+    public GetFileDataObjectByFilenameTask(ReceivedInvoicesRecyclerViewActivity activity){
+        mActivityRef = new WeakReference<>(activity);
     }
 
     protected void onPreExecute() {
@@ -22,7 +27,7 @@ public class GetFileDataObjectByFilenameTask extends AsyncTask<String, Void, Fil
     protected FileDataObject doInBackground(String... params) {
 
         return DatabaseClient
-                .getInstance(InvoiceApp.getContext())
+                .getInstance(mActivityRef.get())
                 .getAppDatabase()
                 .fileDataObjectDao()
                 .findByFilename(params[0]);

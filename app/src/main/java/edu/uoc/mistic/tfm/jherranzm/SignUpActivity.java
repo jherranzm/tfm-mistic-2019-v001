@@ -1,6 +1,7 @@
 package edu.uoc.mistic.tfm.jherranzm;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +15,7 @@ import com.example.apptestvalidationandroid44.R;
 
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +26,9 @@ import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 public class SignUpActivity extends AppCompatActivity {
 
     public static String TAG = "SignUpActivity";
+
+    // Context
+    private static WeakReference<Context> sContextReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
