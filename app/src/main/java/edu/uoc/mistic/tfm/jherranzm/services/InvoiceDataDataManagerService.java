@@ -67,8 +67,10 @@ public class InvoiceDataDataManagerService {
             Log.i(TAG, "GetAllInvoiceDataTask : " + invoiceDataList.size());
 
         } catch (ExecutionException e) {
+            Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
             e.printStackTrace();
         } catch (InterruptedException e) {
+            Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
             e.printStackTrace();
         }
 
@@ -76,12 +78,12 @@ public class InvoiceDataDataManagerService {
 
     }
 
-    public static List<TotalByProviderVO> getTotalsByProvider() {
+    public static List<TotalByProviderVO> getTotalsByProvider(Activity activity) {
 
         List<TotalByProviderVO> totals = new ArrayList<>();
         try {
 
-            GetTotalsByProviderTask getTotalsByProviderTask = new GetTotalsByProviderTask();
+            GetTotalsByProviderTask getTotalsByProviderTask = new GetTotalsByProviderTask(activity);
             totals = getTotalsByProviderTask.execute().get();
             for (TotalByProviderVO total : totals){
                 Log.i(TAG, total.toString());

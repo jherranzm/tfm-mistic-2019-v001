@@ -58,11 +58,11 @@ import es.facturae.facturae.v3.facturae.Facturae;
 public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
     // Constants
-    private static final String TAG = "ReceivedInvoicesRAV";
+    private static final String TAG = ReceivedInvoicesRecyclerViewActivity.class.getSimpleName();
 
     public static final String INFO_INVOICE_CORRECTLY_BACKED_UP_IN_SERVER = "Remote backup. INFO: Invoice  %s correctly backed up!";
     public static final String ALERT_INVOICE_ALREADY_IN_SERVER = "Remote backup. ALERT: Invoice  %s already backed up in system!";
-    public static final String ALERTA_LA_FIRMA_NO_ES_VALIDA = "ALERT: Invoice signature NOT valid!";
+    public static final String ALERT_INVOICE_SIGNATURE_NOT_VALID = "ALERT: Invoice signature NOT valid!";
 
     // Widgets
     private RecyclerView.Adapter mAdapter;
@@ -191,7 +191,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
             if(!valid){
                 //Toast.makeText(mContext, "ERROR : La firma NO es válida!", Toast.LENGTH_LONG).show();
-                alertShow(ALERTA_LA_FIRMA_NO_ES_VALIDA);
+                alertShow(ALERT_INVOICE_SIGNATURE_NOT_VALID);
             }else{
                 Toast.makeText(sContextReference.get(), "Valid signed document!", Toast.LENGTH_SHORT).show();
 
@@ -359,7 +359,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         invoiceData.setUser(tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED));
         invoiceData.setBackedUp(invoiceBackedUp);
 
-        GetByBatchIdentifierInvoiceDataTask getByBatchIdentifierInvoiceDataTask = new GetByBatchIdentifierInvoiceDataTask();
+        GetByBatchIdentifierInvoiceDataTask getByBatchIdentifierInvoiceDataTask = new GetByBatchIdentifierInvoiceDataTask(this);
         List<InvoiceData> alreadySaved = getByBatchIdentifierInvoiceDataTask.execute(
                 invoiceData.getBatchIdentifier(),
                 tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED)

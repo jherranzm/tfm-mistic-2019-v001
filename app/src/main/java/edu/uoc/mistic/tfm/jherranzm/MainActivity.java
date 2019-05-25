@@ -174,7 +174,7 @@ public class MainActivity
 
                 try {
 
-                    GetTotalsByProviderByYearTask getTotalsByProviderTask = new GetTotalsByProviderByYearTask();
+                    GetTotalsByProviderByYearTask getTotalsByProviderTask = new GetTotalsByProviderByYearTask(MainActivity.this);
                     List<TotalByProviderByYearVO> totals = getTotalsByProviderTask.execute().get();
 
                     for(TotalByProviderByYearVO totalByProviderByYearVO : totals){

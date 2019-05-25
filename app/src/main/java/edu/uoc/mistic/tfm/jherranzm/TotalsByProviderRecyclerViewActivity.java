@@ -33,6 +33,11 @@ public class TotalsByProviderRecyclerViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.totals_by_provider_recycler_view);
 
+        initView();
+
+    }
+
+    private void initView() {
         RecyclerView mRecyclerView;
         RecyclerView.LayoutManager mLayoutManager;
 
@@ -42,14 +47,13 @@ public class TotalsByProviderRecyclerViewActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        totals = InvoiceDataDataManagerService.getTotalsByProvider();
+        totals = InvoiceDataDataManagerService.getTotalsByProvider(this);
         mAdapter = new TotalsByProviderRecyclerViewAdapter(totals);
 
         mRecyclerView.setAdapter(mAdapter);
         RecyclerView.ItemDecoration itemDecoration =
                 new DividerItemDecoration(this, LinearLayoutManager.VERTICAL);
         mRecyclerView.addItemDecoration(itemDecoration);
-
     }
 
     @Override

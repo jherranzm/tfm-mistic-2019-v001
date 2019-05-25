@@ -11,7 +11,7 @@ import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;
 
 public class InsertFileDataObjectTask extends AsyncTask<Void, Void, FileDataObject> {
 
-    private static final String TAG = "InsertFileDataObjectTask";
+    private static final String TAG = InsertFileDataObjectTask.class.getSimpleName();
 
     private FileDataObject object;
 
@@ -30,13 +30,13 @@ public class InsertFileDataObjectTask extends AsyncTask<Void, Void, FileDataObje
     @Override
     protected FileDataObject doInBackground(Void... voids) {
 
-        //LocalSymKey object = new LocalSymKey();
+        Log.i(TAG, "Implemented with WeakReference..." );
         long idInserted= DatabaseClient
                     .getInstance(mActivityRef.get())
                     .getAppDatabase()
                     .fileDataObjectDao()
                     .insert(this.object);
-            Log.i(TAG, "Inserted! ["+idInserted+"]" );
+        Log.i(TAG, String.format("Inserted! [%d]", idInserted));
 
         return object;
     }
