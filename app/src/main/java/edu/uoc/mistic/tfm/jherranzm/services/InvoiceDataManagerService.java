@@ -1,5 +1,6 @@
 package edu.uoc.mistic.tfm.jherranzm.services;
 
+import android.app.Activity;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class InvoiceDataManagerService {
 
     private static Map<String, InvoiceData> localInvoices = new HashMap<>();
 
-    public static List<Invoice> getUploadedInvoicesFromServer() {
+    public static List<Invoice> getUploadedInvoicesFromServer(Activity activity, String user) {
 
         List<Invoice> invoices = new ArrayList<>();
         try {
@@ -28,7 +29,7 @@ public class InvoiceDataManagerService {
             // retrieve data from server
             List<Invoice> remoteInvoices = uploadedInvoicesGetAllTask.execute(Constants.URL_FACTURAS).get();
 
-            List<InvoiceData> _localInvoices = InvoiceDataDataManagerService.getInvoiceDataFromDatabase();
+            List<InvoiceData> _localInvoices = InvoiceDataDataManagerService.getInvoiceDataFromDatabase(activity, user);
             for(InvoiceData invoiceData : _localInvoices){
                 localInvoices.put(invoiceData.getBatchIdentifier(), invoiceData);
             }

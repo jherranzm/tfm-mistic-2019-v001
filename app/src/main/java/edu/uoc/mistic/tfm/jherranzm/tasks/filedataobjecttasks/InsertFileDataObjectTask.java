@@ -3,7 +3,9 @@ package edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import edu.uoc.mistic.tfm.jherranzm.InvoiceApp;
+import java.lang.ref.WeakReference;
+
+import edu.uoc.mistic.tfm.jherranzm.ReceivedInvoicesRecyclerViewActivity;
 import edu.uoc.mistic.tfm.jherranzm.model.DatabaseClient;
 import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;
 
@@ -13,7 +15,10 @@ public class InsertFileDataObjectTask extends AsyncTask<Void, Void, FileDataObje
 
     private FileDataObject object;
 
-    public InsertFileDataObjectTask(FileDataObject object){
+    private final WeakReference<ReceivedInvoicesRecyclerViewActivity> mActivityRef;
+
+    public InsertFileDataObjectTask(ReceivedInvoicesRecyclerViewActivity activity, FileDataObject object){
+        mActivityRef = new WeakReference<>(activity);
         this.object = object;
     }
 
@@ -27,7 +32,7 @@ public class InsertFileDataObjectTask extends AsyncTask<Void, Void, FileDataObje
 
         //LocalSymKey object = new LocalSymKey();
         long idInserted= DatabaseClient
-                    .getInstance(InvoiceApp.getContext())
+                    .getInstance(mActivityRef.get())
                     .getAppDatabase()
                     .fileDataObjectDao()
                     .insert(this.object);

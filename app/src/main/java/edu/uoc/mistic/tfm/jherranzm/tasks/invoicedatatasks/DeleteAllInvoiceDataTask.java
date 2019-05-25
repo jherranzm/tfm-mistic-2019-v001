@@ -1,17 +1,21 @@
 package edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import edu.uoc.mistic.tfm.jherranzm.InvoiceApp;
+import java.lang.ref.WeakReference;
+
 import edu.uoc.mistic.tfm.jherranzm.model.DatabaseClient;
 
 public class DeleteAllInvoiceDataTask extends AsyncTask<Void, Void, Boolean> {
 
-    private static final String TAG = "DeleteAllInvoiceDataTask";
+    private static final String TAG = DeleteAllInvoiceDataTask.class.getSimpleName();
 
-    public DeleteAllInvoiceDataTask(){
+    private final WeakReference<Activity> mActivityRef;
 
+    public DeleteAllInvoiceDataTask(Activity activity){
+        mActivityRef = new WeakReference<>(activity);
     }
 
     protected void onPreExecute() {
@@ -21,17 +25,16 @@ public class DeleteAllInvoiceDataTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... voids) {
-
-        boolean ret = false;
+        Log.i(TAG, "Implemented with WeakReference..." );
 
         DatabaseClient
-                    .getInstance(InvoiceApp.getContext())
+                    .getInstance(mActivityRef.get())
                     .getAppDatabase()
                     .invoiceDataDao()
                     .deleteAll();
             Log.i(TAG, "Deleted all!" );
-        ret = true;
-        return ret;
+
+        return true;
     }
 
 }

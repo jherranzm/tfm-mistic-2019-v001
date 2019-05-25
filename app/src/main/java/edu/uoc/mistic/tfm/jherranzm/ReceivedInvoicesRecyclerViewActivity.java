@@ -81,13 +81,14 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.received_invoices_recycler_view);
 
+        sContextReference = new WeakReference<Context>(this);
+
         initView();
     }
 
     private void initView(){
 
-        ProgressBar spinner;
-        spinner = (ProgressBar)findViewById(R.id.progressBar);
+        ProgressBar spinner = findViewById(R.id.progressBar);
         spinner.setVisibility(View.VISIBLE);
 
         RecyclerView mRecyclerView = findViewById(R.id.local_invoices_rv);
@@ -119,7 +120,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                     @Override
                     public void onItemClick(int position, View v) {
                         Log.i(TAG, " Clicked on Item " + position);
-                        Toast.makeText(InvoiceApp.getContext(),
+                        Toast.makeText(sContextReference.get(),
                                 "Invoice " + signedInvoices.get(position).getFileName(),
                                 Toast.LENGTH_SHORT).show();
 
@@ -138,10 +139,10 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         try {
             valid = UtilValidator.isValid(doc);
         } catch (IOException e) {
-            Toast.makeText(InvoiceApp.getContext(), "ERROR IO " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(sContextReference.get(), "ERROR IO " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             Log.i(TAG, "ERROR IO : " + e.getLocalizedMessage());
         } catch (Exception e) {
-            Toast.makeText(InvoiceApp.getContext(), "ERROR Genérico " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(sContextReference.get(), "ERROR Genérico " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             Log.i(TAG, "ERROR Generic : " + e.getLocalizedMessage());
         }
 
@@ -156,11 +157,11 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
             throw new FileNotFoundException();
         }
 
-        Toast.makeText(InvoiceApp.getContext(), "Loading signed file...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(sContextReference.get(), "Loading signed file...", Toast.LENGTH_SHORT).show();
         InputStream isSignedInvoice = new FileInputStream(file);
 
         byte[] baInvoiceSigned = IOUtils.toByteArray(isSignedInvoice);
-        Toast.makeText(InvoiceApp.getContext(), "Info: file signed long : ["+baInvoiceSigned.length+"]", Toast.LENGTH_SHORT).show();
+        Toast.makeText(sContextReference.get(), String.format("Info: file signed long : [%d]", baInvoiceSigned.length), Toast.LENGTH_SHORT).show();
 
         isSignedInvoice = new FileInputStream(file);
         return UtilDocument.getDocument(isSignedInvoice);
@@ -174,7 +175,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
             throw new FileNotFoundException();
         }
 
-        Toast.makeText(InvoiceApp.getContext(), "Loading signed file...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(sContextReference.get(), "Loading signed file...", Toast.LENGTH_SHORT).show();
         InputStream isSignedInvoice = new FileInputStream(file);
 
         return IOUtils.toByteArray(isSignedInvoice);
@@ -184,7 +185,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         try {
              Document doc = getDocumentFromSignedInvoice(position);
 
-            Toast.makeText(InvoiceApp.getContext(), "Invoice processed!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(sContextReference.get(), "Invoice processed!", Toast.LENGTH_SHORT).show();
 
             boolean valid = validateSignedInvoice(doc);
 
@@ -192,36 +193,36 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 //Toast.makeText(mContext, "ERROR : La firma NO es válida!", Toast.LENGTH_LONG).show();
                 alertShow(ALERTA_LA_FIRMA_NO_ES_VALIDA);
             }else{
-                Toast.makeText(InvoiceApp.getContext(), "Valid signed document!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(sContextReference.get(), "Valid signed document!", Toast.LENGTH_SHORT).show();
 
                 Document document = UtilDocument.removeSignature(doc);
-                Toast.makeText(InvoiceApp.getContext(), "Signature erased!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(sContextReference.get(), "Signature erased!", Toast.LENGTH_SHORT).show();
 
 
-                Toast.makeText(InvoiceApp.getContext(), "Retrieving invoice data...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(sContextReference.get(), "Retrieving invoice data...", Toast.LENGTH_SHORT).show();
                 Facturae facturae = UtilFacturae.getFacturaeFromFactura(UtilDocument.documentToString(document));
                 if(facturae == null){
                     throw new Exception("ERROR: Invoice is NOT correct!");
                 }
 
-                Toast.makeText(InvoiceApp.getContext(), "Encrypting invoice data...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(sContextReference.get(), "Encrypting invoice data...", Toast.LENGTH_SHORT).show();
 
 
                 String UIDInvoiceHash = UIDGenerator.generate(facturae);
-                Log.i(TAG, "UIDInvoiceHash : ["+UIDInvoiceHash+"]");
+                Log.i(TAG, String.format("UIDInvoiceHash : [%s]", UIDInvoiceHash));
 
 
                 boolean invoiceBackedUp = encryptAndUploadInvoice(position, facturae, UIDInvoiceHash);
 
                 boolean ret = EnvelopedSignature.signXMLFile(document);
-                Log.i(TAG, "EnvelopedSignature.signXMLFile..." + (ret ? "Signed!!" : "NOT signed..."));
+                Log.i(TAG, String.format("EnvelopedSignature.signXMLFile...%s", ret ? "Signed!!" : "NOT signed..."));
 
                 saveInvoiceDataInLocalDatabase(facturae, UIDInvoiceHash, invoiceBackedUp);
 
             } // if(valid)
         }catch (Exception e){
-            Toast.makeText(InvoiceApp.getContext(), "ERROR:" + e.getMessage(), Toast.LENGTH_LONG).show();
-            Log.e(TAG, "ERROR:" + e.getMessage());
+            Toast.makeText(sContextReference.get(), String.format("ERROR:%s", e.getMessage()), Toast.LENGTH_LONG).show();
+            Log.e(TAG, String.format("ERROR:%s", e.getMessage()));
         }
     }
 
@@ -495,11 +496,11 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 FileDataObject existing = getFileDataObjectByFilenameTask.execute(f.getName()).get();
 
                 if(existing == null){
-                    InsertFileDataObjectTask insertFileDataObjectTask = new InsertFileDataObjectTask(obj);
+                    InsertFileDataObjectTask insertFileDataObjectTask = new InsertFileDataObjectTask(this, obj);
                     FileDataObject inserted = insertFileDataObjectTask.execute().get();
-                    Log.i(TAG, inserted.getFileName() + " inserted in local database ");
+                    Log.i(TAG, String.format("%s inserted in local database ", inserted.getFileName()));
                 }else{
-                    Log.i(TAG, obj.getFileName() + " ALREADY in local database ");
+                    Log.i(TAG, String.format("%s ALREADY in local database ", obj.getFileName()));
                 }
 
             } catch (ExecutionException e) {

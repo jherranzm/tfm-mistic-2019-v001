@@ -1,5 +1,6 @@
 package edu.uoc.mistic.tfm.jherranzm;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 
 import com.example.apptestvalidationandroid44.R;
 
+import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -30,6 +32,8 @@ public class InvoiceDataRecyclerViewAdapter
     private static InvoiceDataClickListener myClickListener;
     private SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     private DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.00");
+
+    private final WeakReference<Activity> mActivityRef;
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
@@ -68,7 +72,8 @@ public class InvoiceDataRecyclerViewAdapter
         InvoiceDataRecyclerViewAdapter.myClickListener = myClickListener;
     }
 
-    InvoiceDataRecyclerViewAdapter(List<InvoiceData> myDataset) {
+    InvoiceDataRecyclerViewAdapter(Activity activity, List<InvoiceData> myDataset) {
+        mActivityRef = new WeakReference<>(activity);
         mDataset = myDataset;
     }
 
@@ -121,7 +126,7 @@ public class InvoiceDataRecyclerViewAdapter
                             case R.id.deleteInvoiceDataOption:
                                 //handle menu1 click
                                 AlertDialog.Builder alertbox = new AlertDialog.Builder(view.getRootView().getContext());
-                                alertbox.setMessage("Do your want to delete this invoice?");
+                                alertbox.setMessage("Do you want to DELETE this invoice?");
                                 alertbox.setTitle("Warning");
                                 alertbox.setIcon(R.drawable.ic_launcher_background);
 
@@ -140,7 +145,9 @@ public class InvoiceDataRecyclerViewAdapter
                                             @Override
                                             public void onClick(DialogInterface dialogInterface, int i) {
                                                 Log.d("deleteInvoiceDataOption", "onClick: OK Called.");
-                                                InvoiceDataDataManagerService.deleteInvoiceData(mDataset.get(position));
+
+                                                InvoiceDataDataManagerService.deleteInvoiceData(mActivityRef.get(), mDataset.get(position));
+
                                                 mDataset.remove(position);
                                                 notifyItemRemoved(position);
                                                 // TODO: refresh info of number of invoices in system.

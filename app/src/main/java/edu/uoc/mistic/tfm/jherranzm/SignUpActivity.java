@@ -34,9 +34,15 @@ public class SignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.sign_up_activity);
 
+        sContextReference = new WeakReference<Context>(this);
+
+        initView();
+
+    }
+
+    private void initView() {
         final EditText username = (EditText)findViewById(R.id.editTextUserName);
         final EditText password = (EditText)findViewById(R.id.editTextPassword);
         final EditText passwordAgain = (EditText)findViewById(R.id.editTextPasswordAgain);
@@ -55,28 +61,28 @@ public class SignUpActivity extends AppCompatActivity {
                 boolean formValid = false;
 
                 if(username.getText().toString().equals("")){
-                    Toast.makeText(InvoiceApp.getContext(),
+                    Toast.makeText(sContextReference.get(),
                             "Username must not be null or void",Toast.LENGTH_LONG).show();
                 }else if( !android.util.Patterns.EMAIL_ADDRESS.matcher(username.getText().toString()).matches() ) {
-                    Toast.makeText(InvoiceApp.getContext(),
+                    Toast.makeText(sContextReference.get(),
                             "Username must be a valid email", Toast.LENGTH_LONG).show();
 
                 }else if(password.getText().toString().equals("")) {
-                    Toast.makeText(InvoiceApp.getContext(),
+                    Toast.makeText(sContextReference.get(),
                             "Password must not be null or void", Toast.LENGTH_LONG).show();
                 }else if(password.getText().toString().length() < 12) {
-                    Toast.makeText(InvoiceApp.getContext(),
+                    Toast.makeText(sContextReference.get(),
                             "Password must be at least 12 chars long", Toast.LENGTH_LONG).show();
 
                 }else if( !pattern.matcher(password.getText().toString()).matches() ) {
-                    Toast.makeText(InvoiceApp.getContext(),
+                    Toast.makeText(sContextReference.get(),
                             "Password must contain at least one digit, one uppercase letter, one lowercase letter and one special char.", Toast.LENGTH_LONG).show();
 
                 }else if(passwordAgain.getText().toString().equals("")) {
-                    Toast.makeText(InvoiceApp.getContext(),
+                    Toast.makeText(sContextReference.get(),
                             "Repeat password must not be null or void", Toast.LENGTH_LONG).show();
                 }else if(!passwordAgain.getText().toString().equals(password.getText().toString())) {
-                    Toast.makeText(InvoiceApp.getContext(),
+                    Toast.makeText(sContextReference.get(),
                             "Passwords are NOT equal", Toast.LENGTH_LONG).show();
                 }else{
                     formValid = true;
@@ -102,20 +108,20 @@ public class SignUpActivity extends AppCompatActivity {
 
                             switch (responseCode){
                                 case HttpURLConnection.HTTP_OK:
-                                    Toast.makeText(InvoiceApp.getContext(),
+                                    Toast.makeText(sContextReference.get(),
                                             "OK : Username " + username.getText().toString()+ " registered correctly!.", Toast.LENGTH_LONG).show();
                                     Log.i(TAG, "OK : Username " + username.getText().toString()+ " registered correctly!.");
                                     infoShow(
                                             "OK : Username " + username.getText().toString()+ " registered correctly!. A message has been sent to the users email to confirm the registration. Please review your inbox. The email is valid for 60 minutes.");
                                     break;
                                 case HttpURLConnection.HTTP_CONFLICT:
-                                    Toast.makeText(InvoiceApp.getContext(),
+                                    Toast.makeText(sContextReference.get(),
                                             "ERROR : Username " + username.getText().toString()+ " already registered.", Toast.LENGTH_LONG).show();
                                     Log.e(TAG, "ERROR : " + "ERROR : Username " + username.getText().toString()+ " already registered.");
                                     infoShow("The email you gave is already used..");
                                     break;
                                 default:
-                                    Toast.makeText(InvoiceApp.getContext(),
+                                    Toast.makeText(sContextReference.get(),
                                             "ERROR : Unexpected behaviour. Please see logs.", Toast.LENGTH_LONG).show();
                                     Log.e(TAG, "ERROR : Unexpected behaviour. Please see logs." + receivedAnswer.toString());
                                     break;
@@ -127,7 +133,7 @@ public class SignUpActivity extends AppCompatActivity {
 
 
                     } catch (Exception e) {
-                        Toast.makeText(InvoiceApp.getContext(),
+                        Toast.makeText(sContextReference.get(),
                                 "ERROR : " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                         Log.e(TAG, "ERROR : " + e.getClass().getCanonicalName() + " : "+ e.getLocalizedMessage() + " : " + e.getMessage());
                         e.printStackTrace();
@@ -142,7 +148,6 @@ public class SignUpActivity extends AppCompatActivity {
                 finish();
             }
         });
-
     }
 
     private  void infoShow(

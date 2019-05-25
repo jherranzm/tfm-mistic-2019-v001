@@ -11,7 +11,9 @@ import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
 
 public class GetByTaxIdentificationNumberInvoiceDataTask extends AsyncTask<String, Void, List<InvoiceData>> {
 
-    private static final String TAG = "GetByTaxIdentificationNumberInvoiceDataTask";
+    private static final String TAG = GetByTaxIdentificationNumberInvoiceDataTask.class.getSimpleName();
+
+    //private final WeakReference<ReceivedInvoicesRecyclerViewActivity> mActivityRef;
 
     private InvoiceData invoiceData;
 

@@ -148,7 +148,7 @@ public class MainActivity
             public void onClick(View view) {
                 mProgressBar.setVisibility(View.VISIBLE);
 
-                InvoiceDataDataManagerService.deleteAllInvoiceData();
+                InvoiceDataDataManagerService.deleteAllInvoiceData(MainActivity.this);
 
                 mProgressBar.setVisibility(View.INVISIBLE);
             }

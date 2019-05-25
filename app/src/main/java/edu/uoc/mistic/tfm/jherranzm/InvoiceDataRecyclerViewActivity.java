@@ -1,5 +1,6 @@
 package edu.uoc.mistic.tfm.jherranzm;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -11,24 +12,42 @@ import android.widget.TextView;
 
 import com.example.apptestvalidationandroid44.R;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
+import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
 import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
+import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
 public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
 
     private static final String TAG = "InvoiceDataRecyclerViewActivity";
 
+    // Context
+    private static WeakReference<Context> sContextReference;
+
     private RecyclerView.Adapter mAdapter;
 
     private List<InvoiceData> invoices;
+
+    // Security
+    private TFMSecurityManager tfmSecurityManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.invoice_data_recycler_view);
 
+        sContextReference = new WeakReference<Context>(this);
+
+        tfmSecurityManager = TFMSecurityManager.getInstance();
+
+        initView();
+
+    }
+
+    private void initView() {
         RecyclerView mRecyclerView;
         RecyclerView.LayoutManager mLayoutManager;
 
@@ -37,8 +56,8 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        invoices = InvoiceDataDataManagerService.getInvoiceDataFromDatabase();
-        mAdapter = new InvoiceDataRecyclerViewAdapter(invoices);
+        invoices = InvoiceDataDataManagerService.getInvoiceDataFromDatabase(this, tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
+        mAdapter = new InvoiceDataRecyclerViewAdapter(this, invoices);
         TextView textViewNumberItems = findViewById(R.id.textViewNumInvoiceFilesInSystem);
         textViewNumberItems.setText("Number of Invoices Processed in System " + invoices.size());
 
@@ -46,15 +65,14 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
         RecyclerView.ItemDecoration itemDecoration =
                 new DividerItemDecoration(this, LinearLayoutManager.VERTICAL);
         mRecyclerView.addItemDecoration(itemDecoration);
-
-     }
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
         //setContentView(R.layout.invoice_data_recycler_view);
-        invoices = InvoiceDataDataManagerService.getInvoiceDataFromDatabase();
-        mAdapter = new InvoiceDataRecyclerViewAdapter(invoices);
+        invoices = InvoiceDataDataManagerService.getInvoiceDataFromDatabase(this, tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
+        mAdapter = new InvoiceDataRecyclerViewAdapter(this, invoices);
         TextView textViewNumberItems = findViewById(R.id.textViewNumInvoiceFilesInSystem);
         textViewNumberItems.setText("Number of Invoices Processed in System " + invoices.size());
 

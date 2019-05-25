@@ -11,7 +11,9 @@ import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
 
 public class GetByBatchIdentifierInvoiceDataTask extends AsyncTask<String, Void, List<InvoiceData>> {
 
-    private static final String TAG = "GetByBatchIdentifierInvoiceDataTask";
+    private static final String TAG = GetByBatchIdentifierInvoiceDataTask.class.getSimpleName();
+
+    //private final WeakReference<ReceivedInvoicesRecyclerViewActivity> mActivityRef;
 
     public GetByBatchIdentifierInvoiceDataTask(){}
 

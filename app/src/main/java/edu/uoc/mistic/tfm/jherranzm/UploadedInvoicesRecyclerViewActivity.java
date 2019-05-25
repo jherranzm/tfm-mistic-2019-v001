@@ -45,6 +45,9 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
     private static String TAG = "UploadedInvoicesRVA";
 
+    // Security
+    private TFMSecurityManager tfmSecurityManager;
+
     private List<Invoice> invoices;
 
     @Override
@@ -52,6 +55,12 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.uploaded_invoices_recycler_view);
 
+        tfmSecurityManager = TFMSecurityManager.getInstance();
+
+        initView();
+    }
+
+    private void initView() {
         RecyclerView mRecyclerView;
         RecyclerView.LayoutManager mLayoutManager;
 
@@ -61,7 +70,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        invoices = InvoiceDataManagerService.getUploadedInvoicesFromServer();
+        invoices = InvoiceDataManagerService.getUploadedInvoicesFromServer(this, tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
         mAdapter = new UploadedInvoicesRecyclerViewAdapter(invoices);
 
         TextView textViewNumberItems = findViewById(R.id.textViewNumUploadedInvoices);

@@ -1,20 +1,26 @@
 package edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
-import edu.uoc.mistic.tfm.jherranzm.InvoiceApp;
 import edu.uoc.mistic.tfm.jherranzm.model.DatabaseClient;
 import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
 
 public class GetAllInvoiceDataByUserTask extends AsyncTask<String, Void, List<InvoiceData>> {
 
-    private static final String TAG = "GetAllInvoiceDataByUserTask";
+    private static final String TAG = GetAllInvoiceDataByUserTask.class.getSimpleName();
 
-    public GetAllInvoiceDataByUserTask() {
+    private final WeakReference<Activity> mActivityRef;
 
+    private String user;
+
+    public GetAllInvoiceDataByUserTask(Activity activity, String user) {
+        this.user = user;
+        mActivityRef = new WeakReference<>(activity);
     }
 
     protected void onPreExecute() {
@@ -26,11 +32,11 @@ public class GetAllInvoiceDataByUserTask extends AsyncTask<String, Void, List<In
     protected List<InvoiceData> doInBackground(String... params) {
 
         List<InvoiceData> taskList = DatabaseClient
-                .getInstance(InvoiceApp.getContext())
+                .getInstance(mActivityRef.get())
                 .getAppDatabase()
                 .invoiceDataDao()
-                .getAllByUser(params[0]);
-        Log.i(TAG, "InvoiceData.length : " + taskList.size());
+                .getAllByUser(user);
+        Log.i(TAG, String.format("InvoiceData.length : %d", taskList.size()));
 
         return taskList;
     }

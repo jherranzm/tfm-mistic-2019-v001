@@ -43,6 +43,12 @@ public class LogInActivity
 
         sContextReference = new WeakReference<Context>(this);
 
+        initView();
+
+        tfmSecurityManager = TFMSecurityManager.getInstance();
+    }
+
+    private void initView() {
         final EditText username = findViewById(R.id.editTextUserName);
         final EditText password = findViewById(R.id.editTextPassword);
 
@@ -122,8 +128,6 @@ public class LogInActivity
                 finish();
             }
         });
-
-        tfmSecurityManager = TFMSecurityManager.getInstance();
     }
 
     private void infoDialog(
