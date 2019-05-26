@@ -34,8 +34,4 @@ public class GetByBatchIdentifierInvoiceDataTask extends AsyncTask<String, Void,
         return taskList;
     }
 
-    protected void onPreExecute() {
-        super.onPreExecute();
-    }
-
 }

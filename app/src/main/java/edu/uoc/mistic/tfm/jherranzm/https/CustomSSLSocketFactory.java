@@ -1,10 +1,6 @@
 package edu.uoc.mistic.tfm.jherranzm.https;
 
-import android.content.Context;
-
-import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.cert.CertificateException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -19,8 +15,8 @@ public class CustomSSLSocketFactory {
 
     private static SSLSocketFactory sslSocketFactory;
 
-    public static SSLSocketFactory getSSLSocketFactory(Context context)
-            throws CertificateException, IOException, GeneralSecurityException {
+    public static SSLSocketFactory getSSLSocketFactory()
+            throws GeneralSecurityException {
 
         TFMSecurityManager tfmSecurityManager = TFMSecurityManager.getInstance();
 

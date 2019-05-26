@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import edu.uoc.mistic.tfm.jherranzm.model.Invoice;
 import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
 import edu.uoc.mistic.tfm.jherranzm.model.TotalByProviderVO;
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.DeleteAllInvoiceDataTask;
@@ -19,22 +18,12 @@ import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.GetTotalsByProviderTa
 
 public class InvoiceDataDataManagerService {
 
-    private static String TAG = InvoiceDataDataManagerService.class.getSimpleName();
+    private static final String TAG = InvoiceDataDataManagerService.class.getSimpleName();
 
-    private static Map<String, Invoice> remoteInvoices = new HashMap<>();
-    private static Map<String, InvoiceData> localInvoices = new HashMap<>();
+    private static final Map<String, InvoiceData> localInvoices = new HashMap<>();
 
     private static InvoiceDataDataManagerService instance;
 
-    public Activity getCallingActivity() {
-        return callingActivity;
-    }
-
-    public void setCallingActivity(Activity callingActivity) {
-        this.callingActivity = callingActivity;
-    }
-
-    private Activity callingActivity;
 
     public static InvoiceDataDataManagerService getInstance(){
         if (instance == null){
@@ -108,7 +97,7 @@ public class InvoiceDataDataManagerService {
         } catch (Exception e) {
             Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
             e.printStackTrace();
-        };
+        }
     }
 
     public static void deleteAllInvoiceData(Activity activity){

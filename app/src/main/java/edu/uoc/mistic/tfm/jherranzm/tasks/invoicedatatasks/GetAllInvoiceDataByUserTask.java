@@ -16,15 +16,11 @@ public class GetAllInvoiceDataByUserTask extends AsyncTask<String, Void, List<In
 
     private final WeakReference<Activity> mActivityRef;
 
-    private String user;
+    private final String user;
 
     public GetAllInvoiceDataByUserTask(Activity activity, String user) {
         this.user = user;
         mActivityRef = new WeakReference<>(activity);
-    }
-
-    protected void onPreExecute() {
-        super.onPreExecute();
     }
 
 

@@ -20,10 +20,6 @@ public class GetAllInvoiceDataTask  extends AsyncTask<Void, Void, List<InvoiceDa
         mActivityRef = new WeakReference<>(activity);
     }
 
-    protected void onPreExecute() {
-        super.onPreExecute();
-    }
-
 
     @Override
     protected List<InvoiceData> doInBackground(Void... voids) {

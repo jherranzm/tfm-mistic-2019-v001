@@ -19,16 +19,16 @@ public class TotalsByProviderRecyclerViewAdapter extends RecyclerView
         .Adapter<TotalsByProviderRecyclerViewAdapter
         .DataObjectHolder> {
     private final static String TAG = "TotalsByProviderRVA";
-    private List<TotalByProviderVO> mDataset;
+    private final List<TotalByProviderVO> mDataset;
     private static TotalsByProviderClickListener myClickListener;
     private SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View
             .OnClickListener {
-        TextView textViewTaxIdentificationNumber;
-        TextView textViewCorporateName;
-        TextView textViewTotalAmount;
+        final TextView textViewTaxIdentificationNumber;
+        final TextView textViewCorporateName;
+        final TextView textViewTotalAmount;
 
         DataObjectHolder(View itemView) {
             super(itemView);

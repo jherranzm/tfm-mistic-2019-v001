@@ -19,7 +19,7 @@ import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
 
 public class TotalsByProviderRecyclerViewActivity extends AppCompatActivity {
 
-    private static String TAG = "TotalsByProviderRVA";
+    private static final String TAG = "TotalsByProviderRVA";
 
     private Context mContext;
 

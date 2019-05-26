@@ -172,7 +172,7 @@ public class InvoiceData implements Serializable {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("InvoiceData{");
+        final StringBuilder sb = new StringBuilder("InvoiceData{");
         sb.append("id=").append(id);
         sb.append(", user='").append(user).append('\'');
         sb.append(", batchIdentifier='").append(batchIdentifier).append('\'');

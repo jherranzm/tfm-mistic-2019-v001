@@ -1,6 +1,5 @@
 package edu.uoc.mistic.tfm.jherranzm;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -12,7 +11,6 @@ import android.widget.TextView;
 
 import com.example.apptestvalidationandroid44.R;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
@@ -22,10 +20,7 @@ import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
 public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
 
-    private static final String TAG = "InvoiceDataRecyclerViewActivity";
-
-    // Context
-    private static WeakReference<Context> sContextReference;
+    private static final String TAG = InvoiceDataRecyclerViewActivity.class.getSimpleName();
 
     private RecyclerView.Adapter mAdapter;
 
@@ -38,8 +33,6 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.invoice_data_recycler_view);
-
-        sContextReference = new WeakReference<Context>(this);
 
         tfmSecurityManager = TFMSecurityManager.getInstance();
 
@@ -109,9 +102,6 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Log.d(TAG, "onClick: OK Called.");
-                        if(okMethod.equals("ok")){
-                            //downloadInvoice(position);
-                        }
                     }
                 });
 

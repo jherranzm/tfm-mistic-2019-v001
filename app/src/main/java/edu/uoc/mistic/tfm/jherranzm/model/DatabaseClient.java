@@ -8,7 +8,7 @@ public class DatabaseClient {
     private static DatabaseClient mInstance;
 
     //our app database object
-    private TFMDatabase appDatabase;
+    private final TFMDatabase appDatabase;
 
     private DatabaseClient(Context mCtx) {
         // creating the app database with Room database builder

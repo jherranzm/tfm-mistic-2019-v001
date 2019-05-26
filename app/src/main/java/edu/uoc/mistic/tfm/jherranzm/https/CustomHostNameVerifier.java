@@ -7,7 +7,7 @@ import javax.net.ssl.SSLSession;
 
 public class CustomHostNameVerifier implements HostnameVerifier {
 
-    public static final String TAG = "CustomHostNameVerifier";
+    private static final String TAG = CustomHostNameVerifier.class.getSimpleName();
 
     @Override
     public boolean verify(String hostname, SSLSession session) {

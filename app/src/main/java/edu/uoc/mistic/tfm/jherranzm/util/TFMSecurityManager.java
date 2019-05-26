@@ -1,5 +1,6 @@
 package edu.uoc.mistic.tfm.jherranzm.util;
 
+import android.app.Activity;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
@@ -20,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystemException;
 import java.security.KeyPair;
@@ -50,7 +52,6 @@ import javax.net.ssl.TrustManagerFactory;
 
 import edu.uoc.mistic.tfm.jherranzm.CsrHelper;
 import edu.uoc.mistic.tfm.jherranzm.InvoiceApp;
-import edu.uoc.mistic.tfm.jherranzm.PostDataAuthenticatedToUrlTask;
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricDecryptor;
 import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricEncryptor;
@@ -61,15 +62,16 @@ import edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks.DeleteLocalSymKeyTask
 import edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks.GetAllLocalSymKeyTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks.GetByFLocalSymKeyTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks.InsertLocalSymKeyTask;
+import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostDataAuthenticatedToUrlTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.remotesymkeytasks.GetByFRemoteSymKeyTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.remotesymkeytasks.GetCertificateFromServerTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.remotesymkeytasks.GetServerStatusTask;
 
 public class TFMSecurityManager {
 
-    private static final String TAG = "TFMSecurityManager";
+    private static final String TAG = TFMSecurityManager.class.getSimpleName();
 
-    private Map<String, String> simKeys = new HashMap<>();
+    private final Map<String, String> simKeys = new HashMap<>();
 
     private X509Certificate certificate;
     private PrivateKey privateKey;
@@ -80,12 +82,18 @@ public class TFMSecurityManager {
     private KeyStore keyStore;
     private static CertificateFactory certFactory;
 
-    private char[] keystorePassword = Constants.PKCS12_PASSWORD.toCharArray();
+    private final char[] keystorePassword = Constants.PKCS12_PASSWORD.toCharArray();
     private File keyStoreFile;
+
+    private WeakReference<Activity> mActivityRef;
 
     private TFMSecurityManager(){}
 
-    public static TFMSecurityManager getInstance(){
+    public static TFMSecurityManager getInstance() {
+        return instance;
+    }
+
+    public static TFMSecurityManager getInstance(Activity activity){
         if (instance == null){
             Log.i(TAG, "TFMSecurityManager initialization: begin...");
 
@@ -99,7 +107,8 @@ public class TFMSecurityManager {
 
             // if instance is null, initialize
             instance = new TFMSecurityManager();
-            instance.manageSecurity();
+
+            instance.manageSecurity(activity);
 
             Log.i(TAG, "TFMSecurityManager initialization: end...");
         }else{
@@ -112,7 +121,9 @@ public class TFMSecurityManager {
     /**
      *
      */
-    private void manageSecurity() {
+    private void manageSecurity(Activity activity) {
+
+        mActivityRef = new WeakReference<>(activity);
 
         // Security
         try {
@@ -186,7 +197,7 @@ public class TFMSecurityManager {
 
         }catch(Exception e){
             Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
-            Toast.makeText(InvoiceApp.getContext(), "ERROR : "+e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage() , Toast.LENGTH_LONG).show();
+            Toast.makeText(mActivityRef.get(), String.format("ERROR : %s: %s", e.getClass().getCanonicalName(), e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -199,7 +210,7 @@ public class TFMSecurityManager {
 
         try {
             if(keyStoreFile.exists()){
-                Log.i(TAG,"KeyStore file exists in : " + keyStoreFile.getAbsolutePath());
+                Log.i(TAG, String.format("KeyStore file exists in : %s", keyStoreFile.getAbsolutePath()));
                 // clean...
                 keyStore.load(null, null);
                 keyStore.load(new FileInputStream(keyStoreFile), keystorePassword);
@@ -327,7 +338,6 @@ public class TFMSecurityManager {
             KeyStoreException,
             NoSuchAlgorithmException,
             IOException,
-            OperatorCreationException,
             ExecutionException,
             InterruptedException,
             CertificateException,
@@ -341,7 +351,7 @@ public class TFMSecurityManager {
 
             // Cleaning just in case
             // Delete Local Symmetric Keys from Database
-            LocalSymKeyDataManagerService.deleteAllByUser(defaultUser);
+            LocalSymKeyDataManagerService.deleteAllByUser(mActivityRef.get(), defaultUser);
 
             // Delete Local Symmetric Keys from KeyStore
             deleteAllLocalSymKeys();
@@ -511,7 +521,7 @@ public class TFMSecurityManager {
 
         for(String str : fields){
             if(this.getSimKeys().get(str) == null){
-                GetByFLocalSymKeyTask getByFLocalSymKeyTask = new GetByFLocalSymKeyTask();
+                GetByFLocalSymKeyTask getByFLocalSymKeyTask = new GetByFLocalSymKeyTask(mActivityRef.get());
                 Log.i(TAG, String.format("LocalSymKey : [%s]", str));
 
                 LocalSymKey lskF1 = getByFLocalSymKeyTask.execute(str).get();
@@ -602,7 +612,7 @@ public class TFMSecurityManager {
         String simKeyStringEnc = new String(Base64.encode(simKeyBytesEnc, Base64.NO_WRAP), StandardCharsets.UTF_8);
         lsk.setK(simKeyStringEnc);
 
-        InsertLocalSymKeyTask insertLocalSymKeyTask = new InsertLocalSymKeyTask(lsk);
+        InsertLocalSymKeyTask insertLocalSymKeyTask = new InsertLocalSymKeyTask(mActivityRef.get(), lsk);
         LocalSymKey lskF = insertLocalSymKeyTask.execute().get();
         Log.i(TAG, String.format("LocalSymKey saved: [%s]", lskF.toString()));
 
@@ -709,10 +719,10 @@ public class TFMSecurityManager {
             throws
             java.util.concurrent.ExecutionException,
             InterruptedException {
-        GetAllLocalSymKeyTask galskTask = new GetAllLocalSymKeyTask();
-        List<LocalSymKey> lskList = galskTask.execute().get();
+        GetAllLocalSymKeyTask getAllLocalSymKeyTask = new GetAllLocalSymKeyTask(mActivityRef.get());
+        List<LocalSymKey> lskList = getAllLocalSymKeyTask.execute().get();
         for(LocalSymKey aLocalSimKey : lskList){
-            DeleteLocalSymKeyTask dlskTask = new DeleteLocalSymKeyTask(aLocalSimKey);
+            DeleteLocalSymKeyTask dlskTask = new DeleteLocalSymKeyTask(mActivityRef.get(), aLocalSimKey);
             LocalSymKey deleted = dlskTask.execute().get();
             Log.i(TAG, "Deleted: " + deleted.toString());
         }
@@ -724,7 +734,7 @@ public class TFMSecurityManager {
 
             // Load Certificate from assets
             Log.i(TAG, String.format("Retrieving %s Certificate from file in assets...", alias));
-            InputStream isCrt = InvoiceApp.getContext().getAssets().open(certFile);
+            InputStream isCrt = mActivityRef.get().getAssets().open(certFile);
             X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(isCrt);
             isCrt.close();
             if(certificate == null){

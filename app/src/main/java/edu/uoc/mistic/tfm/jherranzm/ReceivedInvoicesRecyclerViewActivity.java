@@ -47,6 +47,7 @@ import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.GetFileDataObjectB
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.InsertFileDataObjectTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.GetByBatchIdentifierInvoiceDataTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.InsertInvoiceDataTask;
+import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostDataAuthenticatedToUrlTask;
 import edu.uoc.mistic.tfm.jherranzm.util.RandomStringGenerator;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 import edu.uoc.mistic.tfm.jherranzm.util.UIDGenerator;
@@ -60,9 +61,9 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
     // Constants
     private static final String TAG = ReceivedInvoicesRecyclerViewActivity.class.getSimpleName();
 
-    public static final String INFO_INVOICE_CORRECTLY_BACKED_UP_IN_SERVER = "Remote backup. INFO: Invoice  %s correctly backed up!";
-    public static final String ALERT_INVOICE_ALREADY_IN_SERVER = "Remote backup. ALERT: Invoice  %s already backed up in system!";
-    public static final String ALERT_INVOICE_SIGNATURE_NOT_VALID = "ALERT: Invoice signature NOT valid!";
+    private static final String INFO_INVOICE_CORRECTLY_BACKED_UP_IN_SERVER = "Remote backup. INFO: Invoice  %s correctly backed up!";
+    private static final String ALERT_INVOICE_ALREADY_IN_SERVER = "Remote backup. ALERT: Invoice  %s already backed up in system!";
+    private static final String ALERT_INVOICE_SIGNATURE_NOT_VALID = "ALERT: Invoice signature NOT valid!";
 
     // Widgets
     private RecyclerView.Adapter mAdapter;
@@ -119,13 +120,13 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 new ReceivedInvoicesRecyclerViewAdapter.ReceivedInvoicesClickListener() {
                     @Override
                     public void onItemClick(int position, View v) {
-                        Log.i(TAG, " Clicked on Item " + position);
+                        Log.i(TAG, String.format(" Clicked on Item %d", position));
                         Toast.makeText(sContextReference.get(),
-                                "Invoice " + signedInvoices.get(position).getFileName(),
+                                String.format("Invoice %s", signedInvoices.get(position).getFileName()),
                                 Toast.LENGTH_SHORT).show();
 
                         customDialog("Verify and Upload Invoice?",
-                                "Do you want to process invoice " + signedInvoices.get(position).getFileName(),
+                                String.format("Do you want to process invoice %s", signedInvoices.get(position).getFileName()),
                                 "cancel",
                                 "ok",
                                 position);
@@ -139,11 +140,11 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         try {
             valid = UtilValidator.isValid(doc);
         } catch (IOException e) {
-            Toast.makeText(sContextReference.get(), "ERROR IO " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            Log.i(TAG, "ERROR IO : " + e.getLocalizedMessage());
+            Toast.makeText(sContextReference.get(), String.format("ERROR IO %s", e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
+            Log.i(TAG, String.format("ERROR IO : %s", e.getLocalizedMessage()));
         } catch (Exception e) {
             Toast.makeText(sContextReference.get(), "ERROR Genérico " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            Log.i(TAG, "ERROR Generic : " + e.getLocalizedMessage());
+            Log.i(TAG, String.format("ERROR Generic : %s", e.getLocalizedMessage()));
         }
 
         return valid;
@@ -240,9 +241,9 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
         // IV and Symmetric Key
         String iv = rsg.getRandomString(16);
-        Log.i(TAG, "iv     : ["+iv+"]");
+        Log.i(TAG, String.format("iv     : [%s]", iv));
         String simKey = rsg.getRandomString(16);
-        Log.i(TAG, "simKey : ["+simKey+"]");
+        Log.i(TAG, String.format("simKey : [%s]", simKey));
 
 
         SymmetricEncryptor simEnc = new SymmetricEncryptor();
@@ -318,7 +319,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         PostDataAuthenticatedToUrlTask getData = new PostDataAuthenticatedToUrlTask(params);
 
         String res = getData.execute(Constants.URL_FACTURAS).get();
-        Log.i(TAG, "Response from server : " + res);
+        Log.i(TAG, String.format("Response from server : %s", res));
 
         JSONObject receivedInvoice = new JSONObject(res);
         String id = receivedInvoice.getString("id");
@@ -367,14 +368,14 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
         if(alreadySaved.size()>0){
 
-            Log.i(TAG, "InvoiceData already in system : nothing to be done!" + invoiceData.toString());
-            alertShow( "Local Database: Invoice "+ invoiceData.getInvoiceNumber() +" already in system : nothing to be done!" );
+            Log.i(TAG, String.format("InvoiceData already in system : nothing to be done!%s", invoiceData.toString()));
+            alertShow(String.format("Local Database: Invoice %s already in system : nothing to be done!", invoiceData.getInvoiceNumber()));
         }else{
 
-            InsertInvoiceDataTask insertInvoiceDataTask = new InsertInvoiceDataTask(invoiceData);
+            InsertInvoiceDataTask insertInvoiceDataTask = new InsertInvoiceDataTask(this, invoiceData);
             InvoiceData invoiceDataInserted = insertInvoiceDataTask.execute().get();
-            infoShow( "Local Database: Invoice "+ invoiceData.getInvoiceNumber() +" loaded in system!" );
-            Log.i(TAG, "InvoiceData ingresada: " + invoiceDataInserted.toString());
+            infoShow(String.format("Local Database: Invoice %s loaded in system!", invoiceData.getInvoiceNumber()));
+            Log.i(TAG, String.format("InvoiceData ingresada: %s", invoiceDataInserted.toString()));
         }
     }
 

@@ -99,7 +99,7 @@ public class Invoice implements Serializable {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("Invoice{");
+        final StringBuilder sb = new StringBuilder("Invoice{");
         sb.append("uid='").append(uid).append('\'');
         sb.append(", taxIdentificationNumber='").append(taxIdentificationNumber).append('\'');
         sb.append(", corporateName='").append(corporateName).append('\'');

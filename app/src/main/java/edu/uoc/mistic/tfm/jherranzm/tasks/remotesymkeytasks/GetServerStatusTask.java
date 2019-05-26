@@ -16,14 +16,9 @@ import edu.uoc.mistic.tfm.jherranzm.https.UtilConnection;
 
 public class GetServerStatusTask extends AsyncTask<String, Void, String> {
 
-    private static final String TAG = "GetServerStatusTask";
+    private static final String TAG = GetServerStatusTask.class.getSimpleName();
 
     public GetServerStatusTask(){
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
     }
 
     @Override

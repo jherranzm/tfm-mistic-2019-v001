@@ -18,10 +18,6 @@ public class DeleteAllInvoiceDataTask extends AsyncTask<Void, Void, Boolean> {
         mActivityRef = new WeakReference<>(activity);
     }
 
-    protected void onPreExecute() {
-        super.onPreExecute();
-    }
-
 
     @Override
     protected Boolean doInBackground(Void... voids) {

@@ -16,9 +16,9 @@ import edu.uoc.mistic.tfm.jherranzm.tasks.remotesymkeytasks.UploadedInvoicesGetA
 
 public class InvoiceDataManagerService {
 
-    private static String TAG = "InvoiceDataManagerService";
+    private static final String TAG = InvoiceDataManagerService.class.getSimpleName();
 
-    private static Map<String, InvoiceData> localInvoices = new HashMap<>();
+    private static final Map<String, InvoiceData> localInvoices = new HashMap<>();
 
     public static List<Invoice> getUploadedInvoicesFromServer(Activity activity, String user) {
 

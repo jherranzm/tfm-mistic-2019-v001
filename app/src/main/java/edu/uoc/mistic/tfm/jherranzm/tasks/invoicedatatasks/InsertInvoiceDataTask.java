@@ -1,24 +1,25 @@
 package edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import edu.uoc.mistic.tfm.jherranzm.InvoiceApp;
+import java.lang.ref.WeakReference;
+
 import edu.uoc.mistic.tfm.jherranzm.model.DatabaseClient;
 import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
 
 public class InsertInvoiceDataTask extends AsyncTask<Void, Void, InvoiceData> {
 
-    private static final String TAG = "InsertInvoiceDataTask";
+    private static final String TAG = InsertInvoiceDataTask.class.getSimpleName();
 
-    private InvoiceData invoiceData;
+    private final InvoiceData invoiceData;
 
-    public InsertInvoiceDataTask(InvoiceData data){
+    private final WeakReference<Activity> mActivityRef;
+
+    public InsertInvoiceDataTask(Activity activity, InvoiceData data){
+        mActivityRef = new WeakReference<>(activity);
         this.invoiceData = data;
-    }
-
-    protected void onPreExecute() {
-        super.onPreExecute();
     }
 
 
@@ -27,11 +28,11 @@ public class InsertInvoiceDataTask extends AsyncTask<Void, Void, InvoiceData> {
 
         //LocalSymKey invoiceData = new LocalSymKey();
         long idInserted= DatabaseClient
-                .getInstance(InvoiceApp.getContext())
+                .getInstance(mActivityRef.get())
                 .getAppDatabase()
                 .invoiceDataDao()
                 .insert(this.invoiceData);
-        Log.i(TAG, "Inserted! ["+idInserted+"]" );
+        Log.i(TAG, String.format("Inserted! [%d]", idInserted));
 
         return invoiceData;
     }

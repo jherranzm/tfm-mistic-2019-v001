@@ -34,8 +34,4 @@ public class GetTotalsByProviderByYearTask extends AsyncTask<String, Void, List<
         return totalsByProvider;
     }
 
-    protected void onPreExecute() {
-        super.onPreExecute();
-    }
-
 }

@@ -21,12 +21,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
+import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostLoginTask;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
 public class LogInActivity
         extends AppCompatActivity {
 
-    public static String TAG = "LogInActivity";
+    private static final String TAG = LogInActivity.class.getSimpleName();
 
     // Security
     private TFMSecurityManager tfmSecurityManager;

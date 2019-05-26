@@ -27,24 +27,24 @@ import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
 public class InvoiceDataRecyclerViewAdapter
         extends RecyclerView.Adapter<InvoiceDataRecyclerViewAdapter.DataObjectHolder> {
 
-    private final static String LOG_TAG = "InvoiceDataRVA";
-    private List<InvoiceData> mDataset;
+    private final static String TAG = InvoiceDataRecyclerViewAdapter.class.getSimpleName();
+    private final List<InvoiceData> mDataset;
     private static InvoiceDataClickListener myClickListener;
-    private SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-    private DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.00");
+    private final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    private final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.00");
 
     private final WeakReference<Activity> mActivityRef;
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
-        TextView taxIdentificationNumber;
-        TextView corporateName;
-        TextView invoiceNumber;
-        TextView totalAmount;
-        TextView totalTaxOutputs;
-        TextView issueDate;
-        CheckBox cbBackedUpInServer;
-        TextView buttonViewOption;
+        final TextView taxIdentificationNumber;
+        final TextView corporateName;
+        final TextView invoiceNumber;
+        final TextView totalAmount;
+        final TextView totalTaxOutputs;
+        final TextView issueDate;
+        final CheckBox cbBackedUpInServer;
+        final TextView buttonViewOption;
 
         DataObjectHolder(View itemView) {
             super(itemView);
@@ -58,7 +58,7 @@ public class InvoiceDataRecyclerViewAdapter
             cbBackedUpInServer = itemView.findViewById(R.id.checkBoxRemoteBackUp);
             buttonViewOption = itemView.findViewById(R.id.textViewOptions);
 
-            Log.i(LOG_TAG, "Adding Listener");
+            Log.i(TAG, "Adding Listener");
             itemView.setOnClickListener(this);
         }
 

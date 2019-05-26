@@ -17,14 +17,14 @@ public class ReceivedInvoicesRecyclerViewAdapter extends RecyclerView
         .Adapter<ReceivedInvoicesRecyclerViewAdapter
         .DataObjectHolder> {
     private final static String LOG_TAG = "LocalInvoicesRVA";
-    private List<FileDataObject> mDataset;
+    private final List<FileDataObject> mDataset;
     private static ReceivedInvoicesClickListener theClickListener;
 
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View
             .OnClickListener {
-        TextView fileName;
+        final TextView fileName;
 
         DataObjectHolder(View itemView) {
             super(itemView);

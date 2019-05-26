@@ -32,11 +32,6 @@ public class GetCertificateFromServerTask extends AsyncTask<String, Void, String
     private JSONObject postData;
 
     @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-    }
-
-    @Override
     protected String doInBackground(String... params) {
         try {
             URL url;

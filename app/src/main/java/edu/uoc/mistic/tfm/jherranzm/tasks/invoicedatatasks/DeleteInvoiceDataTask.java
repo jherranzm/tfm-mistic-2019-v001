@@ -15,15 +15,11 @@ public class DeleteInvoiceDataTask extends AsyncTask<Void, Void, Void> {
 
     private final WeakReference<Activity> mActivityRef;
 
-    private InvoiceData invoiceData;
+    private final InvoiceData invoiceData;
 
     public DeleteInvoiceDataTask(Activity activity, InvoiceData data){
         mActivityRef = new WeakReference<>(activity);
         this.invoiceData = data;
-    }
-
-    protected void onPreExecute() {
-        super.onPreExecute();
     }
 
 

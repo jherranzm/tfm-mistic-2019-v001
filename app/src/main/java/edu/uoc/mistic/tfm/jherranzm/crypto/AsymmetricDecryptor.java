@@ -14,7 +14,6 @@ public class AsymmetricDecryptor {
 
      public static byte[] decryptData(byte[] encryptedData, PrivateKey decryptionKey) throws CMSException {
 
-        byte[] decryptedData = null;
         if (null != encryptedData && null != decryptionKey) {
             CMSEnvelopedData envelopedData = new CMSEnvelopedData(encryptedData);
 
@@ -23,7 +22,8 @@ public class AsymmetricDecryptor {
             JceKeyTransRecipient recipient = new JceKeyTransEnvelopedRecipient(decryptionKey);
 
             return recipientInfo.getContent(recipient);
+        }else{
+            return null;
         }
-        return decryptedData;
     }
 }

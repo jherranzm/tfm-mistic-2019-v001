@@ -19,19 +19,19 @@ public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
         .Adapter<UploadedInvoicesRecyclerViewAdapter
         .DataObjectHolder> {
     private final static String LOG_TAG = "UploadedInvoicesRVA";
-    private List<Invoice> mDataset;
+    private final List<Invoice> mDataset;
     private static UploadedInvoicesClickListener myClickListener;
-    private SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    private final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View
             .OnClickListener {
-        TextView taxIdentificationNumber;
-        TextView invoiceNumber;
-        TextView totalAmount;
-        TextView totalTaxOutputs;
-        TextView issueDate;
-        TextView checkedTextView;
+        final TextView taxIdentificationNumber;
+        final TextView invoiceNumber;
+        final TextView totalAmount;
+        final TextView totalTaxOutputs;
+        final TextView issueDate;
+        final TextView checkedTextView;
 
         DataObjectHolder(View itemView) {
             super(itemView);

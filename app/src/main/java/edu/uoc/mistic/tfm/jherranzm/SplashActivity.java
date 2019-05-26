@@ -22,14 +22,14 @@ public class SplashActivity extends AppCompatActivity {
 
 
         Bitmap myBitmap = QRCode.from("MISTIC TFM Invoices by jherranzm@uoc.edu").bitmap();
-        ImageView myImage = (ImageView) findViewById(R.id.imageView);
+        ImageView myImage = findViewById(R.id.imageView);
         myImage.setImageBitmap(myBitmap);
 
         Thread logoTimer = new Thread() {
             public void run() {
                 try {
 
-                    TFMSecurityManager tfmSecurityManager = TFMSecurityManager.getInstance();
+                    TFMSecurityManager tfmSecurityManager = TFMSecurityManager.getInstance(SplashActivity.this);
 
                     sleep(1000);
                 } catch (InterruptedException e) {

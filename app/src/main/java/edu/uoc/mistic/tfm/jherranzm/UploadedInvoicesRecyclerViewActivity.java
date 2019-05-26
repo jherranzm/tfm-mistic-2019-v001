@@ -43,7 +43,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
     private Context mContext;
     private RecyclerView.Adapter mAdapter;
 
-    private static String TAG = "UploadedInvoicesRVA";
+    private static final String TAG = UploadedInvoicesRecyclerViewActivity.class.getSimpleName();
 
     // Security
     private TFMSecurityManager tfmSecurityManager;
@@ -74,7 +74,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
         mAdapter = new UploadedInvoicesRecyclerViewAdapter(invoices);
 
         TextView textViewNumberItems = findViewById(R.id.textViewNumUploadedInvoices);
-        textViewNumberItems.setText("Number of Invoices in Server " + invoices.size());
+        textViewNumberItems.setText(String.format("Number of Invoices in Server %d", invoices.size()));
 
         mRecyclerView.setAdapter(mAdapter);
         RecyclerView.ItemDecoration itemDecoration =
@@ -114,11 +114,11 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
             GetInvoiceByIdTask getInvoiceByIdTask = new GetInvoiceByIdTask();
 
             String res = getInvoiceByIdTask.execute(url).get();
-            Log.i(TAG, "Received from server : " + res);
+            Log.i(TAG, String.format("Received from server : %s", res));
             JSONObject jsonInvoice = new JSONObject(res);
-            Log.i(TAG, "Received from server [iv]: " + jsonInvoice.get("iv"));
-            Log.i(TAG, "Received from server [simKey]: " + jsonInvoice.get("simKey"));
-            Log.i(TAG, "Received from server [signedInvoice]: " + jsonInvoice.get("signedInvoice"));
+            Log.i(TAG, String.format("Received from server [iv]: %s", jsonInvoice.get("iv")));
+            Log.i(TAG, String.format("Received from server [simKey]: %s", jsonInvoice.get("simKey")));
+            Log.i(TAG, String.format("Received from server [signedInvoice]: %s", jsonInvoice.get("signedInvoice")));
 
             TFMSecurityManager tfmSecurityManager = TFMSecurityManager.getInstance();
 
@@ -131,20 +131,20 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
             byte[] simKeyBytesEncDec = AsymmetricDecryptor.decryptData(simKeyBytesDec, tfmSecurityManager.getPrivateKey());
             String simKeyStringDec = new String(simKeyBytesEncDec);
 
-            Log.i(TAG, "Received from server [iv]    : " + ivStringDec);
-            Log.i(TAG, "Received from server [simKey]: " + simKeyStringDec);
+            Log.i(TAG, String.format("Received from server [iv]    : %s", ivStringDec));
+            Log.i(TAG, String.format("Received from server [simKey]: %s", simKeyStringDec));
 
             SymmetricDecryptor simDec = new SymmetricDecryptor();
             simDec.setIv(ivStringDec);
             simDec.setKey(simKeyStringDec);
             String signedInvoiceDecrypted   = simDec.decrypt((String)jsonInvoice.get("signedInvoice"));
-            Log.i(TAG, "Received from server [signedInvoice]: " + signedInvoiceDecrypted);
+            Log.i(TAG, String.format("Received from server [signedInvoice]: %s", signedInvoiceDecrypted));
 
             Document doc = UtilDocument.getDocument(IOUtils.toInputStream(signedInvoiceDecrypted));
-            Log.i(TAG, "Received from server [doc]: " + doc.getNodeName());
+            Log.i(TAG, String.format("Received from server [doc]: %s", doc.getNodeName()));
 
             boolean valid = UtilValidator.isValid(doc);
-            Log.i(TAG, "Received from server [doc]: isValid? : " + valid);
+            Log.i(TAG, String.format("Received from server [doc]: isValid? : %s", valid));
 
             Log.i(TAG, "Received from server [doc]: removing signature...");
             Document document = UtilDocument.removeSignature(doc);
@@ -156,12 +156,12 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
             if(facturae.getInvoices() == null){
                 throw new Exception("Invoice document received from server contains NO invoices");
             }
-            Log.i(TAG, "Received from server [facturae]: InvoiceNumber   : " + facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
-            Log.i(TAG, "Received from server [facturae]: ItemDescription : " + facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getItemDescription());
-            Log.i(TAG, "Received from server [facturae]: Quantity        : " + facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getQuantity());
-            Log.i(TAG, "Received from server [facturae]: UnitOfMeasure   : " + facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getUnitOfMeasure().toString());
-            Log.i(TAG, "Received from server [facturae]: UnitPriceWithoutTax : " + facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getUnitPriceWithoutTax());
-            Log.i(TAG, "Received from server [facturae]: TotalCost       : " + facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getTotalCost());
+            Log.i(TAG, String.format("Received from server [facturae]: InvoiceNumber   : %s", facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber()));
+            Log.i(TAG, String.format("Received from server [facturae]: ItemDescription : %s", facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getItemDescription()));
+            Log.i(TAG, String.format("Received from server [facturae]: Quantity        : %s", facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getQuantity()));
+            Log.i(TAG, String.format("Received from server [facturae]: UnitOfMeasure   : %s", facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getUnitOfMeasure().toString()));
+            Log.i(TAG, String.format("Received from server [facturae]: UnitPriceWithoutTax : %s", facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getUnitPriceWithoutTax()));
+            Log.i(TAG, String.format("Received from server [facturae]: TotalCost       : %s", facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getTotalCost()));
 
             StringBuilder sb = new StringBuilder();
             sb.append(Constants.CR_LF);
@@ -200,8 +200,8 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
             }
 
         }catch(Exception e){
-            Log.e(TAG, "ERROR : " + e.getLocalizedMessage());
-            Log.i(TAG, "ERROR : " + e.getLocalizedMessage());
+            Log.e(TAG, String.format("ERROR : %s", e.getLocalizedMessage()));
+            Log.i(TAG, String.format("ERROR : %s", e.getLocalizedMessage()));
         }
     }
 

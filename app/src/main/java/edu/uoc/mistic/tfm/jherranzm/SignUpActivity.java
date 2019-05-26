@@ -22,10 +22,11 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
+import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostDataToUrlTask;
 
 public class SignUpActivity extends AppCompatActivity {
 
-    public static String TAG = "SignUpActivity";
+    private static final String TAG = "SignUpActivity";
 
     // Context
     private static WeakReference<Context> sContextReference;
@@ -43,12 +44,12 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        final EditText username = (EditText)findViewById(R.id.editTextUserName);
-        final EditText password = (EditText)findViewById(R.id.editTextPassword);
-        final EditText passwordAgain = (EditText)findViewById(R.id.editTextPasswordAgain);
+        final EditText username = findViewById(R.id.editTextUserName);
+        final EditText password = findViewById(R.id.editTextPassword);
+        final EditText passwordAgain = findViewById(R.id.editTextPasswordAgain);
 
-        Button login =(Button)findViewById(R.id.buttonLogin);
-        Button cancel =(Button)findViewById(R.id.buttonCancel);
+        Button login = findViewById(R.id.buttonLogin);
+        Button cancel = findViewById(R.id.buttonCancel);
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override

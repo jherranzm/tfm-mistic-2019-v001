@@ -19,6 +19,6 @@ public class RemoteSymKeyDataManagerService {
         } catch (Exception e) {
             Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
             e.printStackTrace();
-        };
+        }
     }
 }

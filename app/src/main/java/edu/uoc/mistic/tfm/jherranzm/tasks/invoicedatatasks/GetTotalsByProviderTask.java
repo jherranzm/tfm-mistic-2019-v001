@@ -8,14 +8,11 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 
 import edu.uoc.mistic.tfm.jherranzm.model.DatabaseClient;
-import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
 import edu.uoc.mistic.tfm.jherranzm.model.TotalByProviderVO;
 
 public class GetTotalsByProviderTask extends AsyncTask<String, Void, List<TotalByProviderVO>> {
 
     private static final String TAG = GetTotalsByProviderTask.class.getSimpleName();
-
-    private InvoiceData invoiceData;
 
     private final WeakReference<Activity> mActivityRef;
 
@@ -32,13 +29,9 @@ public class GetTotalsByProviderTask extends AsyncTask<String, Void, List<TotalB
                 .invoiceDataDao()
                 .findTotalsByProvider();
 
-        Log.i(TAG, "TotalByProviderVO.length : " + totalsByProvider.size());
+        Log.i(TAG, String.format("TotalByProviderVO.length : %d", totalsByProvider.size()));
 
         return totalsByProvider;
-    }
-
-    protected void onPreExecute() {
-        super.onPreExecute();
     }
 
 }

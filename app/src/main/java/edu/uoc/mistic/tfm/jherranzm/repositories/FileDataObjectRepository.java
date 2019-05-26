@@ -12,7 +12,7 @@ import edu.uoc.mistic.tfm.jherranzm.model.TFMDatabase;
 
 public class FileDataObjectRepository {
 
-    public static String DB_NAME = "LocalSimKeyDB";
+    private static final String DB_NAME = "LocalSimKeyDB";
     private static final String TAG = "FileDataObjectRepository";
 
     private static TFMDatabase tfmDatabase;

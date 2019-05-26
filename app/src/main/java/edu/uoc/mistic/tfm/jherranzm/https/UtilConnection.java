@@ -7,8 +7,6 @@ import java.util.Base64;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import edu.uoc.mistic.tfm.jherranzm.InvoiceApp;
-
 public class UtilConnection {
 
     public static HttpsURLConnection getHttpsURLConnection(URL url) throws IOException, GeneralSecurityException {
@@ -16,7 +14,7 @@ public class UtilConnection {
         HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
         HttpsURLConnection.setDefaultHostnameVerifier(new CustomHostNameVerifier());
 
-        urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
+        urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory());
         urlConnection.setConnectTimeout(20000);
         urlConnection.setReadTimeout(20000);
 
@@ -35,7 +33,7 @@ public class UtilConnection {
         HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
         HttpsURLConnection.setDefaultHostnameVerifier(new CustomHostNameVerifier());
 
-        urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory(InvoiceApp.getContext()));
+        urlConnection.setSSLSocketFactory(CustomSSLSocketFactory.getSSLSocketFactory());
         urlConnection.setConnectTimeout(20000);
         urlConnection.setReadTimeout(20000);
 

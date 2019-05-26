@@ -13,17 +13,13 @@ public class InsertFileDataObjectTask extends AsyncTask<Void, Void, FileDataObje
 
     private static final String TAG = InsertFileDataObjectTask.class.getSimpleName();
 
-    private FileDataObject object;
+    private final FileDataObject object;
 
     private final WeakReference<ReceivedInvoicesRecyclerViewActivity> mActivityRef;
 
     public InsertFileDataObjectTask(ReceivedInvoicesRecyclerViewActivity activity, FileDataObject object){
         mActivityRef = new WeakReference<>(activity);
         this.object = object;
-    }
-
-    protected void onPreExecute() {
-        super.onPreExecute();
     }
 
 

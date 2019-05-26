@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.tasks.posttasks;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -19,37 +19,32 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.https.UtilConnection;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
 
-public class PostLoginTask extends AsyncTask<String, Void, String> {
+public class PostDataAuthenticatedToUrlTask extends AsyncTask<String, Void, String> {
 
-    private static final String TAG = "PostLoginTask";
+    private static final String TAG = "PostDataAuthenticatedToUrlTask";
 
-    public PostLoginTask(){}
-
-    private TFMSecurityManager tfmSecurityManager;
+    public PostDataAuthenticatedToUrlTask(){}
 
     // This is the JSON body of the post
     private JSONObject postData;
 
+    private TFMSecurityManager tfmSecurityManager;
 
     private int responseCode;
 
     // This is a constructor that allows you to pass in the JSON body
-    public PostLoginTask(Map<String, String> postData) {
+    public PostDataAuthenticatedToUrlTask(Map<String, String> postData) {
 
         tfmSecurityManager = TFMSecurityManager.getInstance();
 
         if (postData != null) {
             this.postData = new JSONObject(postData);
         }
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
     }
 
     @Override
@@ -61,7 +56,9 @@ public class PostLoginTask extends AsyncTask<String, Void, String> {
             url = new URL(params[0]);
             Log.i(TAG, "POST : " +url.toString());
 
-            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url, params[1], params[2]);
+            HttpsURLConnection urlConnection = UtilConnection.getHttpsURLConnection(url,
+                    tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED),
+                    tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_PASS));
 
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);

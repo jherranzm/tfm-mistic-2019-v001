@@ -5,7 +5,6 @@ import android.util.Base64;
 import android.util.Log;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -13,10 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.GeneralSecurityException;
-import java.security.cert.CertificateException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,17 +29,12 @@ import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
 public class UploadedInvoicesGetAllTask extends AsyncTask<String, Void, List<Invoice>> {
 
-    private static final String TAG = "UploadedInvoicesGetAllTask";
+    private static final String TAG = UploadedInvoicesGetAllTask.class.getSimpleName();
 
-    private TFMSecurityManager tfmSecurityManager;
+    private final TFMSecurityManager tfmSecurityManager;
 
     public UploadedInvoicesGetAllTask(){
         tfmSecurityManager = TFMSecurityManager.getInstance();
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
     }
 
     @Override
@@ -61,18 +52,18 @@ public class UploadedInvoicesGetAllTask extends AsyncTask<String, Void, List<Inv
             urlConnection.setRequestMethod("GET");
 
             int responseCode = urlConnection.getResponseCode();
-            Log.i(TAG, "responseCode:" + responseCode);
+            Log.i(TAG, String.format("responseCode:%d", responseCode));
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 server_response = readStream(urlConnection.getInputStream());
-                Log.i(TAG,"Respuesta servidor: " + server_response);
+                Log.i(TAG, String.format("Respuesta servidor: %s", server_response));
 
                 JSONArray array = new JSONArray(server_response);
 
                 ArrayList<Invoice> invoices;
 
                 invoices = getInvoicesFromResponse(array);
-                Log.i(TAG,"invoices: " + invoices.size());
+                Log.i(TAG, String.format("invoices: %d", invoices.size()));
                 return invoices;
             }else if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
                 return new ArrayList<>();
@@ -80,20 +71,8 @@ public class UploadedInvoicesGetAllTask extends AsyncTask<String, Void, List<Inv
                 return new ArrayList<>();
             }
 
-        }catch (JSONException e){
-            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
-            e.printStackTrace();
-        }catch (CertificateException e){
-            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
-            e.printStackTrace();
-        }catch (GeneralSecurityException e){
-            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
-            e.printStackTrace();
-        } catch (IOException e) {
-            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
+        }catch (Exception e) {
+            Log.e(TAG, String.format("ERROR : Class - %s:  Message - %s", e.getClass().getCanonicalName(), e.getLocalizedMessage()));
             e.printStackTrace();
         }
         return null;

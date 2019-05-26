@@ -1,36 +1,37 @@
 package edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import edu.uoc.mistic.tfm.jherranzm.InvoiceApp;
+import java.lang.ref.WeakReference;
+
 import edu.uoc.mistic.tfm.jherranzm.model.DatabaseClient;
 import edu.uoc.mistic.tfm.jherranzm.model.LocalSymKey;
 
 public class DeleteLocalSymKeyTask extends AsyncTask<Void, Void, LocalSymKey> {
 
-    private static final String TAG = "DeleteLocalSymKeyTask";
+    private static final String TAG = DeleteLocalSymKeyTask.class.getSimpleName();
 
-    private LocalSymKey lsk;
+    private final WeakReference<Activity> mActivityRef;
 
-    public DeleteLocalSymKeyTask(LocalSymKey theLsk){
+    private final LocalSymKey lsk;
+
+    public DeleteLocalSymKeyTask(Activity activity, LocalSymKey theLsk){
+        mActivityRef = new WeakReference<>(activity);
         this.lsk = theLsk;
-    }
-
-    protected void onPreExecute() {
-        super.onPreExecute();
     }
 
 
     @Override
     protected LocalSymKey doInBackground(Void... voids) {
-
+        Log.i(TAG, "Implemented with WeakReference..." );
         DatabaseClient
-                    .getInstance(InvoiceApp.getContext())
+                    .getInstance(mActivityRef.get())
                     .getAppDatabase()
                     .localSymKeyDao()
                     .delete(this.lsk);
-            Log.i(TAG, "Deleted : ["+this.lsk+"]" );
+            Log.i(TAG, String.format("Deleted : [%s]", this.lsk));
 
         return lsk;
     }

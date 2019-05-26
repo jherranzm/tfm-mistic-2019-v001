@@ -18,16 +18,11 @@ import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
 public class GetByFRemoteSymKeyTask  extends AsyncTask<String, Void, String> {
 
-    private static final String TAG = "GetByFRemoteSymKeyTask";
+    private static final String TAG = GetByFRemoteSymKeyTask.class.getSimpleName();
 
-    private TFMSecurityManager tfmSecurityManager;
+    private final TFMSecurityManager tfmSecurityManager;
 
     public GetByFRemoteSymKeyTask(){ tfmSecurityManager = TFMSecurityManager.getInstance(); }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-    }
 
     @Override
     protected String doInBackground(String... params) {
@@ -47,7 +42,7 @@ public class GetByFRemoteSymKeyTask  extends AsyncTask<String, Void, String> {
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 server_response = readStream(urlConnection.getInputStream());
-                Log.i(TAG,"Respuesta servidor: " + server_response);
+                Log.i(TAG, String.format("Respuesta servidor: %s", server_response));
                 return server_response;
             }
 

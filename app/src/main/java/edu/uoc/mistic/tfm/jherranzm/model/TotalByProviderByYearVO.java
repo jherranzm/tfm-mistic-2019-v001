@@ -9,7 +9,7 @@ public class TotalByProviderByYearVO {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("TotalByProviderByYearVO{");
+        final StringBuilder sb = new StringBuilder("TotalByProviderByYearVO{");
         sb.append("taxIdentificationNumber='").append(taxIdentificationNumber).append('\'');
         sb.append(", corporateName='").append(corporateName).append('\'');
         sb.append(", year=").append(year);

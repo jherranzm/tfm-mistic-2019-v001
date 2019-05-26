@@ -8,7 +8,6 @@ import org.spongycastle.asn1.x509.BasicConstraints;
 import org.spongycastle.asn1.x509.Extension;
 import org.spongycastle.asn1.x509.ExtensionsGenerator;
 import org.spongycastle.operator.ContentSigner;
-import org.spongycastle.operator.OperatorCreationException;
 import org.spongycastle.pkcs.PKCS10CertificationRequest;
 import org.spongycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.spongycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
@@ -30,7 +29,7 @@ public class CsrHelper {
 
     private static class JCESigner implements ContentSigner {
 
-        private static Map<String, AlgorithmIdentifier> ALGOS = new HashMap<String, AlgorithmIdentifier>();
+        private final static Map<String, AlgorithmIdentifier> ALGOS = new HashMap<>();
 
         static {
             ALGOS.put("SHA256withRSA".toLowerCase(), new AlgorithmIdentifier(
@@ -44,7 +43,7 @@ public class CsrHelper {
         private Signature signature;
         private ByteArrayOutputStream outputStream;
 
-        public JCESigner(PrivateKey privateKey, String sigAlgo) {
+        private JCESigner(PrivateKey privateKey, String sigAlgo) {
             //Utils.throwIfNull(privateKey, sigAlgo);
             mAlgo = sigAlgo.toLowerCase();
             try {
@@ -89,12 +88,11 @@ public class CsrHelper {
      *
      * @param keyPair, private and public key
      * @param cn, common name
-     * @return
+     * @return PKCS10CertificationRequest
      * @throws IOException
-     * @throws OperatorCreationException
+
      */
-    public static PKCS10CertificationRequest generateCSR(KeyPair keyPair, String cn) throws IOException,
-            OperatorCreationException {
+    public static PKCS10CertificationRequest generateCSR(KeyPair keyPair, String cn) throws IOException{
         String principal = String.format(CN_PATTERN, cn);
 
         ContentSigner signer = new JCESigner (keyPair.getPrivate(),DEFAULT_SIGNATURE_ALGORITHM);
@@ -106,8 +104,7 @@ public class CsrHelper {
                 true));
         csrBuilder.addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest,
                 extensionsGenerator.generate());
-        PKCS10CertificationRequest csr = csrBuilder.build(signer);
 
-        return csr;
+        return csrBuilder.build(signer);
     }
 }

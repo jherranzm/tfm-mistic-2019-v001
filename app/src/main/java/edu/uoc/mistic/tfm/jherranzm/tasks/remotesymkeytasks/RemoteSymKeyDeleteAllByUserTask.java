@@ -20,15 +20,10 @@ public class RemoteSymKeyDeleteAllByUserTask extends AsyncTask<String, Void, Str
 
     private static final String TAG = "RemoteSymKeyDeleteAllByUserTask";
 
-    private TFMSecurityManager tfmSecurityManager;
+    private final TFMSecurityManager tfmSecurityManager;
 
     public RemoteSymKeyDeleteAllByUserTask(){
         tfmSecurityManager = TFMSecurityManager.getInstance();
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
     }
 
     @Override

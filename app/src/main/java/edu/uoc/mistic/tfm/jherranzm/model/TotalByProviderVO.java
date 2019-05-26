@@ -8,7 +8,7 @@ public class TotalByProviderVO {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("TotalByProviderVO {");
+        final StringBuilder sb = new StringBuilder("TotalByProviderVO {");
         sb.append("taxIdentificationNumber='").append(taxIdentificationNumber).append('\'');
         sb.append(", corporateName='").append(corporateName).append('\'');
         sb.append(", totalAmount=").append(totalAmount);

@@ -55,7 +55,7 @@ public class LocalSymKey implements Serializable {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("LocalSymKey{");
+        final StringBuilder sb = new StringBuilder("LocalSymKey{");
         sb.append("id=").append(id);
         sb.append(", user='").append(user).append('\'');
         sb.append(", f='").append(f).append('\'');

@@ -19,10 +19,6 @@ public class GetFileDataObjectByFilenameTask extends AsyncTask<String, Void, Fil
         mActivityRef = new WeakReference<>(activity);
     }
 
-    protected void onPreExecute() {
-        super.onPreExecute();
-    }
-
 
     @Override
     protected FileDataObject doInBackground(String... params) {
