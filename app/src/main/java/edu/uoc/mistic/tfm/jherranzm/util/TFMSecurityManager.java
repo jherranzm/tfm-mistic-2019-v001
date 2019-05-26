@@ -55,6 +55,7 @@ import edu.uoc.mistic.tfm.jherranzm.InvoiceApp;
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricDecryptor;
 import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricEncryptor;
+import edu.uoc.mistic.tfm.jherranzm.crypto.SymmetricEncryptor;
 import edu.uoc.mistic.tfm.jherranzm.model.LocalSymKey;
 import edu.uoc.mistic.tfm.jherranzm.services.LocalSymKeyDataManagerService;
 import edu.uoc.mistic.tfm.jherranzm.services.RemoteSymKeyDataManagerService;
@@ -129,11 +130,11 @@ public class TFMSecurityManager {
         try {
 
             //CertificateFactory certFactory = CertificateFactory.getInstance(Constants.X_509, Constants.BC);
-            Log.i(TAG, "KeyStore.getDefaultType() : " + KeyStore.getDefaultType());
+            Log.i(TAG, String.format("KeyStore.getDefaultType() : %s", KeyStore.getDefaultType()));
 
             // Keystore creation
             keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            Log.i(TAG, "KeyStore.getType() : " + keyStore.getType());
+            Log.i(TAG, String.format("KeyStore.getType() : %s", keyStore.getType()));
 
 
             keyStoreFile = loadOrCreateKeyStore();
@@ -162,10 +163,10 @@ public class TFMSecurityManager {
             String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
             tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
             tmf.init(keyStore);
-            Log.i(TAG,"TrustManager : Algorithm : " + tmfAlgorithm);
-            Log.i(TAG,"TrustManager : numItems : " + tmf.getTrustManagers().length);
+            Log.i(TAG, String.format("TrustManager : Algorithm : %s", tmfAlgorithm));
+            Log.i(TAG, String.format("TrustManager : numItems : %d", tmf.getTrustManagers().length));
             for(TrustManager tm : tmf.getTrustManagers()){
-                Log.i(TAG,"TrustManager  Item : " + tm.toString());
+                Log.i(TAG, String.format("TrustManager  Item : %s", tm.toString()));
             }
 
             // First connection to server
@@ -185,12 +186,9 @@ public class TFMSecurityManager {
 
                 saveKeyStoreToFileSystem();
                 saveKeyStoreToSDCard();
+                saveKeyStoreToServer();
 
             }
-
-            //String defaultUser = "UsuarioApp";
-            //String userPass = "UsuarioApp";
-            //String label = "UsuarioApp";
 
             loadKeyStoreFromSDCard();
 
@@ -199,6 +197,65 @@ public class TFMSecurityManager {
             Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
             Toast.makeText(mActivityRef.get(), String.format("ERROR : %s: %s", e.getClass().getCanonicalName(), e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void saveKeyStoreToServer() {
+
+        try {
+
+            // Read KeyStore to String
+            InputStream isKeyStoreFile = new FileInputStream(keyStoreFile);
+
+            // Encrypt with the user's password
+            byte[] baIsKeyStoreFile = IOUtils.toByteArray(isKeyStoreFile);
+
+            RandomStringGenerator rsg = new RandomStringGenerator();
+
+            // IV and Symmetric Key
+            String iv = rsg.getRandomString(16);
+            Log.i(TAG, String.format("iv     : [%s]", iv));
+
+            String simKey = getKeyToEncryptTheKeyStore();
+            Log.i(TAG, String.format("simKey : [%s]", simKey));
+
+            SymmetricEncryptor simEnc = new SymmetricEncryptor();
+            simEnc.setIv(iv);
+            simEnc.setKey(simKey);
+
+            String keyStoreFileEncrypted   = simEnc.encrypt(baIsKeyStoreFile);
+            Log.i(TAG,keyStoreFileEncrypted);
+
+            Map<String, String> params = new HashMap<>();
+            params.put("op", "store");
+            params.put("iv", iv);
+            params.put("enc", keyStoreFileEncrypted);
+
+            PostDataAuthenticatedToUrlTask getData = new PostDataAuthenticatedToUrlTask(params);
+
+            String res = getData.execute(Constants.URL_KEYSTORE).get();
+            Log.i(TAG, String.format("Response from server : %s", res));
+
+
+
+        } catch (Exception e) {
+            Log.e(TAG,String.format("ERROR : %s: %s", e.getClass().getCanonicalName(), e.getLocalizedMessage()));
+        }
+
+
+        // Convert to Base64
+
+        // Push to server
+
+        // Retrieve server response
+    }
+
+    private String getKeyToEncryptTheKeyStore() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getSecretFromKeyInKeyStore(Constants.USER_PASS));
+        sb.reverse();
+        sb.append("M3st3C!Tr3b4llF3n4lD3M4st3r");
+        sb.substring(0,15);
+        return sb.substring(0,15);
     }
 
     private void loadKeyStoreFromSDCard() {
@@ -218,13 +275,8 @@ public class TFMSecurityManager {
                 showAliasesInKeyStore();
 
             }
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
+        } catch (Exception e) {
+            Log.e(TAG, String.format("ERROR : %s: %s", e.getClass().getCanonicalName(), e.getLocalizedMessage()));
             e.printStackTrace();
         }
     }
@@ -237,7 +289,6 @@ public class TFMSecurityManager {
             KeyStoreException,
             NoSuchAlgorithmException,
             IOException,
-            OperatorCreationException,
             ExecutionException,
             InterruptedException,
             CertificateException,
@@ -268,6 +319,7 @@ public class TFMSecurityManager {
 
         saveKeyStoreToFileSystem();
         saveKeyStoreToSDCard();
+        saveKeyStoreToServer();
     }
 
     /**

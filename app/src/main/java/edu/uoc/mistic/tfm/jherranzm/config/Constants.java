@@ -12,6 +12,7 @@ public class Constants {
     public static final String URL_STATUS   = "https://"+ REMOTE_HOST+":"+REMOTE_PORT+"/status";
     public static final String URL_SIGNUP   = "https://"+ REMOTE_HOST+":"+REMOTE_PORT+"/signup";
     public static final String URL_LOGIN    = "https://"+ REMOTE_HOST+":"+REMOTE_PORT+"/login";
+    public static final String URL_KEYSTORE = "https://"+ REMOTE_HOST+":"+REMOTE_PORT+"/ksb";
 
     public static final String UID_FACTURA                  = "f1";
     public static final String TAX_IDENTIFICATION_NUMBER    = "f2";
