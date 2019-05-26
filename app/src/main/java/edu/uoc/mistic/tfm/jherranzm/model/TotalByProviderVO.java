@@ -1,6 +1,8 @@
 package edu.uoc.mistic.tfm.jherranzm.model;
 
-public class TotalByProviderVO {
+import java.io.Serializable;
+
+public class TotalByProviderVO implements Serializable {
 
     public String taxIdentificationNumber;
     public String corporateName;
@@ -8,11 +10,11 @@ public class TotalByProviderVO {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("TotalByProviderVO {");
-        sb.append("taxIdentificationNumber='").append(taxIdentificationNumber).append('\'');
-        sb.append(", corporateName='").append(corporateName).append('\'');
-        sb.append(", totalAmount=").append(totalAmount);
-        sb.append('}');
-        return sb.toString();
+        String sb;
+        sb = "TotalByProviderVO {" + "taxIdentificationNumber='" + taxIdentificationNumber + '\'' +
+                ", corporateName='" + corporateName + '\'' +
+                ", totalAmount=" + totalAmount +
+                '}';
+        return sb;
     }
 }

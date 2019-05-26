@@ -100,4 +100,7 @@ dependencies {
 
     // QR Code generator
     implementation 'com.github.kenglxn.QRGen:android:2.5.0'
+
+    // https://github.com/PhilJay/MPAndroidChart#gradle-setup
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 }

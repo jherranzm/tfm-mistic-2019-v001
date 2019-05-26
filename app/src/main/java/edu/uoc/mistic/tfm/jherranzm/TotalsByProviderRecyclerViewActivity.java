@@ -1,6 +1,6 @@
 package edu.uoc.mistic.tfm.jherranzm;
 
-import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -8,8 +8,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
+import java.io.Serializable;
 import java.util.List;
 
 import edu.uoc.mistic.tfm.jherranzm.model.TotalByProviderVO;
@@ -18,8 +20,6 @@ import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
 public class TotalsByProviderRecyclerViewActivity extends AppCompatActivity {
 
     private static final String TAG = "TotalsByProviderRVA";
-
-    private Context mContext;
 
     // Widgets
     private RecyclerView.Adapter mAdapter;
@@ -39,7 +39,6 @@ public class TotalsByProviderRecyclerViewActivity extends AppCompatActivity {
         RecyclerView mRecyclerView;
         RecyclerView.LayoutManager mLayoutManager;
 
-        mContext = getApplicationContext();
         mRecyclerView = findViewById(R.id.totals_by_provider_recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(this);
@@ -47,6 +46,17 @@ public class TotalsByProviderRecyclerViewActivity extends AppCompatActivity {
 
         totals = InvoiceDataDataManagerService.getTotalsByProvider(this);
         mAdapter = new TotalsByProviderRecyclerViewAdapter(totals);
+
+        Button buttonShowGraph = findViewById(R.id.buttonShowGraph);
+
+        buttonShowGraph.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getBaseContext(), ChartActivity.class);
+                intent.putExtra("totals", (Serializable) totals);
+                startActivity(intent);
+            }
+        });
 
         mRecyclerView.setAdapter(mAdapter);
         RecyclerView.ItemDecoration itemDecoration =
@@ -62,7 +72,7 @@ public class TotalsByProviderRecyclerViewActivity extends AppCompatActivity {
                     @Override
                     public void onItemClick(int position, View v) {
                         Log.i(TAG, " Clicked on Item " + position);
-                        Toast.makeText(mContext, "TIN : " + totals.get(position).taxIdentificationNumber, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getBaseContext(), "TIN : " + totals.get(position).taxIdentificationNumber, Toast.LENGTH_SHORT).show();
                         Log.i(TAG, " Clicked on Item " + totals.get(position).toString());
 
 

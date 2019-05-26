@@ -7,28 +7,25 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
-        android:name="edu.uoc.mistic.tfm.jherranzm.InvoiceApp"
+        android:name=".InvoiceApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <!-- SplashActivity -->
         <activity
-            android:name="edu.uoc.mistic.tfm.jherranzm.SplashActivity"
+            android:name=".SplashActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- MainActivity -->
+        </activity> <!-- MainActivity -->
         <activity
-            android:name="edu.uoc.mistic.tfm.jherranzm.MainActivity"
+            android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -36,80 +33,78 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- UploadedInvoicesRecyclerViewActivity -->
+        </activity> <!-- UploadedInvoicesRecyclerViewActivity -->
         <activity
-            android:name="edu.uoc.mistic.tfm.jherranzm.UploadedInvoicesRecyclerViewActivity"
+            android:name=".UploadedInvoicesRecyclerViewActivity"
             android:label="@string/app_name"
-            android:parentActivityName="edu.uoc.mistic.tfm.jherranzm.MainActivity">
+            android:parentActivityName=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- ReceivedInvoicesRecyclerViewActivity -->
+        <activity
+            android:name=".ReceivedInvoicesRecyclerViewActivity"
+            android:label="@string/app_name"
+            android:parentActivityName=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- InvoiceDataRecyclerViewActivity -->
+        <activity
+            android:name=".InvoiceDataRecyclerViewActivity"
+            android:label="@string/app_name"
+            android:parentActivityName=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- SignUpActivity -->
+        <activity
+            android:name=".SignUpActivity"
+            android:label="@string/app_name"
+            android:parentActivityName=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- LogInActivity -->
+        <activity
+            android:name=".LogInActivity"
+            android:label="@string/app_name"
+            android:parentActivityName=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- TotalsByProviderRecyclerViewActivity -->
+        <activity
+            android:name=".TotalsByProviderRecyclerViewActivity"
+            android:label="@string/app_name"
+            android:parentActivityName=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- ReceivedInvoicesRecyclerViewActivity -->
+        <!-- ChartActivity -->
         <activity
-            android:name="edu.uoc.mistic.tfm.jherranzm.ReceivedInvoicesRecyclerViewActivity"
+            android:name=".ChartActivity"
             android:label="@string/app_name"
-            android:parentActivityName="edu.uoc.mistic.tfm.jherranzm.MainActivity">
+            android:parentActivityName=".TotalsByProviderRecyclerViewActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- InvoiceDataRecyclerViewActivity -->
-        <activity
-            android:name="edu.uoc.mistic.tfm.jherranzm.InvoiceDataRecyclerViewActivity"
-            android:label="@string/app_name"
-            android:parentActivityName="edu.uoc.mistic.tfm.jherranzm.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <!-- SignUpActivity -->
-        <activity
-            android:name="edu.uoc.mistic.tfm.jherranzm.SignUpActivity"
-            android:label="@string/app_name"
-            android:parentActivityName="edu.uoc.mistic.tfm.jherranzm.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <!-- LogInActivity -->
-        <activity
-            android:name="edu.uoc.mistic.tfm.jherranzm.LogInActivity"
-            android:label="@string/app_name"
-            android:parentActivityName="edu.uoc.mistic.tfm.jherranzm.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <!-- TotalsByProviderRecyclerViewActivity -->
-        <activity
-            android:name="edu.uoc.mistic.tfm.jherranzm.TotalsByProviderRecyclerViewActivity"
-            android:label="@string/app_name"
-            android:parentActivityName="edu.uoc.mistic.tfm.jherranzm.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
     </application>
 
 </manifest>
