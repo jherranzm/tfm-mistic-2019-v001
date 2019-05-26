@@ -10,8 +10,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.apptestvalidationandroid44.R;
-
 import java.util.List;
 
 import edu.uoc.mistic.tfm.jherranzm.model.TotalByProviderVO;

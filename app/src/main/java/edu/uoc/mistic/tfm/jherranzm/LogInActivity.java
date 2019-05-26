@@ -12,8 +12,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.apptestvalidationandroid44.R;
-
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;

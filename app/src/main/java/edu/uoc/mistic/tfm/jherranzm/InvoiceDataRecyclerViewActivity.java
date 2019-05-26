@@ -9,8 +9,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.example.apptestvalidationandroid44.R;
-
 import java.util.List;
 
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;

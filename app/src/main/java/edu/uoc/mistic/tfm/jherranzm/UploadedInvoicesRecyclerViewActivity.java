@@ -14,8 +14,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.apptestvalidationandroid44.R;
-
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.w3c.dom.Document;

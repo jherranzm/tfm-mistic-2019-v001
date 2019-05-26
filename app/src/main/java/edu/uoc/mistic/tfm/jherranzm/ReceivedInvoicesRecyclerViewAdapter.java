@@ -7,8 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.apptestvalidationandroid44.R;
-
 import java.util.List;
 
 import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;

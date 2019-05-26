@@ -7,8 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.apptestvalidationandroid44.R;
-
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;

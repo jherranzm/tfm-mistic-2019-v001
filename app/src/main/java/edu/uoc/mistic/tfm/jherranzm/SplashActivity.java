@@ -7,8 +7,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.example.apptestvalidationandroid44.R;
-
 import net.glxn.qrgen.android.QRCode;
 
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;

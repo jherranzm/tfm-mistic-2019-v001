@@ -51,7 +51,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import edu.uoc.mistic.tfm.jherranzm.CsrHelper;
-import edu.uoc.mistic.tfm.jherranzm.InvoiceApp;
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricDecryptor;
 import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricEncryptor;
@@ -339,7 +338,8 @@ public class TFMSecurityManager {
             KeyStoreException {
 
         // Load Keystore if exists...
-        File keyStoreFile = new File(InvoiceApp.getAppDir(), Constants.KEY_STORE_BKS_FILE);
+        Log.i(TAG, String.format("Application getFilesDir : [%s]", mActivityRef.get().getApplicationContext().getFilesDir()));
+        File keyStoreFile = new File(mActivityRef.get().getApplicationContext().getFilesDir(), Constants.KEY_STORE_BKS_FILE);
 
         if(keyStoreFile.exists()){
             Log.i(TAG, String.format("KeyStore file already exists in : [%s]", keyStoreFile.getAbsolutePath()));
