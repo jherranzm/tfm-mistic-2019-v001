@@ -43,6 +43,7 @@ import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;
 import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.GetFileDataObjectByFilenameTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.InsertFileDataObjectTask;
+import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.UpdateFileDataObjectTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.GetByBatchIdentifierInvoiceDataTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.InsertInvoiceDataTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostDataAuthenticatedToUrlTask;
@@ -182,7 +183,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
     private void validateAndUploadSignedInvoice(int position) {
         try {
-             Document doc = getDocumentFromSignedInvoice(position);
+            Document doc = getDocumentFromSignedInvoice(position);
 
             Toast.makeText(sContextReference.get(), "Invoice processed!", Toast.LENGTH_SHORT).show();
 
@@ -218,11 +219,33 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
                 saveInvoiceDataInLocalDatabase(facturae, UIDInvoiceHash, invoiceBackedUp);
 
+                updateFileDataObjectInLocalDatabase(position);
+
             } // if(valid)
         }catch (Exception e){
             Toast.makeText(sContextReference.get(), String.format("ERROR:%s", e.getMessage()), Toast.LENGTH_LONG).show();
             Log.e(TAG, String.format("ERROR:%s", e.getMessage()));
         }
+    }
+
+    private void updateFileDataObjectInLocalDatabase(int position) {
+
+        try {
+            GetFileDataObjectByFilenameTask getFileDataObjectByFilenameTask = new GetFileDataObjectByFilenameTask(this);
+            FileDataObject existing = getFileDataObjectByFilenameTask.execute(signedInvoices.get(position).getFileName()).get();
+
+            existing.setProcessed(true);
+
+            UpdateFileDataObjectTask updateFileDataObjectTask = new UpdateFileDataObjectTask(this, existing);
+            FileDataObject updated = updateFileDataObjectTask.execute().get();
+
+            Log.i(TAG, String.format("FileDataObject updated : %s", updated.toString()));
+
+        } catch (Exception e) {
+            Toast.makeText(sContextReference.get(), String.format("ERROR:%s", e.getMessage()), Toast.LENGTH_LONG).show();
+            Log.e(TAG, String.format("ERROR:%s", e.getMessage()));
+        }
+
     }
 
     private boolean encryptAndUploadInvoice(
@@ -435,6 +458,10 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                         Log.d(TAG, "onClick: OK Called.");
                         if(okMethod.equals("ok")){
                             validateAndUploadSignedInvoice(position);
+                            FileDataObject fdo = signedInvoices.get(position);
+                            fdo.setProcessed(true);
+                            signedInvoices.set(position, fdo);
+                            mAdapter.notifyItemChanged(position);
                         }
                     }
                 });
@@ -488,7 +515,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         for (File f : list) {
             Log.i(TAG, f.getName());
             FileDataObject obj = new FileDataObject(f.getName(), "pepe");
-            signedInvoices.add(obj);
+            //signedInvoices.add(obj);
 
             try {
                 GetFileDataObjectByFilenameTask getFileDataObjectByFilenameTask = new GetFileDataObjectByFilenameTask(this);
@@ -498,8 +525,10 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                     InsertFileDataObjectTask insertFileDataObjectTask = new InsertFileDataObjectTask(this, obj);
                     FileDataObject inserted = insertFileDataObjectTask.execute().get();
                     Log.i(TAG, String.format("%s inserted in local database ", inserted.getFileName()));
+                    signedInvoices.add(inserted);
                 }else{
                     Log.i(TAG, String.format("%s ALREADY in local database ", obj.getFileName()));
+                    signedInvoices.add(existing);
                 }
 
             } catch (ExecutionException e) {

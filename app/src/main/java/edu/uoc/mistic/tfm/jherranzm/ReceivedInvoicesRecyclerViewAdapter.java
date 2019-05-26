@@ -1,10 +1,13 @@
 package edu.uoc.mistic.tfm.jherranzm;
 
+import android.graphics.Color;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.List;
@@ -14,7 +17,7 @@ import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;
 public class ReceivedInvoicesRecyclerViewAdapter extends RecyclerView
         .Adapter<ReceivedInvoicesRecyclerViewAdapter
         .DataObjectHolder> {
-    private final static String LOG_TAG = "LocalInvoicesRVA";
+    private final static String TAG = ReceivedInvoicesRecyclerViewAdapter.class.getCanonicalName();
     private final List<FileDataObject> mDataset;
     private static ReceivedInvoicesClickListener theClickListener;
 
@@ -23,12 +26,24 @@ public class ReceivedInvoicesRecyclerViewAdapter extends RecyclerView
             implements View
             .OnClickListener {
         final TextView fileName;
+        final CardView cardView;
+        final Button buttonProcess;
 
         DataObjectHolder(View itemView) {
             super(itemView);
+
+            Log.i(TAG, "DataObjectHolder...");
+
+            cardView = itemView.findViewById(R.id.cardViewFileDataObject);
             fileName = itemView.findViewById(R.id.textViewFileName);
-            Log.i(LOG_TAG, "Adding Listener");
-            itemView.setOnClickListener(this);
+            buttonProcess = itemView.findViewById(R.id.buttonProcess);
+            Log.i(TAG, "Adding Listener");
+            //itemView.setOnClickListener(this);
+
+            cardView.setCardBackgroundColor(Color.LTGRAY);
+            buttonProcess.setOnClickListener(this);
+
+
         }
 
         @Override
@@ -49,6 +64,7 @@ public class ReceivedInvoicesRecyclerViewAdapter extends RecyclerView
     @Override
     public DataObjectHolder onCreateViewHolder(ViewGroup parent,
                                                int viewType) {
+        Log.i(TAG, "onCreateViewHolder...");
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.received_invoice_recyclerview_item, parent, false);
 
@@ -57,15 +73,25 @@ public class ReceivedInvoicesRecyclerViewAdapter extends RecyclerView
 
     @Override
     public void onBindViewHolder(DataObjectHolder holder, int position) {
-        holder.fileName.setText(String.format("TIN: %s", mDataset.get(position).getFileName()));
+        Log.i(TAG, "onBindViewHolder...");
+        holder.fileName.setText(String.format("File: %s", mDataset.get(position).getFileName()));
+        if(mDataset.get(position).isProcessed()) {
+            holder.cardView.setCardBackgroundColor(Color.GREEN);
+            holder.buttonProcess.setVisibility(View.INVISIBLE);
+        }else{
+            holder.cardView.setCardBackgroundColor(Color.LTGRAY);
+            holder.buttonProcess.setVisibility(View.VISIBLE);
+        }
     }
 
     public void addItem(FileDataObject dataObj, int index) {
+        Log.i(TAG, "addItem...");
         mDataset.add(dataObj);
         notifyItemInserted(index);
     }
 
     public void deleteItem(int index) {
+        Log.i(TAG, "deleteItem...");
         mDataset.remove(index);
         notifyItemRemoved(index);
     }
