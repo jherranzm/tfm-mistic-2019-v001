@@ -40,12 +40,10 @@ import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricEncryptor;
 import edu.uoc.mistic.tfm.jherranzm.crypto.EnvelopedSignature;
 import edu.uoc.mistic.tfm.jherranzm.crypto.SymmetricEncryptor;
 import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;
-import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
+import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.GetFileDataObjectByFilenameTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.InsertFileDataObjectTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.UpdateFileDataObjectTask;
-import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.GetByBatchIdentifierInvoiceDataTask;
-import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.InsertInvoiceDataTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostDataAuthenticatedToUrlTask;
 import edu.uoc.mistic.tfm.jherranzm.util.RandomStringGenerator;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
@@ -134,21 +132,6 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 });
     }
 
-    private boolean validateSignedInvoice(Document doc){
-        boolean valid = false;
-        try {
-            valid = UtilValidator.isValid(doc);
-        } catch (IOException e) {
-            Toast.makeText(sContextReference.get(), String.format("ERROR IO %s", e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
-            Log.i(TAG, String.format("ERROR IO : %s", e.getLocalizedMessage()));
-        } catch (Exception e) {
-            Toast.makeText(sContextReference.get(), "ERROR Genérico " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            Log.i(TAG, String.format("ERROR Generic : %s", e.getLocalizedMessage()));
-        }
-
-        return valid;
-    }
-
     private Document getDocumentFromSignedInvoice(int position) throws IOException {
         File sdcard = Environment.getExternalStorageDirectory();
         File file = new File(sdcard, "Download/" + signedInvoices.get(position).getFileName());
@@ -161,7 +144,11 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         InputStream isSignedInvoice = new FileInputStream(file);
 
         byte[] baInvoiceSigned = IOUtils.toByteArray(isSignedInvoice);
-        Toast.makeText(sContextReference.get(), String.format("Info: file signed long : [%d]", baInvoiceSigned.length), Toast.LENGTH_SHORT).show();
+        Toast.makeText(sContextReference.get(),
+                String.format(
+                        new Locale("es-ES"),
+                        "Info: file signed long : [%d]", baInvoiceSigned.length),
+                Toast.LENGTH_SHORT).show();
 
         isSignedInvoice = new FileInputStream(file);
         return UtilDocument.getDocument(isSignedInvoice);
@@ -187,7 +174,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
             Toast.makeText(sContextReference.get(), "Invoice processed!", Toast.LENGTH_SHORT).show();
 
-            boolean valid = validateSignedInvoice(doc);
+            boolean valid = UtilValidator.validateSignedInvoice(doc);
 
             if(!valid){
                 //Toast.makeText(mContext, "ERROR : La firma NO es válida!", Toast.LENGTH_LONG).show();
@@ -217,7 +204,8 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 boolean ret = EnvelopedSignature.signXMLFile(document);
                 Log.i(TAG, String.format("EnvelopedSignature.signXMLFile...%s", ret ? "Signed!!" : "NOT signed..."));
 
-                saveInvoiceDataInLocalDatabase(facturae, UIDInvoiceHash, invoiceBackedUp);
+                InvoiceDataDataManagerService invoiceDataDataManagerService = InvoiceDataDataManagerService.getInstance(this);
+                invoiceDataDataManagerService.saveInvoiceDataInLocalDatabase(facturae, UIDInvoiceHash, invoiceBackedUp);
 
                 updateFileDataObjectInLocalDatabase(position);
 
@@ -369,60 +357,6 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         return invoiceBackedUp;
     }
 
-    private void saveInvoiceDataInLocalDatabase(
-            Facturae facturae,
-            String UIDFacturaHash,
-            boolean invoiceBackedUp)
-            throws
-            java.util.concurrent.ExecutionException,
-            InterruptedException {
-
-        InvoiceData invoiceData = getInvoiceData(facturae, UIDFacturaHash);
-        invoiceData.setUser(tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED));
-        invoiceData.setBackedUp(invoiceBackedUp);
-
-        GetByBatchIdentifierInvoiceDataTask getByBatchIdentifierInvoiceDataTask = new GetByBatchIdentifierInvoiceDataTask(this);
-        List<InvoiceData> alreadySaved = getByBatchIdentifierInvoiceDataTask.execute(
-                invoiceData.getBatchIdentifier(),
-                tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED)
-        ).get();
-
-        if(alreadySaved.size()>0){
-
-            Log.i(TAG, String.format("InvoiceData already in system : nothing to be done!%s", invoiceData.toString()));
-            alertShow(String.format("Local Database: Invoice %s already in system : nothing to be done!", invoiceData.getInvoiceNumber()));
-        }else{
-
-            InsertInvoiceDataTask insertInvoiceDataTask = new InsertInvoiceDataTask(this, invoiceData);
-            InvoiceData invoiceDataInserted = insertInvoiceDataTask.execute().get();
-            infoShow(String.format("Local Database: Invoice %s loaded in system!", invoiceData.getInvoiceNumber()));
-            Log.i(TAG, String.format("InvoiceData ingresada: %s", invoiceDataInserted.toString()));
-        }
-    }
-
-    private InvoiceData getInvoiceData(
-            Facturae facturae,
-            String UIDFacturaHash) {
-
-        InvoiceData invoiceData = new InvoiceData();
-
-        invoiceData.setBatchIdentifier(UIDFacturaHash);
-
-        invoiceData.setTaxIdentificationNumber(facturae.getParties().getSellerParty().getTaxIdentification().getTaxIdentificationNumber());
-        invoiceData.setCorporateName(facturae.getParties().getSellerParty().getLegalEntity().getCorporateName());
-
-        invoiceData.setInvoiceNumber(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
-
-        invoiceData.setTaxAmount(facturae.getInvoices().getInvoiceList().get(0).getTaxesOutputList().get(0).getTaxAmount().getTotalAmount());
-        invoiceData.setTaxBase(facturae.getInvoices().getInvoiceList().get(0).getTaxesOutputList().get(0).getTaxableBase().getTotalAmount());
-        invoiceData.setTotalAmount(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
-        invoiceData.setTotalGrossAmount(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount());
-
-        invoiceData.setIssueDate(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
-        invoiceData.setStartDate(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getInvoicingPeriod().getStartDate());
-        invoiceData.setEndDate(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getInvoicingPeriod().getStartDate());
-        return invoiceData;
-    }
 
     private void customDialog(
             String title,

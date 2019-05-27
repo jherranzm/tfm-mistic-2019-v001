@@ -9,6 +9,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import java.io.IOException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -21,7 +22,7 @@ import javax.xml.xpath.XPathFactory;
 
 public class UtilValidator {
 
-    private static final String TAG = "UtilValidator";
+    private static final String TAG = UtilValidator.class.getSimpleName();
 
     /**
      *
@@ -54,7 +55,7 @@ public class UtilValidator {
      * @return
      * @throws Exception
      */
-    public static boolean isValid(Document doc) throws Exception {
+    private static boolean isValid(Document doc) throws Exception {
         NodeList nl = doc.getElementsByTagNameNS(Constants.SignatureSpecNS, "Signature");
         if (nl.getLength() == 0) {
             throw new Exception("No XML Digital Signature Found, document is discarded");
@@ -145,4 +146,16 @@ public class UtilValidator {
         }
     }
 
+    public static boolean validateSignedInvoice(final Document doc){
+        boolean valid = false;
+        try {
+            valid = isValid(doc);
+        } catch (IOException e) {
+            Log.i(TAG, String.format("ERROR IO : %s", e.getLocalizedMessage()));
+        } catch (Exception e) {
+            Log.i(TAG, String.format("ERROR Generic : %s", e.getLocalizedMessage()));
+        }
+
+        return valid;
+    }
 }

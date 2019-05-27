@@ -95,7 +95,7 @@ public class EnvelopedSignature {
 
             printDocToLog(docToSign);
 
-            boolean valid = UtilValidator.isValid(docToSign);
+            boolean valid = UtilValidator.validateSignedInvoice(docToSign);
             Log.i(TAG, "UtilValidator.isValid..." + (valid ? "Válida!!" : "No válida..."));
 
             ret = true;

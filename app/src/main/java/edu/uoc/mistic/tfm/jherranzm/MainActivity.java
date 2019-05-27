@@ -83,7 +83,6 @@ public class MainActivity
         Button goToShowInfoByProviderAndYear = findViewById(R.id.buttonShowInfoByProviderByYear);
         Button goToLocalInvoices = findViewById(R.id.buttonShowInvoices);
         Button goToDeleteAllInvoices = findViewById(R.id.buttonDeleteAllInvoices);
-        Button goToPieChart = findViewById(R.id.buttonPieChart);
 
         Button goToSignUp = findViewById(R.id.buttonGoToSignUp);
         Button goToLogIn = findViewById(R.id.buttonGoToLogin);
@@ -216,17 +215,6 @@ public class MainActivity
             }
         });
 
-        goToPieChart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mProgressBar.setVisibility(View.VISIBLE);
-
-                Intent intent = new Intent(sContextReference.get(), ChartActivity.class);
-                startActivity(intent);
-
-                mProgressBar.setVisibility(View.INVISIBLE);
-            }
-        });
     }
 
 

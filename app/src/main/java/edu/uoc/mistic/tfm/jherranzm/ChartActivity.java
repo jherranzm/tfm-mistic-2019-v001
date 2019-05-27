@@ -36,8 +36,8 @@ public class ChartActivity extends AppCompatActivity {
         Description description = new Description();
         description.setText("Totals by Provider");
         description.setTextSize(32);
-        //Log.d(TAG, String.format("width :%d", thePieChart. / 2));
         description.setPosition(600, 100);
+
         thePieChart.setDescription(description);
         thePieChart.setHoleRadius(25f);
         thePieChart.setTransparentCircleAlpha(10);
@@ -69,8 +69,11 @@ public class ChartActivity extends AppCompatActivity {
         pieDataSet.setSliceSpace(2);
         pieDataSet.setValueTextSize(22);
         pieDataSet.setColors(
-                ContextCompat.getColor(this, R.color.colorPrimary),
-                ContextCompat.getColor(this, R.color.colorAccent));
+                ContextCompat.getColor(this, R.color.red),
+                ContextCompat.getColor(this, R.color.green),
+                ContextCompat.getColor(this, R.color.yellow),
+                ContextCompat.getColor(this, R.color.pink),
+                ContextCompat.getColor(this, R.color.blue));
 
 
         PieData pieData = new PieData(pieDataSet);
