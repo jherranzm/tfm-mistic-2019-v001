@@ -88,9 +88,10 @@ public class LogInActivity
                         int responseCode = jsonResponse.getInt("responseCode");
 
                         if(responseCode == 200){
+                            Log.i(TAG, String.format("OK : Username %s logged correctly!.", username.getText().toString()));
                             infoDialog(
                                     "User correctly logged in system!",
-                                    "OK : Username " + username.getText().toString()+ " logged correctly!.",
+                                    String.format("OK : Username %s logged correctly!.", username.getText().toString()),
                                     "OK");
 
                             // Create KeyPair

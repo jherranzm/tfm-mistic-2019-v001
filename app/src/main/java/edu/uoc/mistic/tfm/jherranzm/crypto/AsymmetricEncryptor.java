@@ -25,8 +25,8 @@ public class AsymmetricEncryptor {
             JceKeyTransRecipientInfoGenerator jceKey = new JceKeyTransRecipientInfoGenerator(encryptionCertificate);
             cmsEnvelopedDataGenerator.addRecipientInfoGenerator(jceKey);
             CMSTypedData msg = new CMSProcessableByteArray(data);
-            OutputEncryptor encryptor = new JceCMSContentEncryptorBuilder(CMSAlgorithm.AES256_CBC).setProvider("BC").build();
-            CMSEnvelopedData cmsEnvelopedData = cmsEnvelopedDataGenerator.generate(msg,encryptor);
+            OutputEncryptor outputEncryptor = new JceCMSContentEncryptorBuilder(CMSAlgorithm.AES256_CBC).setProvider("BC").build();
+            CMSEnvelopedData cmsEnvelopedData = cmsEnvelopedDataGenerator.generate(msg,outputEncryptor);
             encryptedData = cmsEnvelopedData.getEncoded();
         }
         return encryptedData;

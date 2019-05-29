@@ -17,10 +17,11 @@ import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 
 import edu.uoc.mistic.tfm.jherranzm.https.UtilConnection;
+import edu.uoc.mistic.tfm.jherranzm.util.UtilStreamReader;
 
 public class GetCertificateFromServerTask extends AsyncTask<String, Void, String> {
 
-    private static final String TAG = "GetCertificateFromServerTask";
+    private static final String TAG = GetCertificateFromServerTask.class.getSimpleName();
 
     public GetCertificateFromServerTask(Map<String, String> postData){
         if (postData != null) {
@@ -58,28 +59,21 @@ public class GetCertificateFromServerTask extends AsyncTask<String, Void, String
 
             int responseCode = urlConnection.getResponseCode();
 
-            Log.i(TAG, "Código de respuesta del servidor : ["+responseCode+"]");
+            Log.i(TAG, "Server response code: ["+responseCode+"]");
 
             if(responseCode == HttpURLConnection.HTTP_OK){
-                server_response = readStream(urlConnection.getInputStream());
-                Log.i(TAG, "Respuesta servidor: " + server_response);
-                urlConnection.disconnect();
-
-                return server_response;
-            }else if(responseCode == HttpURLConnection.HTTP_CONFLICT){
-                server_response = readStream(urlConnection.getErrorStream());
-                Log.i(TAG, "Factura ya registrada en el sistema!");
-                Log.i(TAG, "Respuesta servidor: " + server_response);
+                InputStream serverInputStream = urlConnection.getInputStream();
+                server_response = UtilStreamReader.readStream(serverInputStream);
+                Log.i(TAG,"Server response: " + server_response);
+                serverInputStream.close();
                 urlConnection.disconnect();
                 return server_response;
-            }else if(responseCode == HttpURLConnection.HTTP_INTERNAL_ERROR){
+            }else{
                 //server_response = readStream(urlConnection.getErrorStream());
-                Log.i(TAG, "ERROR de servidor!");
+                Log.i(TAG, "ERROR. Server error.");
                 urlConnection.disconnect();
                 return "{\"id\" : -1}";
             }
-
-            return null;
 
         } catch (Exception e) {
             Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());

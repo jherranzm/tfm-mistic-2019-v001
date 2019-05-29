@@ -295,12 +295,13 @@ public class TFMSecurityManager {
             CMSException,
             JSONException {
 
-        setCertificateAndPrivateKey(label, defaultUser);
 
         saveKeyAndSecretInKeyStore(Constants.USER_LOGGED, defaultUser);
         saveKeyAndSecretInKeyStore(Constants.USER_PASS, userPass);
 
+        setCertificateAndPrivateKey(label, defaultUser);
 
+        // Delete Local Symmetric Keys from KeyStore
         deleteAllLocalSymKeys();
 
         String[] fields = {
@@ -411,7 +412,6 @@ public class TFMSecurityManager {
             //Delete Local Symmetric Keys from RemoteDatabase
             RemoteSymKeyDataManagerService.deleteAllByUser();
 
-
             //Generate KeyPair
             Log.i(TAG,"KeyPair : generating...");
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
@@ -474,7 +474,7 @@ public class TFMSecurityManager {
 
         this.setCertificate(userCertificate);
         this.setPrivateKey(retrievedPrivateKey);
-    }
+   }
 
     private String getStatusFromServer() throws ExecutionException, InterruptedException {
         String status = "";

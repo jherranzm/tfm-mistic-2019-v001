@@ -103,4 +103,5 @@ dependencies {
 
     // https://github.com/PhilJay/MPAndroidChart#gradle-setup
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+    androidTestImplementation 'com.android.support.test:rules:1.0.2'
 }

@@ -3,6 +3,7 @@ package edu.uoc.mistic.tfm.jherranzm;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -110,8 +111,11 @@ public class SignUpActivity extends AppCompatActivity {
                                     Toast.makeText(sContextReference.get(),
                                             "OK : Username " + username.getText().toString()+ " registered correctly!.", Toast.LENGTH_LONG).show();
                                     Log.i(TAG, "OK : Username " + username.getText().toString()+ " registered correctly!.");
-                                    infoShow(
+                                    allOKShow(
                                             "OK : Username " + username.getText().toString()+ " registered correctly!. A message has been sent to the users email to confirm the registration. Please review your inbox. The email is valid for 60 minutes.");
+
+
+
                                     break;
                                 case HttpURLConnection.HTTP_CONFLICT:
                                     Toast.makeText(sContextReference.get(),
@@ -151,6 +155,25 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private  void infoShow(
+            String message ) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Log.i(TAG, "alertShow : You clicked on OK!");
+                        Intent intent = new Intent(sContextReference.get(), LogInActivity.class);
+                        startActivity(intent);
+                    }
+                })
+                .setTitle("Alert!")
+                .setMessage(message)
+                .setIcon(R.drawable.ic_launcher_background);
+
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    private  void allOKShow(
             String message ) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder
