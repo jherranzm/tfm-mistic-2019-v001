@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.ui.activities;
 
 
 import android.content.Context;
@@ -18,6 +18,7 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostLoginTask;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;

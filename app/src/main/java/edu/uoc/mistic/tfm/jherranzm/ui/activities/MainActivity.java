@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.ui.activities;
 
 import android.Manifest;
 import android.content.Context;
@@ -28,6 +28,7 @@ import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.util.List;
 
+import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.model.TotalByProviderByYearVO;
 import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.GetTotalsByProviderByYearTask;

@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.ui.activities;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostDataToUrlTask;
 

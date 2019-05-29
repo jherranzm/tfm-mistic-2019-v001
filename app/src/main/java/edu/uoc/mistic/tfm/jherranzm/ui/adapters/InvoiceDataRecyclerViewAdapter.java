@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.ui.adapters;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
 import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
 
@@ -70,7 +71,7 @@ public class InvoiceDataRecyclerViewAdapter
         InvoiceDataRecyclerViewAdapter.myClickListener = myClickListener;
     }
 
-    InvoiceDataRecyclerViewAdapter(Activity activity, List<InvoiceData> myDataset) {
+    public InvoiceDataRecyclerViewAdapter(Activity activity, List<InvoiceData> myDataset) {
         mActivityRef = new WeakReference<>(activity);
         mDataset = myDataset;
     }

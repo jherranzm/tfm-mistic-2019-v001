@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.ui.adapters;
 
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.model.Invoice;
 
 public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
@@ -49,11 +50,11 @@ public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
         }
     }
 
-    void setOnItemClickListener(UploadedInvoicesClickListener myClickListener) {
+    public void setOnItemClickListener(UploadedInvoicesClickListener myClickListener) {
         UploadedInvoicesRecyclerViewAdapter.myClickListener = myClickListener;
     }
 
-    UploadedInvoicesRecyclerViewAdapter(List<Invoice> myDataset) {
+    public UploadedInvoicesRecyclerViewAdapter(List<Invoice> myDataset) {
         mDataset = myDataset;
     }
 

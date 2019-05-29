@@ -16,7 +16,7 @@
         android:theme="@style/AppTheme">
         <!-- SplashActivity -->
         <activity
-            android:name=".SplashActivity">
+            android:name=".ui.activities.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,7 +24,7 @@
             </intent-filter>
         </activity> <!-- MainActivity -->
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.activities.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -34,9 +34,9 @@
             </intent-filter>
         </activity> <!-- UploadedInvoicesRecyclerViewActivity -->
         <activity
-            android:name=".UploadedInvoicesRecyclerViewActivity"
+            android:name=".ui.activities.UploadedInvoicesRecyclerViewActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".ui.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -44,9 +44,9 @@
             </intent-filter>
         </activity> <!-- ReceivedInvoicesRecyclerViewActivity -->
         <activity
-            android:name=".ReceivedInvoicesRecyclerViewActivity"
+            android:name=".ui.activities.ReceivedInvoicesRecyclerViewActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".ui.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -54,9 +54,9 @@
             </intent-filter>
         </activity> <!-- InvoiceDataRecyclerViewActivity -->
         <activity
-            android:name=".InvoiceDataRecyclerViewActivity"
+            android:name=".ui.activities.InvoiceDataRecyclerViewActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".ui.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -64,9 +64,9 @@
             </intent-filter>
         </activity> <!-- SignUpActivity -->
         <activity
-            android:name=".SignUpActivity"
+            android:name=".ui.activities.SignUpActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".ui.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -74,9 +74,9 @@
             </intent-filter>
         </activity> <!-- LogInActivity -->
         <activity
-            android:name=".LogInActivity"
+            android:name=".ui.activities.LogInActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".ui.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -84,9 +84,9 @@
             </intent-filter>
         </activity> <!-- TotalsByProviderRecyclerViewActivity -->
         <activity
-            android:name=".TotalsByProviderRecyclerViewActivity"
+            android:name=".ui.activities.TotalsByProviderRecyclerViewActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".ui.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -95,9 +95,9 @@
         </activity>
         <!-- ChartActivity -->
         <activity
-            android:name=".ChartActivity"
+            android:name=".ui.activities.ChartActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".TotalsByProviderRecyclerViewActivity">
+            android:parentActivityName=".ui.activities.TotalsByProviderRecyclerViewActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

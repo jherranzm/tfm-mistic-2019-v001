@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.ui.activities;
 
 import android.Manifest;
 import android.content.Intent;
@@ -13,6 +13,7 @@ import android.widget.ImageView;
 
 import net.glxn.qrgen.android.QRCode;
 
+import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
 public class SplashActivity extends AppCompatActivity {

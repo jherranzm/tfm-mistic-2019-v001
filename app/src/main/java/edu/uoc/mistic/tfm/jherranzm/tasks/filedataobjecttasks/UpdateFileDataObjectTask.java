@@ -5,9 +5,9 @@ import android.util.Log;
 
 import java.lang.ref.WeakReference;
 
-import edu.uoc.mistic.tfm.jherranzm.ReceivedInvoicesRecyclerViewActivity;
 import edu.uoc.mistic.tfm.jherranzm.model.DatabaseClient;
 import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;
+import edu.uoc.mistic.tfm.jherranzm.ui.activities.ReceivedInvoicesRecyclerViewActivity;
 
 public class UpdateFileDataObjectTask extends AsyncTask<Void, Void, FileDataObject> {
 

@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.ui.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,8 +14,10 @@ import android.widget.Toast;
 import java.io.Serializable;
 import java.util.List;
 
+import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.model.TotalByProviderVO;
 import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
+import edu.uoc.mistic.tfm.jherranzm.ui.adapters.TotalsByProviderRecyclerViewAdapter;
 
 public class TotalsByProviderRecyclerViewActivity extends AppCompatActivity {
 

@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.ui.adapters;
 
 import android.graphics.Color;
 import android.support.v7.widget.CardView;
@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;
 
 public class ReceivedInvoicesRecyclerViewAdapter extends RecyclerView
@@ -53,11 +54,11 @@ public class ReceivedInvoicesRecyclerViewAdapter extends RecyclerView
         }
     }
 
-    void setOnItemClickListener(ReceivedInvoicesClickListener aClickListener) {
+    public void setOnItemClickListener(ReceivedInvoicesClickListener aClickListener) {
         ReceivedInvoicesRecyclerViewAdapter.theClickListener = aClickListener;
     }
 
-    ReceivedInvoicesRecyclerViewAdapter(List<FileDataObject> myDataset) {
+    public ReceivedInvoicesRecyclerViewAdapter(List<FileDataObject> myDataset) {
         mDataset = myDataset;
     }
 

@@ -10,6 +10,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import edu.uoc.mistic.tfm.jherranzm.ui.activities.SplashActivity;
+
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class SplashActivityTest {

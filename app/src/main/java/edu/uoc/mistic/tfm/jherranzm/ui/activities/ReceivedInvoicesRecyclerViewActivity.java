@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.ui.activities;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricEncryptor;
 import edu.uoc.mistic.tfm.jherranzm.crypto.EnvelopedSignature;
@@ -45,6 +46,7 @@ import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.GetFileDataObjectB
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.InsertFileDataObjectTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.UpdateFileDataObjectTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostDataAuthenticatedToUrlTask;
+import edu.uoc.mistic.tfm.jherranzm.ui.adapters.ReceivedInvoicesRecyclerViewAdapter;
 import edu.uoc.mistic.tfm.jherranzm.util.RandomStringGenerator;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 import edu.uoc.mistic.tfm.jherranzm.util.UIDGenerator;
@@ -144,11 +146,9 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         InputStream isSignedInvoice = new FileInputStream(file);
 
         byte[] baInvoiceSigned = IOUtils.toByteArray(isSignedInvoice);
-        Toast.makeText(sContextReference.get(),
-                String.format(
-                        new Locale("es-ES"),
-                        "Info: file signed long : [%d]", baInvoiceSigned.length),
-                Toast.LENGTH_SHORT).show();
+//        Toast.makeText(sContextReference.get(),
+//                String.format("Info: file signed long : [%d]", baInvoiceSigned.length),
+//                Toast.LENGTH_SHORT).show();
 
         isSignedInvoice = new FileInputStream(file);
         return UtilDocument.getDocument(isSignedInvoice);

@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.ui.activities;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -11,9 +11,11 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
 import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
+import edu.uoc.mistic.tfm.jherranzm.ui.adapters.InvoiceDataRecyclerViewAdapter;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
 public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {

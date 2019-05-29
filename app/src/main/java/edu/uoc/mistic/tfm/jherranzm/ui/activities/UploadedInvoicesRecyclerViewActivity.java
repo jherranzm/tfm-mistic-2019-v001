@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.ui.activities;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
+import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricDecryptor;
 import edu.uoc.mistic.tfm.jherranzm.crypto.SymmetricDecryptor;
@@ -34,6 +35,7 @@ import edu.uoc.mistic.tfm.jherranzm.model.Invoice;
 import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
 import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataManagerService;
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicetasks.GetInvoiceByIdTask;
+import edu.uoc.mistic.tfm.jherranzm.ui.adapters.UploadedInvoicesRecyclerViewAdapter;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 import edu.uoc.mistic.tfm.jherranzm.util.UIDGenerator;
 import edu.uoc.mistic.tfm.jherranzm.util.UtilDocument;

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="edu.uoc.mistic.tfm.jherranzm.TotalsByProviderRecyclerViewActivity" >
+    tools:context="edu.uoc.mistic.tfm.jherranzm.ui.activities.TotalsByProviderRecyclerViewActivity" >
 
     <TextView
         android:id="@+id/textViewTotalsByProvider"

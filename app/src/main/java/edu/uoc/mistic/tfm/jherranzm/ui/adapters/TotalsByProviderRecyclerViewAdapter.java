@@ -1,4 +1,4 @@
-package edu.uoc.mistic.tfm.jherranzm;
+package edu.uoc.mistic.tfm.jherranzm.ui.adapters;
 
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.model.TotalByProviderVO;
 
 public class TotalsByProviderRecyclerViewAdapter extends RecyclerView
@@ -43,11 +44,11 @@ public class TotalsByProviderRecyclerViewAdapter extends RecyclerView
         }
     }
 
-    void setOnItemClickListener(TotalsByProviderClickListener myClickListener) {
+    public void setOnItemClickListener(TotalsByProviderClickListener myClickListener) {
         TotalsByProviderRecyclerViewAdapter.myClickListener = myClickListener;
     }
 
-    TotalsByProviderRecyclerViewAdapter(List<TotalByProviderVO> myDataset) {
+    public TotalsByProviderRecyclerViewAdapter(List<TotalByProviderVO> myDataset) {
         mDataset = myDataset;
     }
 
