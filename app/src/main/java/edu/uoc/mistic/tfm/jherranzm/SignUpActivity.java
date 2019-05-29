@@ -24,7 +24,7 @@ import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostDataToUrlTask;
 
 public class SignUpActivity extends AppCompatActivity {
 
-    private static final String TAG = "SignUpActivity";
+    private static final String TAG = SignUpActivity.class.getSimpleName();
 
     // Context
     private static WeakReference<Context> sContextReference;
@@ -89,7 +89,7 @@ public class SignUpActivity extends AppCompatActivity {
 
                 if(formValid){
                     Map<String, String> params = new HashMap<>();
-                    params.put("op", "signUp");
+                    params.put("op", "signup");
                     params.put("username", username.getText().toString());
                     params.put("pass", password.getText().toString());
 
@@ -123,6 +123,7 @@ public class SignUpActivity extends AppCompatActivity {
                                     Toast.makeText(sContextReference.get(),
                                             "ERROR : Unexpected behaviour. Please see logs.", Toast.LENGTH_LONG).show();
                                     Log.e(TAG, "ERROR : Unexpected behaviour. Please see logs." + receivedAnswer.toString());
+                                    alertShow("ERROR : Unexpected behaviour. Please see logs." + receivedAnswer.toString());
                                     break;
                             }
 
