@@ -69,6 +69,8 @@ import edu.uoc.mistic.tfm.jherranzm.tasks.remotesymkeytasks.GetServerStatusTask;
 public class TFMSecurityManager {
 
     private static final String TAG = TFMSecurityManager.class.getSimpleName();
+    private static final int SERVER_ACTIVE = 1;
+    private static final int SERVER_INACTIVE = 0;
 
     private final Map<String, String> simKeys = new HashMap<>();
 
@@ -85,6 +87,7 @@ public class TFMSecurityManager {
     private File keyStoreFile;
 
     private WeakReference<Activity> mActivityRef;
+    private int serverStatus;
 
     private TFMSecurityManager(){}
 
@@ -168,10 +171,14 @@ public class TFMSecurityManager {
             }
 
             // First connection to server
+
+            setServerStatus(SERVER_INACTIVE);
             String status = getStatusFromServer();
 
-            if(!"ACTIVE".equals(status)){
-                throw new Exception("Server NOT active");
+            if("ACTIVE".equals(status)){
+                //throw new Exception("Server NOT active");
+                status = "NOT ACTIVE";
+                setServerStatus(SERVER_ACTIVE);
             }
 
             if(getSecretFromKeyInKeyStore(Constants.USER_LOGGED) == null){
@@ -184,8 +191,9 @@ public class TFMSecurityManager {
 
                 saveKeyStoreToFileSystem();
                 saveKeyStoreToSDCard();
-                saveKeyStoreToServer();
-
+                if(getServerStatus() == SERVER_ACTIVE) {
+                    saveKeyStoreToServer();
+                }
             }
 
             loadKeyStoreFromSDCard();
@@ -318,7 +326,9 @@ public class TFMSecurityManager {
 
         saveKeyStoreToFileSystem();
         saveKeyStoreToSDCard();
-        saveKeyStoreToServer();
+        if(getServerStatus() == SERVER_ACTIVE) {
+            saveKeyStoreToServer();
+        }
     }
 
     /**
@@ -580,11 +590,14 @@ public class TFMSecurityManager {
                     Log.i(TAG, String.format("LocalSymKey : [%s] NOT in LOCAL database!", str));
 
                     // Recuperem la clau del servidor
-                    Log.i(TAG, String.format("Searching [%s] in REMOTE database...", str));
-                    GetByFRemoteSymKeyTask getByFRemoteSymKeyTask = new GetByFRemoteSymKeyTask();
+                    String res = "";
+                    if(getServerStatus() == SERVER_ACTIVE) {
+                        Log.i(TAG, String.format("Searching [%s] in REMOTE database...", str));
+                        GetByFRemoteSymKeyTask getByFRemoteSymKeyTask = new GetByFRemoteSymKeyTask();
 
-                    String url = Constants.URL_KEYS + "/" + str;
-                    String res = getByFRemoteSymKeyTask.execute(url).get();
+                        String url = Constants.URL_KEYS + "/" + str;
+                        res = getByFRemoteSymKeyTask.execute(url).get();
+                    }
 
                     if(res == null || res.isEmpty()){
                         Log.i(TAG, String.format("LocalSymKey NOT located in REMOTE: [%s]", str));
@@ -667,14 +680,16 @@ public class TFMSecurityManager {
         LocalSymKey lskF = insertLocalSymKeyTask.execute().get();
         Log.i(TAG, String.format("LocalSymKey saved: [%s]", lskF.toString()));
 
-        Map<String, String> params = new HashMap<>();
-        params.put("f", str);
-        params.put("k", simKeyStringEnc);
+        if (getServerStatus() == SERVER_ACTIVE) {
+            Map<String, String> params = new HashMap<>();
+            params.put("f", str);
+            params.put("k", simKeyStringEnc);
 
-        PostDataAuthenticatedToUrlTask getData = new PostDataAuthenticatedToUrlTask(params);
+            PostDataAuthenticatedToUrlTask getData = new PostDataAuthenticatedToUrlTask(params);
 
-        String res = getData.execute(Constants.URL_KEYS).get();
-        Log.i(TAG, String.format("Insert remote SymKey Task: server response : [%s]", res));
+            String res = getData.execute(Constants.URL_KEYS).get();
+            Log.i(TAG, String.format("Insert remote SymKey Task: server response : [%s]", res));
+        }
 
         this.getSimKeys().put(str, simKey);
 
@@ -941,4 +956,17 @@ public class TFMSecurityManager {
         return simKeys;
     }
 
+
+    public int getServerStatus() {
+        return serverStatus;
+    }
+
+    public void setServerStatus(int serverStatus) {
+        this.serverStatus = serverStatus;
+    }
+
+
+    public boolean isServerOnLine() {
+        return getServerStatus() == SERVER_ACTIVE;
+    }
 }

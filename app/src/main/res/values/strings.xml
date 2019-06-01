@@ -40,6 +40,7 @@
     <string name="taxIdentificationNumber">taxIdentificationNumber</string>
     <string name="corporateName">CorporateName</string>
     <string name="invoiceNumber">invoiceNumber</string>
+    <string name="serverOnline">Server Online</string>
 
 
 </resources>

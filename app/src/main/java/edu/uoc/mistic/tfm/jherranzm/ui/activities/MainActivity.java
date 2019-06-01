@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -13,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckedTextView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -87,6 +89,12 @@ public class MainActivity
 
         Button goToSignUp = findViewById(R.id.buttonGoToSignUp);
         Button goToLogIn = findViewById(R.id.buttonGoToLogin);
+
+        // Is serverOnline
+        CheckedTextView isServerOnLine = findViewById(R.id.checkedServerOnline);
+        isServerOnLine.setChecked(tfmSecurityManager.isServerOnLine());
+        isServerOnLine.setText((tfmSecurityManager.isServerOnLine() ? "Server Online" : "Server offline"));
+        isServerOnLine.setBackgroundColor((tfmSecurityManager.isServerOnLine() ? Color.GREEN : Color.RED));
 
         // Show who is logged
         TextView textViewUserLogged = findViewById(R.id.textViewUserLogged);

@@ -199,7 +199,10 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 Log.i(TAG, String.format("UIDInvoiceHash : [%s]", UIDInvoiceHash));
 
 
-                boolean invoiceBackedUp = encryptAndUploadInvoice(position, facturae, UIDInvoiceHash);
+                boolean invoiceBackedUp = false;
+                if (tfmSecurityManager.isServerOnLine()) {
+                    invoiceBackedUp = encryptAndUploadInvoice(position, facturae, UIDInvoiceHash);
+                }
 
                 boolean ret = EnvelopedSignature.signXMLFile(document);
                 Log.i(TAG, String.format("EnvelopedSignature.signXMLFile...%s", ret ? "Signed!!" : "NOT signed..."));
