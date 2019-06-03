@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -32,8 +33,10 @@ import java.security.cert.CertificateEncodingException;
 import java.util.List;
 
 import edu.uoc.mistic.tfm.jherranzm.R;
+import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.model.TotalByProviderByYearVO;
 import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataService;
+import edu.uoc.mistic.tfm.jherranzm.services.ServerInfoService;
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.GetTotalsByProviderByYearTask;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
@@ -42,13 +45,18 @@ public class MainActivity
         extends AppCompatActivity{
 
     // Constants
-    private static final String TAG = "MAIN_ACTIVITY";
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     // Security
     private TFMSecurityManager tfmSecurityManager;
 
     // Context
     private static WeakReference<Context> sContextReference;
+
+    private Handler mHandler;
+
+    private CheckedTextView isServerOnLine;
+
 
 
     @Override
@@ -60,6 +68,9 @@ public class MainActivity
         setContentView(R.layout.activity_main);
 
         sContextReference = new WeakReference<Context>(this);
+
+        mHandler = new Handler();
+        startRepeatingTask();
 
         // 2019-03-30
         // Check whether this app has write external storage permission or not.
@@ -74,6 +85,12 @@ public class MainActivity
         initView();
 
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopRepeatingTask();
     }
 
     private void initView() {
@@ -128,7 +145,7 @@ public class MainActivity
         Button goToDeleteAllInvoices = findViewById(R.id.buttonDeleteAllInvoices);
 
         // Is serverOnline
-        CheckedTextView isServerOnLine = findViewById(R.id.checkedServerOnline);
+        isServerOnLine = findViewById(R.id.checkedServerOnline);
         isServerOnLine.setChecked(tfmSecurityManager.isServerOnLine());
         isServerOnLine.setText((tfmSecurityManager.isServerOnLine() ? "Server Online" : "Server offline"));
         isServerOnLine.setBackgroundColor((tfmSecurityManager.isServerOnLine() ? Color.GREEN : Color.RED));
@@ -258,6 +275,41 @@ public class MainActivity
 
 
         return super.onOptionsItemSelected(item);
+    }
+
+    Runnable mStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                //updateStatus(); //this function can change value of mInterval.
+                String status = ServerInfoService.getStatusFromServer();
+                if ("ACTIVE".equals(status)) {
+                    tfmSecurityManager.setServerStatus(Constants.SERVER_ACTIVE);
+                }else{
+                    tfmSecurityManager.setServerStatus(Constants.SERVER_INACTIVE);
+                }
+                isServerOnLine.setChecked(tfmSecurityManager.isServerOnLine());
+                isServerOnLine.setText((tfmSecurityManager.isServerOnLine() ? "Server Online" : "Server offline"));
+                isServerOnLine.setBackgroundColor((tfmSecurityManager.isServerOnLine() ? Color.GREEN : Color.RED));
+
+            }catch (Exception e){
+                Log.e(TAG, "Error trying to locate server");
+            } finally {
+                // 100% guarantee that this always happens, even if
+                // your update method throws an exception
+                // 5 seconds by default, can be changed later
+                int mInterval = 5000;
+                mHandler.postDelayed(mStatusChecker, mInterval);
+            }
+        }
+    };
+
+    void startRepeatingTask() {
+        mStatusChecker.run();
+    }
+
+    void stopRepeatingTask() {
+        mHandler.removeCallbacks(mStatusChecker);
     }
 
     static {

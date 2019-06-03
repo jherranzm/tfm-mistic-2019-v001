@@ -3,6 +3,8 @@ package edu.uoc.mistic.tfm.jherranzm.config;
 public class Constants {
 
 
+    public static final int SERVER_ACTIVE = 1;
+    public static final int SERVER_INACTIVE = 0;
     private static final String REMOTE_HOST = "10.0.2.2";
     private static final String REMOTE_PORT = "8443";
 

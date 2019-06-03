@@ -57,6 +57,7 @@ import edu.uoc.mistic.tfm.jherranzm.crypto.SymmetricEncryptor;
 import edu.uoc.mistic.tfm.jherranzm.model.LocalSymKey;
 import edu.uoc.mistic.tfm.jherranzm.services.LocalSymKeyService;
 import edu.uoc.mistic.tfm.jherranzm.services.RemoteSymKeyService;
+import edu.uoc.mistic.tfm.jherranzm.services.ServerInfoService;
 import edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks.DeleteLocalSymKeyTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks.GetAllLocalSymKeyTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks.GetByFLocalSymKeyTask;
@@ -64,13 +65,10 @@ import edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks.InsertLocalSymKeyTask
 import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostDataAuthenticatedToUrlTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.remotesymkeytasks.GetByFRemoteSymKeyTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.remotesymkeytasks.GetCertificateFromServerTask;
-import edu.uoc.mistic.tfm.jherranzm.tasks.remotesymkeytasks.GetServerStatusTask;
 
 public class TFMSecurityManager {
 
     private static final String TAG = TFMSecurityManager.class.getSimpleName();
-    private static final int SERVER_ACTIVE = 1;
-    private static final int SERVER_INACTIVE = 0;
 
     private final Map<String, String> simKeys = new HashMap<>();
 
@@ -172,13 +170,13 @@ public class TFMSecurityManager {
 
             // First connection to server
 
-            setServerStatus(SERVER_INACTIVE);
-            String status = getStatusFromServer();
+            setServerStatus(Constants.SERVER_INACTIVE);
+            String status = ServerInfoService.getStatusFromServer();
 
             if("ACTIVE".equals(status)){
                 //throw new Exception("Server NOT active");
                 status = "NOT ACTIVE";
-                setServerStatus(SERVER_ACTIVE);
+                setServerStatus(Constants.SERVER_ACTIVE);
             }
 
             if(getSecretFromKeyInKeyStore(Constants.USER_LOGGED) == null){
@@ -191,7 +189,7 @@ public class TFMSecurityManager {
 
                 saveKeyStoreToFileSystem();
                 saveKeyStoreToSDCard();
-                if(getServerStatus() == SERVER_ACTIVE) {
+                if(getServerStatus() == Constants.SERVER_ACTIVE) {
                     saveKeyStoreToServer();
                 }
             }
@@ -326,7 +324,7 @@ public class TFMSecurityManager {
 
         saveKeyStoreToFileSystem();
         saveKeyStoreToSDCard();
-        if(getServerStatus() == SERVER_ACTIVE) {
+        if(getServerStatus() == Constants.SERVER_ACTIVE) {
             saveKeyStoreToServer();
         }
     }
@@ -485,18 +483,6 @@ public class TFMSecurityManager {
         this.setPrivateKey(retrievedPrivateKey);
    }
 
-    private String getStatusFromServer() throws ExecutionException, InterruptedException {
-        String status = "";
-        int max_attempts = 10;
-        int current_attempt = 0;
-        while (!"ACTIVE".equals(status) && current_attempt < max_attempts) {
-            GetServerStatusTask getServerStatusTask = new GetServerStatusTask();
-            status = getServerStatusTask.execute(Constants.URL_STATUS).get();
-            Log.i(TAG, String.format("Server status : [%s]", status));
-            current_attempt++;
-        }
-        return status;
-    }
 
     /**
      *
@@ -591,7 +577,7 @@ public class TFMSecurityManager {
 
                     // Recuperem la clau del servidor
                     String res = "";
-                    if(getServerStatus() == SERVER_ACTIVE) {
+                    if(getServerStatus() == Constants.SERVER_ACTIVE) {
                         Log.i(TAG, String.format("Searching [%s] in REMOTE database...", str));
                         GetByFRemoteSymKeyTask getByFRemoteSymKeyTask = new GetByFRemoteSymKeyTask();
 
@@ -680,7 +666,7 @@ public class TFMSecurityManager {
         LocalSymKey lskF = insertLocalSymKeyTask.execute().get();
         Log.i(TAG, String.format("LocalSymKey saved: [%s]", lskF.toString()));
 
-        if (getServerStatus() == SERVER_ACTIVE) {
+        if (getServerStatus() == Constants.SERVER_ACTIVE) {
             Map<String, String> params = new HashMap<>();
             params.put("f", str);
             params.put("k", simKeyStringEnc);
@@ -967,6 +953,6 @@ public class TFMSecurityManager {
 
 
     public boolean isServerOnLine() {
-        return getServerStatus() == SERVER_ACTIVE;
+        return getServerStatus() == Constants.SERVER_ACTIVE;
     }
 }
