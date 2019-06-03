@@ -41,7 +41,7 @@ import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricEncryptor;
 import edu.uoc.mistic.tfm.jherranzm.crypto.EnvelopedSignature;
 import edu.uoc.mistic.tfm.jherranzm.crypto.SymmetricEncryptor;
 import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;
-import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
+import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataService;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.GetFileDataObjectByFilenameTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.InsertFileDataObjectTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.UpdateFileDataObjectTask;
@@ -170,14 +170,17 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
     private void validateAndUploadSignedInvoice(int position) {
         try {
+            Log.i(TAG, String.format("Retrieve document from invoice file in position [%d]", position));
             Document doc = getDocumentFromSignedInvoice(position);
 
             Toast.makeText(sContextReference.get(), "Invoice processed!", Toast.LENGTH_SHORT).show();
 
+            Log.i(TAG, String.format("Validating document from invoice file in position [%d] ...", position));
             boolean valid = UtilValidator.validateSignedInvoice(doc);
 
             if(!valid){
                 //Toast.makeText(mContext, "ERROR : La firma NO es válida!", Toast.LENGTH_LONG).show();
+                Log.i(TAG, ALERT_INVOICE_SIGNATURE_NOT_VALID);
                 alertShow(ALERT_INVOICE_SIGNATURE_NOT_VALID);
             }else{
                 Toast.makeText(sContextReference.get(), "Valid signed document!", Toast.LENGTH_SHORT).show();
@@ -207,8 +210,8 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 boolean ret = EnvelopedSignature.signXMLFile(document);
                 Log.i(TAG, String.format("EnvelopedSignature.signXMLFile...%s", ret ? "Signed!!" : "NOT signed..."));
 
-                InvoiceDataDataManagerService invoiceDataDataManagerService = InvoiceDataDataManagerService.getInstance(this);
-                invoiceDataDataManagerService.saveInvoiceDataInLocalDatabase(facturae, UIDInvoiceHash, invoiceBackedUp);
+                InvoiceDataService invoiceDataService = InvoiceDataService.getInstance(this);
+                invoiceDataService.saveInvoiceDataInLocalDatabase(facturae, UIDInvoiceHash, invoiceBackedUp);
 
                 updateFileDataObjectInLocalDatabase(position);
 

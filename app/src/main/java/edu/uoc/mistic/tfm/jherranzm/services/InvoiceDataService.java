@@ -22,9 +22,9 @@ import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.InsertInvoiceDataTask
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 import es.facturae.facturae.v3.facturae.Facturae;
 
-public class InvoiceDataDataManagerService {
+public class InvoiceDataService {
 
-    private static final String TAG = InvoiceDataDataManagerService.class.getSimpleName();
+    private static final String TAG = InvoiceDataService.class.getSimpleName();
 
     private static TFMSecurityManager tfmSecurityManager;
 
@@ -32,23 +32,23 @@ public class InvoiceDataDataManagerService {
 
     private static final Map<String, InvoiceData> localInvoices = new HashMap<>();
 
-    private static InvoiceDataDataManagerService instance;
+    private static InvoiceDataService instance;
 
-    public static InvoiceDataDataManagerService getInstance() {
+    public static InvoiceDataService getInstance() {
         return instance;
     }
 
-    public static InvoiceDataDataManagerService getInstance(Activity activity){
+    public static InvoiceDataService getInstance(Activity activity){
         if (instance == null){
-            Log.i(TAG, "InvoiceDataDataManagerService initialization: begin...");
+            Log.i(TAG, "InvoiceDataService initialization: begin...");
             // if instance is null, initialize
-            instance = new InvoiceDataDataManagerService();
+            instance = new InvoiceDataService();
             tfmSecurityManager = TFMSecurityManager.getInstance();
 
             instance.init(activity);
-            Log.i(TAG, "InvoiceDataDataManagerService initialization: end...");
+            Log.i(TAG, "InvoiceDataService initialization: end...");
         }else{
-            Log.i(TAG, "InvoiceDataDataManagerService already initialized!");
+            Log.i(TAG, "InvoiceDataService already initialized!");
         }
         return instance;
     }

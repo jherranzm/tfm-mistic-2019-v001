@@ -7,6 +7,7 @@ import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,7 @@ import java.util.Locale;
 
 import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
-import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
+import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataService;
 
 public class InvoiceDataRecyclerViewAdapter
         extends RecyclerView.Adapter<InvoiceDataRecyclerViewAdapter.DataObjectHolder> {
@@ -114,8 +115,17 @@ public class InvoiceDataRecyclerViewAdapter
                 //creating a popup menu
                 PopupMenu popup = new PopupMenu(view.getRootView().getContext(), holder.buttonViewOption);
 
+                Menu popupMenu = popup.getMenu();
+
                 //inflating menu from xml resource
                 popup.inflate(R.menu.invoice_data_popup_menu);
+
+                if(mDataset.get(position).isBackedUp()){
+                    popupMenu.findItem(R.id.uploadInvoiceDataOption).setEnabled(false);
+                }else{
+                    popupMenu.findItem(R.id.uploadInvoiceDataOption).setEnabled(true);
+                }
+
 
                 //adding click listener
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -124,12 +134,12 @@ public class InvoiceDataRecyclerViewAdapter
                         switch (item.getItemId()) {
                             case R.id.deleteInvoiceDataOption:
                                 //handle menu1 click
-                                AlertDialog.Builder alertbox = new AlertDialog.Builder(view.getRootView().getContext());
-                                alertbox.setMessage("Do you want to DELETE this invoice?");
-                                alertbox.setTitle("Warning");
-                                alertbox.setIcon(R.drawable.ic_launcher_background);
+                                AlertDialog.Builder alertBox = new AlertDialog.Builder(view.getRootView().getContext());
+                                alertBox.setMessage("Do you want to DELETE this invoice?");
+                                alertBox.setTitle("Warning");
+                                alertBox.setIcon(R.drawable.ic_launcher_background);
 
-                                alertbox.setNegativeButton(
+                                alertBox.setNegativeButton(
                                         "Cancel",
                                         new DialogInterface.OnClickListener() {
                                             @Override
@@ -138,14 +148,14 @@ public class InvoiceDataRecyclerViewAdapter
                                             }
                                         });
 
-                                alertbox.setPositiveButton(
+                                alertBox.setPositiveButton(
                                         "OK",
                                         new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialogInterface, int i) {
                                                 Log.d("deleteInvoiceDataOption", "onClick: OK Called.");
 
-                                                InvoiceDataDataManagerService.deleteInvoiceData(mActivityRef.get(), mDataset.get(position));
+                                                InvoiceDataService.deleteInvoiceData(mActivityRef.get(), mDataset.get(position));
 
                                                 mDataset.remove(position);
                                                 notifyItemRemoved(position);
@@ -153,7 +163,10 @@ public class InvoiceDataRecyclerViewAdapter
                                             }
                                         });
 
-                                alertbox.show();
+                                alertBox.show();
+                                break;
+
+                            case R.id.uploadInvoiceDataOption:
                                 break;
                         }
                         return false;

@@ -5,17 +5,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckedTextView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,7 +33,7 @@ import java.util.List;
 
 import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.model.TotalByProviderByYearVO;
-import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
+import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataService;
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.GetTotalsByProviderByYearTask;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
@@ -76,19 +77,55 @@ public class MainActivity
     }
 
     private void initView() {
-        // init View
-        final ProgressBar mProgressBar = findViewById(R.id.progressBar1);
-        mProgressBar.setVisibility(View.INVISIBLE);
 
+        // Button invoices backed up in server
         Button goToShowUploadedInvoices = findViewById(R.id.buttonGoToShowUploadedInvoice);
-        Button goToShowLocalInvoices = findViewById(R.id.buttonShowLocalInvoices);
-        Button goToShowInfoByProviders = findViewById(R.id.buttonShowInfoByProvider);
-        Button goToShowInfoByProviderAndYear = findViewById(R.id.buttonShowInfoByProviderByYear);
-        Button goToLocalInvoices = findViewById(R.id.buttonShowInvoices);
-        Button goToDeleteAllInvoices = findViewById(R.id.buttonDeleteAllInvoices);
+        Drawable iconUploadCloud = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_upload_cloud );
+        if(iconUploadCloud != null){
+            iconUploadCloud.setBounds(0, 0, iconUploadCloud.getMinimumWidth(),
+                    iconUploadCloud.getMinimumHeight());
+            goToShowUploadedInvoices.setCompoundDrawables(iconUploadCloud, null, null, null);
+        }
 
+        // Button invoice files downloaded in device (in th SDCard)
+        Button goToShowLocalInvoices = findViewById(R.id.buttonShowLocalInvoices);
+        Drawable iconFileDownloaded = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_file_download);
+        if (iconFileDownloaded != null) {
+            iconFileDownloaded.setBounds(0, 0, iconFileDownloaded.getMinimumWidth(),
+                    iconFileDownloaded.getMinimumHeight());
+            goToShowLocalInvoices.setCompoundDrawables(iconFileDownloaded, null, null, null);
+        }
+
+        // Button invoices already processed and in local database
+        Button goToLocalInvoices = findViewById(R.id.buttonShowInvoices);
+        Drawable iconLocalInvoice = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_local_invoice);
+        if (iconLocalInvoice != null) {
+            iconLocalInvoice.setBounds(0, 0, iconLocalInvoice.getMinimumWidth(),
+                    iconLocalInvoice.getMinimumHeight());
+            goToLocalInvoices.setCompoundDrawables(iconLocalInvoice, null, null, null);
+        }
+
+        // Button sign up button
         Button goToSignUp = findViewById(R.id.buttonGoToSignUp);
+        Drawable iconSignUp = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_sign_up);
+        if (iconSignUp != null) {
+            iconSignUp.setBounds(0, 0, iconSignUp.getMinimumWidth(),
+                    iconSignUp.getMinimumHeight());
+            goToSignUp.setCompoundDrawables(iconSignUp, null, null, null);
+        }
+
         Button goToLogIn = findViewById(R.id.buttonGoToLogin);
+        Drawable iconLogIn = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_log_in);
+        if (iconLogIn != null) {
+            iconLogIn.setBounds(0, 0, iconLogIn.getMinimumWidth(),
+                    iconLogIn.getMinimumHeight());
+            goToLogIn.setCompoundDrawables(iconLogIn, null, null, null);
+        }
+
+
+        Button goToShowInfoByProviderAndYear = findViewById(R.id.buttonShowInfoByProviderByYear);
+
+        Button goToDeleteAllInvoices = findViewById(R.id.buttonDeleteAllInvoices);
 
         // Is serverOnline
         CheckedTextView isServerOnLine = findViewById(R.id.checkedServerOnline);
@@ -115,70 +152,37 @@ public class MainActivity
         goToShowUploadedInvoices.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                mProgressBar.setVisibility(View.VISIBLE);
-
                 Intent intent = new Intent(sContextReference.get(), UploadedInvoicesRecyclerViewActivity.class);
                 startActivity(intent);
-
-                mProgressBar.setVisibility(View.INVISIBLE);
-
             }
         });
 
         goToShowLocalInvoices.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mProgressBar.setVisibility(View.VISIBLE);
-
                 Intent intent = new Intent(sContextReference.get(), ReceivedInvoicesRecyclerViewActivity.class);
                 startActivity(intent);
-
-                mProgressBar.setVisibility(View.INVISIBLE);
             }
         });
 
         goToLocalInvoices.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mProgressBar.setVisibility(View.VISIBLE);
-
                 Intent intent = new Intent(sContextReference.get(), InvoiceDataRecyclerViewActivity.class);
                 startActivity(intent);
-
-                mProgressBar.setVisibility(View.INVISIBLE);
             }
         });
 
         goToDeleteAllInvoices.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mProgressBar.setVisibility(View.VISIBLE);
-
-                InvoiceDataDataManagerService.deleteAllInvoiceData(MainActivity.this);
-
-                mProgressBar.setVisibility(View.INVISIBLE);
-            }
-        });
-
-
-        goToShowInfoByProviders.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mProgressBar.setVisibility(View.VISIBLE);
-
-                Intent intent = new Intent(sContextReference.get(), TotalsByProviderRecyclerViewActivity.class);
-                startActivity(intent);
-
-                mProgressBar.setVisibility(View.INVISIBLE);
+                InvoiceDataService.deleteAllInvoiceData(MainActivity.this);
             }
         });
 
         goToShowInfoByProviderAndYear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mProgressBar.setVisibility(View.VISIBLE);
-
                 try {
 
                     GetTotalsByProviderByYearTask getTotalsByProviderTask = new GetTotalsByProviderByYearTask(MainActivity.this);
@@ -187,40 +191,26 @@ public class MainActivity
                     for(TotalByProviderByYearVO totalByProviderByYearVO : totals){
                         Log.i(TAG, totalByProviderByYearVO.toString());
                     }
-
-                    mProgressBar.setVisibility(View.INVISIBLE);
-
-
                 } catch (Exception e) {
                     Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
                     e.printStackTrace();
                 }
-
-                mProgressBar.setVisibility(View.INVISIBLE);
             }
         });
 
         goToSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mProgressBar.setVisibility(View.VISIBLE);
-
                 Intent intent = new Intent(sContextReference.get(), SignUpActivity.class);
                 startActivity(intent);
-
-                mProgressBar.setVisibility(View.INVISIBLE);
             }
         });
 
         goToLogIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mProgressBar.setVisibility(View.VISIBLE);
-
                 Intent intent = new Intent(sContextReference.get(), LogInActivity.class);
                 startActivity(intent);
-
-                mProgressBar.setVisibility(View.INVISIBLE);
             }
         });
 

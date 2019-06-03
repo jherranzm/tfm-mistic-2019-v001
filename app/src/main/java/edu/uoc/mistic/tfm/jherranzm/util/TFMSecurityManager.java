@@ -55,8 +55,8 @@ import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricDecryptor;
 import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricEncryptor;
 import edu.uoc.mistic.tfm.jherranzm.crypto.SymmetricEncryptor;
 import edu.uoc.mistic.tfm.jherranzm.model.LocalSymKey;
-import edu.uoc.mistic.tfm.jherranzm.services.LocalSymKeyDataManagerService;
-import edu.uoc.mistic.tfm.jherranzm.services.RemoteSymKeyDataManagerService;
+import edu.uoc.mistic.tfm.jherranzm.services.LocalSymKeyService;
+import edu.uoc.mistic.tfm.jherranzm.services.RemoteSymKeyService;
 import edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks.DeleteLocalSymKeyTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks.GetAllLocalSymKeyTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks.GetByFLocalSymKeyTask;
@@ -413,13 +413,13 @@ public class TFMSecurityManager {
 
             // Cleaning just in case
             // Delete Local Symmetric Keys from Database
-            LocalSymKeyDataManagerService.deleteAllByUser(mActivityRef.get(), defaultUser);
+            LocalSymKeyService.deleteAllByUser(mActivityRef.get(), defaultUser);
 
             // Delete Local Symmetric Keys from KeyStore
             deleteAllLocalSymKeys();
 
             //Delete Local Symmetric Keys from RemoteDatabase
-            RemoteSymKeyDataManagerService.deleteAllByUser();
+            RemoteSymKeyService.deleteAllByUser();
 
             //Generate KeyPair
             Log.i(TAG,"KeyPair : generating...");

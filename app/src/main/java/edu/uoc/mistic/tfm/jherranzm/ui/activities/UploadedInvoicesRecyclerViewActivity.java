@@ -32,8 +32,8 @@ import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricDecryptor;
 import edu.uoc.mistic.tfm.jherranzm.crypto.SymmetricDecryptor;
 import edu.uoc.mistic.tfm.jherranzm.model.Invoice;
-import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
-import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataManagerService;
+import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataService;
+import edu.uoc.mistic.tfm.jherranzm.services.InvoiceService;
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicetasks.GetInvoiceByIdTask;
 import edu.uoc.mistic.tfm.jherranzm.ui.adapters.UploadedInvoicesRecyclerViewAdapter;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
@@ -77,7 +77,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        invoices = InvoiceDataManagerService.getUploadedInvoicesFromServer(this, tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
+        invoices = InvoiceService.getUploadedInvoicesFromServer(this, tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
         mAdapter = new UploadedInvoicesRecyclerViewAdapter(invoices);
 
         TextView textViewNumberItems = findViewById(R.id.textViewNumUploadedInvoices);
@@ -107,7 +107,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
                         Log.i(TAG, " Clicked on Item " + invoices.get(position).toString());
 
                         downloadInvoiceFromServerDialog("Download invoice from server?",
-                        "Do you want to download invoice " + position + " from server and process it?",
+                                String.format("Do you want to download invoice %d from server and process it?", position),
                         "cancel",
                         "ok",
                         position);
@@ -288,8 +288,8 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
                         try {
                             Facturae facturae = UtilFacturae.getFacturaeFromFactura(UtilDocument.documentToString(document));
                             String UIDInvoiceHash = UIDGenerator.generate(facturae);
-                            InvoiceDataDataManagerService invoiceDataDataManagerService = InvoiceDataDataManagerService.getInstance(UploadedInvoicesRecyclerViewActivity.this);
-                            invoiceDataDataManagerService.saveInvoiceDataInLocalDatabase(facturae, UIDInvoiceHash, true);
+                            InvoiceDataService invoiceDataService = InvoiceDataService.getInstance(UploadedInvoicesRecyclerViewActivity.this);
+                            invoiceDataService.saveInvoiceDataInLocalDatabase(facturae, UIDInvoiceHash, true);
                         } catch (ExecutionException e) {
                             e.printStackTrace();
                         } catch (InterruptedException e) {

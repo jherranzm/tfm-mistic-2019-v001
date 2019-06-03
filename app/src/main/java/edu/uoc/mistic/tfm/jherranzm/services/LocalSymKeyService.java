@@ -5,9 +5,9 @@ import android.util.Log;
 
 import edu.uoc.mistic.tfm.jherranzm.tasks.localsymkeytasks.DeleteAllByUserLocalSymKeyTask;
 
-public class LocalSymKeyDataManagerService {
+public class LocalSymKeyService {
 
-    private static final String TAG = LocalSymKeyDataManagerService.class.getSimpleName();
+    private static final String TAG = LocalSymKeyService.class.getSimpleName();
 
     public static void deleteAllByUser(Activity activity, String user) {
 

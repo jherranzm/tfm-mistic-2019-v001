@@ -5,9 +5,9 @@ import android.util.Log;
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.tasks.remotesymkeytasks.RemoteSymKeyDeleteAllByUserTask;
 
-public class RemoteSymKeyDataManagerService {
+public class RemoteSymKeyService {
 
-    private static final String TAG = RemoteSymKeyDataManagerService.class.getSimpleName();
+    private static final String TAG = RemoteSymKeyService.class.getSimpleName();
 
     public static void deleteAllByUser() {
 

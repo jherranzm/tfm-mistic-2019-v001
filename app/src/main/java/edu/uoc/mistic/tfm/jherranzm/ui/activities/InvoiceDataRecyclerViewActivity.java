@@ -1,12 +1,17 @@
 package edu.uoc.mistic.tfm.jherranzm.ui.activities;
 
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.List;
@@ -14,7 +19,7 @@ import java.util.List;
 import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
-import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
+import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataService;
 import edu.uoc.mistic.tfm.jherranzm.ui.adapters.InvoiceDataRecyclerViewAdapter;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
@@ -49,10 +54,26 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        invoices = InvoiceDataDataManagerService.getInvoiceDataFromDatabase(this, tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
+        // Button invoices backed up in server
+        Button goToShowTotalsByProvider = findViewById(R.id.buttonShowInfoByProvider);
+        Drawable iconShowTotalsByProvider = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_totals_by_provider );
+        if (iconShowTotalsByProvider != null) {
+            iconShowTotalsByProvider.setBounds(0, 0, iconShowTotalsByProvider.getMinimumWidth(),
+                    iconShowTotalsByProvider.getMinimumHeight());
+            goToShowTotalsByProvider.setCompoundDrawables(iconShowTotalsByProvider, null, null, null);
+        }
+
+        goToShowTotalsByProvider.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), TotalsByProviderRecyclerViewActivity.class);
+                startActivity(intent);
+            }
+        });
+        invoices = InvoiceDataService.getInvoiceDataFromDatabase(this, tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
         mAdapter = new InvoiceDataRecyclerViewAdapter(this, invoices);
         TextView textViewNumberItems = findViewById(R.id.textViewNumInvoiceFilesInSystem);
-        textViewNumberItems.setText("Number of Invoices Processed in System " + invoices.size());
+        textViewNumberItems.setText(String.format("Number of Invoices Processed in System %d", invoices.size()));
 
         mRecyclerView.setAdapter(mAdapter);
         RecyclerView.ItemDecoration itemDecoration =
@@ -64,7 +85,7 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         //setContentView(R.layout.invoice_data_recycler_view);
-        invoices = InvoiceDataDataManagerService.getInvoiceDataFromDatabase(this, tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
+        invoices = InvoiceDataService.getInvoiceDataFromDatabase(this, tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
         mAdapter = new InvoiceDataRecyclerViewAdapter(this, invoices);
         TextView textViewNumberItems = findViewById(R.id.textViewNumInvoiceFilesInSystem);
         textViewNumberItems.setText("Number of Invoices Processed in System " + invoices.size());

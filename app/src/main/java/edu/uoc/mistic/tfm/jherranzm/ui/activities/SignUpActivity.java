@@ -180,7 +180,9 @@ public class SignUpActivity extends AppCompatActivity {
         builder
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        Log.i(TAG, "alertShow : You clicked on OK!");
+                        Log.i(TAG, "allOKShow : You clicked on OK. Go to LogInActivity...");
+                        Intent intent = new Intent(sContextReference.get(), LogInActivity.class);
+                        startActivity(intent);
                     }
                 })
                 .setTitle("Alert!")

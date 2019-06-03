@@ -136,7 +136,7 @@ public class LogInActivity
             String message,
             final String okMethod){
         final android.support.v7.app.AlertDialog.Builder builderSingle = new android.support.v7.app.AlertDialog.Builder(this);
-        builderSingle.setIcon(R.mipmap.ic_launcher_round);
+        builderSingle.setIcon(R.drawable.ic_perm_device_info);
         builderSingle.setTitle(title);
         builderSingle.setMessage(message);
 

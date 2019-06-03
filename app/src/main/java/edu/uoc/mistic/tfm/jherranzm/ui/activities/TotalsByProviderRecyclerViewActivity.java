@@ -16,7 +16,7 @@ import java.util.List;
 
 import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.model.TotalByProviderVO;
-import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataDataManagerService;
+import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataService;
 import edu.uoc.mistic.tfm.jherranzm.ui.adapters.TotalsByProviderRecyclerViewAdapter;
 
 public class TotalsByProviderRecyclerViewActivity extends AppCompatActivity {
@@ -46,7 +46,7 @@ public class TotalsByProviderRecyclerViewActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        totals = InvoiceDataDataManagerService.getTotalsByProvider(this);
+        totals = InvoiceDataService.getTotalsByProvider(this);
         mAdapter = new TotalsByProviderRecyclerViewAdapter(totals);
 
         Button buttonShowGraph = findViewById(R.id.buttonShowGraph);

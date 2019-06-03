@@ -3,7 +3,12 @@
 
     <item
         android:id="@+id/deleteInvoiceDataOption"
-        android:title="@string/deleteInvoiceData"></item>
+        android:title="@string/deleteInvoiceData"
+        android:icon="@drawable/ic_perm_device_info" />
+    <item
+        android:id="@+id/uploadInvoiceDataOption"
+        android:title="@string/uploadInvoiceData"
+        android:icon="@drawable/ic_upload_cloud" />
 
 
 </menu>

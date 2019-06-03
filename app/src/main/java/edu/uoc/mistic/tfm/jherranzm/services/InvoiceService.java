@@ -14,9 +14,9 @@ import edu.uoc.mistic.tfm.jherranzm.model.Invoice;
 import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
 import edu.uoc.mistic.tfm.jherranzm.tasks.remotesymkeytasks.UploadedInvoicesGetAllTask;
 
-public class InvoiceDataManagerService {
+public class InvoiceService {
 
-    private static final String TAG = InvoiceDataManagerService.class.getSimpleName();
+    private static final String TAG = InvoiceService.class.getSimpleName();
 
     private static final Map<String, InvoiceData> localInvoices = new HashMap<>();
 
@@ -29,7 +29,7 @@ public class InvoiceDataManagerService {
             // retrieve data from server
             List<Invoice> remoteInvoices = uploadedInvoicesGetAllTask.execute(Constants.URL_FACTURAS).get();
 
-            List<InvoiceData> _localInvoices = InvoiceDataDataManagerService.getInvoiceDataFromDatabase(activity, user);
+            List<InvoiceData> _localInvoices = InvoiceDataService.getInvoiceDataFromDatabase(activity, user);
             for(InvoiceData invoiceData : _localInvoices){
                 localInvoices.put(invoiceData.getBatchIdentifier(), invoiceData);
             }
