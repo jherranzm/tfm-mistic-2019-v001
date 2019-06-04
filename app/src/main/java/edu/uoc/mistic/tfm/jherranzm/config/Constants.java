@@ -7,6 +7,9 @@ public class Constants {
     public static final int SERVER_INACTIVE = 0;
     public static final int USER_IS_LOGGED = 1;
     public static final int USER_IS_NOT_LOGGED = 0;
+    public static final int FILE_PENDING = 0;
+    public static final int FILE_VALID = 1;
+    public static final int FILE_NOT_VALID = 2;
 
     private static final String REMOTE_HOST = "10.0.2.2";
     private static final String REMOTE_PORT = "8443";

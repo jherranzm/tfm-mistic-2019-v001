@@ -43,7 +43,6 @@ import edu.uoc.mistic.tfm.jherranzm.crypto.SymmetricEncryptor;
 import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;
 import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataService;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.GetFileDataObjectByFilenameAndUserTask;
-import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.GetFileDataObjectByFilenameTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.InsertFileDataObjectTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.UpdateFileDataObjectTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostDataAuthenticatedToUrlTask;
@@ -85,6 +84,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         tfmSecurityManager = TFMSecurityManager.getInstance();
 
         sContextReference = new WeakReference<Context>(this);
+        signedInvoices = getFileInvoicesInSystem();
 
         initView();
     }
@@ -100,7 +100,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        signedInvoices = getFileInvoicesInSystem();
+
         mAdapter = new ReceivedInvoicesRecyclerViewAdapter(signedInvoices);
         TextView textViewNumberItems = findViewById(R.id.textViewNumInvoiceFilesInSystem);
         textViewNumberItems.setText(String.format(Locale.getDefault(), "Number of File Invoices in System [%d]", signedInvoices.size()));
@@ -179,17 +179,21 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 Log.i(TAG, ALERT_INVOICE_SIGNATURE_NOT_VALID);
                 alertShow(ALERT_INVOICE_SIGNATURE_NOT_VALID);
             }else{
+                Log.i(TAG, String.format("Valid signed document! [%d] ...", position));
                 Toast.makeText(sContextReference.get(), "Valid signed document!", Toast.LENGTH_SHORT).show();
 
                 Document document = UtilDocument.removeSignature(doc);
+                Log.i(TAG, String.format("Signature erased! [%d] ...", position));
                 Toast.makeText(sContextReference.get(), "Signature erased!", Toast.LENGTH_SHORT).show();
 
-
+                Log.i(TAG, String.format("Retrieving invoice data! [%d] ...", position));
                 Toast.makeText(sContextReference.get(), "Retrieving invoice data...", Toast.LENGTH_SHORT).show();
                 Facturae facturae = UtilFacturae.getFacturaeFromFactura(UtilDocument.documentToString(document));
                 if(facturae == null){
                     throw new Exception("ERROR: Invoice is NOT correct!");
                 }
+
+                showInfoOfReceivedInvoice(document);
 
                 Toast.makeText(sContextReference.get(), "Encrypting invoice data...", Toast.LENGTH_SHORT).show();
 
@@ -221,10 +225,12 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
     private void updateFileDataObjectInLocalDatabase(int position) {
 
         try {
-            GetFileDataObjectByFilenameTask getFileDataObjectByFilenameTask = new GetFileDataObjectByFilenameTask(this);
-            FileDataObject existing = getFileDataObjectByFilenameTask.execute(signedInvoices.get(position).getFileName()).get();
+            GetFileDataObjectByFilenameAndUserTask getFileDataObjectByFilenameAndUserTask = new GetFileDataObjectByFilenameAndUserTask(this);
+            FileDataObject existing = getFileDataObjectByFilenameAndUserTask
+                    .execute(signedInvoices.get(position).getFileName(), tfmSecurityManager.getEmailUserLogged())
+                    .get();
 
-            existing.setProcessed(true);
+            existing.setStatus(Constants.FILE_VALID);
 
             UpdateFileDataObjectTask updateFileDataObjectTask = new UpdateFileDataObjectTask(this, existing);
             FileDataObject updated = updateFileDataObjectTask.execute().get();
@@ -395,7 +401,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                         if(okMethod.equals("ok")){
                             validateAndUploadSignedInvoice(position);
                             FileDataObject fdo = signedInvoices.get(position);
-                            fdo.setProcessed(true);
+                            fdo.setStatus(Constants.FILE_VALID);
                             signedInvoices.set(position, fdo);
                             mAdapter.notifyItemChanged(position);
                         }
@@ -449,9 +455,9 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         List<FileDataObject> signedInvoices = new ArrayList<>();
 
         for (File f : list) {
-            Log.i(TAG, f.getName());
-            Log.i(TAG, tfmSecurityManager.getEmailUserLogged());
-            FileDataObject obj = new FileDataObject(f.getName(), tfmSecurityManager.getEmailUserLogged());
+            //Log.i(TAG, f.getName());
+            //Log.i(TAG, tfmSecurityManager.getEmailUserLogged());
+            FileDataObject obj = new FileDataObject(f.getName(), tfmSecurityManager.getEmailUserLogged(), Constants.FILE_PENDING);
 
             try {
                 // Is the file already in local database
@@ -461,22 +467,95 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 if(existing == null){
                     InsertFileDataObjectTask insertFileDataObjectTask = new InsertFileDataObjectTask(this, obj);
                     FileDataObject inserted = insertFileDataObjectTask.execute().get();
-                    Log.i(TAG, String.format("%s inserted in local database ", inserted.getFileName()));
+                    //Log.i(TAG, String.format("%s inserted in local database ", inserted.getFileName()));
                     signedInvoices.add(inserted);
                 }else{
-                    Log.i(TAG, String.format("%s ALREADY in local database ", obj.getFileName()));
+                    //Log.i(TAG, String.format("%s ALREADY in local database ", obj.getFileName()));
                     signedInvoices.add(existing);
                 }
 
             } catch (ExecutionException e) {
                 e.printStackTrace();
+                Log.e(TAG, "ERROR : " + e.getClass().getCanonicalName() + " : "+ e.getLocalizedMessage() + " : " + e.getMessage());
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Log.e(TAG, "ERROR : " + e.getClass().getCanonicalName() + " : "+ e.getLocalizedMessage() + " : " + e.getMessage());
             }
 
         }
 
         return signedInvoices;
 
+    }
+
+    private void showInfoOfReceivedInvoice(Document document) throws Exception {
+        Facturae facturae = UtilFacturae.getFacturaeFromFactura(UtilDocument.documentToString(document));
+        if(facturae == null){
+            throw new Exception("Invoice document received from server is null");
+        }
+        if(facturae.getInvoices() == null){
+            throw new Exception("Invoice document received from server contains NO invoices");
+        }
+        Log.i(TAG, String.format("Received from server [facturae]: InvoiceNumber   : %s", facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber()));
+        Log.i(TAG, String.format("Received from server [facturae]: ItemDescription : %s", facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getItemDescription()));
+        Log.i(TAG, String.format("Received from server [facturae]: Quantity        : %s", facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getQuantity()));
+        Log.i(TAG, String.format("Received from server [facturae]: UnitOfMeasure   : %s", facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getUnitOfMeasure().toString()));
+        Log.i(TAG, String.format("Received from server [facturae]: UnitPriceWithoutTax : %s", facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getUnitPriceWithoutTax()));
+        Log.i(TAG, String.format("Received from server [facturae]: TotalCost       : %s", facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getTotalCost()));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(Constants.CR_LF);
+        sb.append("InvoiceNumber:");
+        sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber());
+        sb.append(Constants.CR_LF);
+        sb.append("ItemDescription:");
+        sb.append(facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getItemDescription());
+        sb.append(Constants.CR_LF);
+        sb.append("Quantity        : ");
+        sb.append(facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getQuantity());
+        sb.append(Constants.CR_LF);
+        sb.append("UnitOfMeasure   : ");
+        sb.append(facturae.getInvoices().getInvoiceList().get(0).getItems().getInvoiceLineList().get(0).getUnitOfMeasure().toString());
+        sb.append(Constants.CR_LF);
+        sb.append("GrossAmount   : ");
+        sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalGrossAmount());
+        sb.append(Constants.CR_LF);
+        sb.append("TaxAmount   : ");
+        sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getTotalTaxOutputs());
+        sb.append(Constants.CR_LF);
+        sb.append("TotalCost   : ");
+        sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceTotals().getInvoiceTotal());
+        sb.append(Constants.CR_LF);
+
+        infoDialog(
+                "Invoice Info",
+                sb.toString(),
+                "ok");
+    }
+
+    private void infoDialog(
+            String title,
+            String message,
+            final String okMethod){
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setIcon(R.mipmap.ic_check);
+        builder.setTitle("Info");
+        builder.setMessage(message);
+
+
+        builder.setPositiveButton(
+                "OK",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Log.d(TAG, "onClick: OK Called.");
+                        if(okMethod.equals("ok")){
+                            Log.d(TAG, "onClick: OK Called.");
+                        }
+                    }
+                });
+
+
+        builder.show();
     }
 }

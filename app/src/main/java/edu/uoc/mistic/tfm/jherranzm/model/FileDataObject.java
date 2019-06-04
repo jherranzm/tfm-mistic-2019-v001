@@ -18,15 +18,15 @@ public class FileDataObject implements Serializable {
     @ColumnInfo(name = "fileName")
     private String fileName;
 
-    @ColumnInfo(name = "isProcessed")
-    private boolean isProcessed;
+    @ColumnInfo(name = "status")
+    private int status;
 
 
-    public FileDataObject(String fileName, String user) {
+    public FileDataObject(String fileName, String user, int status) {
 
         this.fileName = fileName;
         this.user = user;
-        this.isProcessed = false;
+        this.status = status;
     }
 
     public FileDataObject() {
@@ -49,12 +49,12 @@ public class FileDataObject implements Serializable {
         this.user = user;
     }
 
-    public boolean isProcessed() {
-        return isProcessed;
+    public int getStatus() {
+        return status;
     }
 
-    public void setProcessed(boolean processed) {
-        isProcessed = processed;
+    public void setStatus(int status) {
+        this.status = status;
     }
 
     public String getFileName() {

@@ -54,7 +54,7 @@ public class MainActivity
 
     private Handler mHandler;
 
-    private CheckedTextView isServerOnLine;
+    CheckedTextView isServerOnLine;
 
     // Widgets
     Button goToSignUp;
@@ -294,6 +294,7 @@ public class MainActivity
                 }else{
                     tfmSecurityManager.setServerStatus(Constants.SERVER_INACTIVE);
                 }
+                Log.i(TAG, isServerOnLine == null ? "isServerOnLine es Nulo!" : "isServerOnLine NO es nulo...");
                 isServerOnLine.setChecked(tfmSecurityManager.isServerOnLine());
                 isServerOnLine.setText((tfmSecurityManager.isServerOnLine() ? "Server Online" : "Server offline"));
                 isServerOnLine.setBackgroundColor((tfmSecurityManager.isServerOnLine() ? Color.GREEN : Color.RED));
@@ -305,10 +306,8 @@ public class MainActivity
 
             }catch (Exception e){
                 Log.e(TAG, "Error trying to locate server");
+                Log.e(TAG, "ERROR : " + e.getClass().getCanonicalName() + " : "+ e.getLocalizedMessage() + " : " + e.getMessage());
             } finally {
-                // 100% guarantee that this always happens, even if
-                // your update method throws an exception
-                // 5 seconds by default, can be changed later
                 int mInterval = 10000;
                 mHandler.postDelayed(mStatusChecker, mInterval);
             }

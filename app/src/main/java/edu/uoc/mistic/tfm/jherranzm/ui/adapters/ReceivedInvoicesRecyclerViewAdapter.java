@@ -13,6 +13,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import edu.uoc.mistic.tfm.jherranzm.R;
+import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
@@ -78,10 +79,10 @@ public class ReceivedInvoicesRecyclerViewAdapter extends RecyclerView
         Log.i(TAG, "onBindViewHolder...");
         holder.fileName.setText(String.format("File: %s", mDataset.get(position).getFileName()));
 
-        if(mDataset.get(position).isProcessed()) {
+        if(mDataset.get(position).getStatus() == Constants.FILE_VALID) {
             holder.cardView.setCardBackgroundColor(Color.GREEN);
             holder.buttonProcess.setVisibility(View.INVISIBLE);
-        }else{
+        }else if(mDataset.get(position).getStatus() == Constants.FILE_PENDING) {
             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
             holder.buttonProcess.setVisibility(View.VISIBLE);
             holder.buttonProcess.setEnabled(TFMSecurityManager.getInstance().isUserLogged());
