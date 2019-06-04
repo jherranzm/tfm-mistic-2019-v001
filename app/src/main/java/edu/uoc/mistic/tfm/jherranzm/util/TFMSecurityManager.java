@@ -11,7 +11,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.spongycastle.cms.CMSException;
 import org.spongycastle.openssl.jcajce.JcaPEMWriter;
-import org.spongycastle.operator.OperatorCreationException;
 import org.spongycastle.pkcs.PKCS10CertificationRequest;
 import org.spongycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 
@@ -44,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.TrustManager;
@@ -74,7 +72,6 @@ public class TFMSecurityManager {
 
     private X509Certificate certificate;
     private PrivateKey privateKey;
-    private PrivateKeyEntry pke;
     private TrustManagerFactory tmf;
 
     private static TFMSecurityManager instance;
@@ -86,6 +83,7 @@ public class TFMSecurityManager {
 
     private WeakReference<Activity> mActivityRef;
     private int serverStatus;
+    private int userLogged;
 
     private TFMSecurityManager(){}
 
@@ -170,22 +168,24 @@ public class TFMSecurityManager {
 
             // First connection to server
 
+            setUserLogged(Constants.USER_IS_NOT_LOGGED);
             setServerStatus(Constants.SERVER_INACTIVE);
             String status = ServerInfoService.getStatusFromServer();
 
             if("ACTIVE".equals(status)){
-                //throw new Exception("Server NOT active");
-                status = "NOT ACTIVE";
                 setServerStatus(Constants.SERVER_ACTIVE);
             }
 
             if(getSecretFromKeyInKeyStore(Constants.USER_LOGGED) == null){
                 Log.i(TAG, "NOT a default user logged.");
+                setUserLogged(Constants.USER_IS_NOT_LOGGED);
             }else{
                 setCertificatePrivateKeyAndSymmetricKeysForUserLogged(
                         getSecretFromKeyInKeyStore(Constants.USER_LOGGED),
                         getSecretFromKeyInKeyStore(Constants.USER_PASS),
                         getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
+
+                setUserLogged(Constants.USER_IS_LOGGED);
 
                 saveKeyStoreToFileSystem();
                 saveKeyStoreToSDCard();
@@ -202,6 +202,18 @@ public class TFMSecurityManager {
             Toast.makeText(mActivityRef.get(), String.format("ERROR : %s: %s", e.getClass().getCanonicalName(), e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
         }
     }
+
+    public void logOut() {
+        try {
+            keyStore.deleteEntry(Constants.USER_LOGGED);
+            keyStore.deleteEntry(Constants.USER_PASS);
+            setUserLogged(Constants.USER_IS_NOT_LOGGED);
+        } catch (KeyStoreException e) {
+            Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
+            Toast.makeText(mActivityRef.get(), String.format("ERROR : %s: %s", e.getClass().getCanonicalName(), e.getLocalizedMessage()), Toast.LENGTH_LONG).show();
+        }
+    }
+
 
     private void saveKeyStoreToServer() {
 
@@ -303,6 +315,7 @@ public class TFMSecurityManager {
 
         saveKeyAndSecretInKeyStore(Constants.USER_LOGGED, defaultUser);
         saveKeyAndSecretInKeyStore(Constants.USER_PASS, userPass);
+        setUserLogged(Constants.USER_IS_LOGGED);
 
         setCertificateAndPrivateKey(label, defaultUser);
 
@@ -331,12 +344,6 @@ public class TFMSecurityManager {
 
     /**
      * If KeyStore file exists, load it. Else, create and load the CA and Server Certificates from assets
-     *
-     * @return the KeyStore File
-     * @throws IOException
-     * @throws CertificateException
-     * @throws NoSuchAlgorithmException
-     * @throws KeyStoreException
      */
     private File loadOrCreateKeyStore()
             throws
@@ -381,16 +388,7 @@ public class TFMSecurityManager {
      *
      * @param label, the label used to identify the Certificate and PrivateKey in the KeyStore
      * @param defaultUser, the name of the current user (email)
-     *
-     * @throws KeyStoreException
-     * @throws NoSuchAlgorithmException
-     * @throws IOException
-     * @throws OperatorCreationException
-     * @throws ExecutionException
-     * @throws InterruptedException
-     * @throws CertificateException
-     * @throws UnrecoverableEntryException
-     */
+      */
     private void setCertificateAndPrivateKey(
             String label,
             String defaultUser)
@@ -486,10 +484,6 @@ public class TFMSecurityManager {
 
     /**
      *
-     * @throws CertificateException
-     * @throws IOException
-     * @throws KeyStoreException
-     * @throws NoSuchAlgorithmException
      */
     private void saveKeyStoreToFileSystem()
             throws
@@ -506,10 +500,6 @@ public class TFMSecurityManager {
 
     /**
      *
-     * @throws CertificateException
-     * @throws IOException
-     * @throws KeyStoreException
-     * @throws NoSuchAlgorithmException
      */
     private void saveKeyStoreToSDCard()
             throws
@@ -528,7 +518,7 @@ public class TFMSecurityManager {
 
     /**
      *
-     * @throws KeyStoreException
+
      */
     private void showAliasesInKeyStore()
             throws
@@ -548,13 +538,6 @@ public class TFMSecurityManager {
 
     /**
      *
-     * @param fields
-     * @throws ExecutionException
-     * @throws InterruptedException
-     * @throws CertificateEncodingException
-     * @throws CMSException
-     * @throws IOException
-     * @throws JSONException
      */
     private void getSymmetricKeys(String[] fields)
             throws
@@ -618,7 +601,6 @@ public class TFMSecurityManager {
      *
      * @param str the local symmetric key name
      * @param lskF1 LocalSymKey
-     * @throws CMSException
      */
     private void getLocalSymKey(String str, LocalSymKey lskF1)
             throws
@@ -637,13 +619,6 @@ public class TFMSecurityManager {
 
     /**
      *
-     * @param rsg
-     * @param str
-     * @throws CertificateEncodingException
-     * @throws CMSException
-     * @throws IOException
-     * @throws java.util.concurrent.ExecutionException
-     * @throws InterruptedException
      */
     private void createLocalSymKey(RandomStringGenerator rsg, String str) throws
             CertificateEncodingException,
@@ -679,8 +654,6 @@ public class TFMSecurityManager {
 
         this.getSimKeys().put(str, simKey);
 
-        //createSymmetricKeyInKeyStore(str);
-
         Log.i(TAG, String.format("Save key/secret in KeyStore : %s / %s ", str, simKey));
         saveKeyAndSecretInKeyStore(str, simKey);
         String retrievedSecret = getSecretFromKeyInKeyStore(str);
@@ -690,82 +663,6 @@ public class TFMSecurityManager {
 
     /**
      *
-     * @param str
-     */
-    private void createSymmetricKeyInKeyStore(String str){
-
-        try {
-            KeyGenerator keyGenerator = KeyGenerator.getInstance(Constants.AES);
-            SecureRandom secureRandom = new SecureRandom();
-            int keyBitSize = 128;
-
-            keyGenerator.init(keyBitSize, secureRandom);
-
-            SecretKey secretKey = keyGenerator.generateKey();
-
-            byte[] data = secretKey.getEncoded();
-            String keyString = java.util.Base64.getEncoder().encodeToString(data);
-            Log.i(TAG, String.format("createSymmetricKeyInKeyStore.keyString : [%s]", keyString));
-
-            byte[] data2 = java.util.Base64.getDecoder().decode(keyString);
-            SecretKey key2 = new SecretKeySpec(data2, 0, data2.length, Constants.AES);
-
-            byte[] data3 = key2.getEncoded();
-            String keyString3 = java.util.Base64.getEncoder().encodeToString(data3);
-
-            if(secretKey.equals(key2)){
-                Log.i(TAG, String.format("Bien! [%s] : [%s]", keyString, keyString3));
-
-                KeyStore.ProtectionParameter protectionParameter =
-                        new KeyStore.PasswordProtection(Constants.PKCS12_PASSWORD.toCharArray());
-                keyStore.setEntry(
-                        str,
-                        new KeyStore.SecretKeyEntry(secretKey),
-                        protectionParameter);
-                showAliasesInKeyStore();
-
-                String symmetricKeyStored = getSymmetricKeyFromKeyStore(str, protectionParameter);
-                Log.i(TAG, String.format("symmetricKeyStored [%s] : [%s]. Original : [%s]", str, symmetricKeyStored, keyString));
-
-            }else{
-                Log.e(TAG, "ERROR : Something went really wrong... Keys are not equal!!");
-            }
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (UnrecoverableEntryException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    /**
-     *
-     * @param str
-     * @param protectionParameter
-     * @return
-     * @throws KeyStoreException
-     * @throws NoSuchAlgorithmException
-     * @throws UnrecoverableEntryException
-     */
-    private String getSymmetricKeyFromKeyStore(String str, KeyStore.ProtectionParameter protectionParameter)
-            throws
-            KeyStoreException,
-            NoSuchAlgorithmException,
-            UnrecoverableEntryException {
-
-        KeyStore.SecretKeyEntry recoveredEntry = (KeyStore.SecretKeyEntry)keyStore.getEntry(str, protectionParameter);
-        byte[] bytes = recoveredEntry.getSecretKey().getEncoded();
-        String recoveredSecret = java.util.Base64.getEncoder().encodeToString(bytes);
-        Log.i(TAG, String.format("recovered [%s]", recoveredSecret));
-        return recoveredSecret;
-    }
-
-    /**
-     *
-     * @throws java.util.concurrent.ExecutionException
-     * @throws InterruptedException
      */
     private void deleteAllLocalSymKeys()
             throws
@@ -774,9 +671,9 @@ public class TFMSecurityManager {
         GetAllLocalSymKeyTask getAllLocalSymKeyTask = new GetAllLocalSymKeyTask(mActivityRef.get());
         List<LocalSymKey> lskList = getAllLocalSymKeyTask.execute().get();
         for(LocalSymKey aLocalSimKey : lskList){
-            DeleteLocalSymKeyTask dlskTask = new DeleteLocalSymKeyTask(mActivityRef.get(), aLocalSimKey);
-            LocalSymKey deleted = dlskTask.execute().get();
-            Log.i(TAG, "Deleted: " + deleted.toString());
+            DeleteLocalSymKeyTask deleteLocalSymKeyTask = new DeleteLocalSymKeyTask(mActivityRef.get(), aLocalSimKey);
+            LocalSymKey deleted = deleteLocalSymKeyTask.execute().get();
+            Log.i(TAG, String.format("Deleted: [%s]", deleted.toString()));
         }
     }
 
@@ -799,34 +696,6 @@ public class TFMSecurityManager {
 
     /**
      *
-     * @param str
-     * @param secret
-     */
-    public void saveUserLoggedDataInKeyStore(String str, String secret){
-
-        try {
-            Log.i(TAG, String.format("saveUserLoggedDataInKeyStore : [%s] : [%s]", str, secret));
-            byte[] data2 = secret.getBytes();
-            SecretKey key2 = new SecretKeySpec(data2, 0, data2.length, Constants.AES);
-
-            KeyStore.ProtectionParameter protectionParameter =
-                    new KeyStore.PasswordProtection(Constants.PKCS12_PASSWORD.toCharArray());
-            keyStore.setEntry(
-                    str,
-                    new KeyStore.SecretKeyEntry(key2),
-                    protectionParameter);
-            showAliasesInKeyStore();
-
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    /**
-     *
-     * @param str
-     * @return
      */
     public String getUserLoggedDataFromKeyStore(String str){
 
@@ -854,10 +723,8 @@ public class TFMSecurityManager {
 
     /**
      *
-     * @param str
-     * @param secret
      */
-    public void saveKeyAndSecretInKeyStore(String str, String secret){
+    private void saveKeyAndSecretInKeyStore(String str, String secret){
 
         try {
             Log.i(TAG, String.format("saveKeyAndSecretInKeyStore : [%s] : [%s]", str, secret));
@@ -880,8 +747,6 @@ public class TFMSecurityManager {
 
     /**
      *
-     * @param str
-     * @return
      */
     public String getSecretFromKeyInKeyStore(String str){
 
@@ -897,7 +762,9 @@ public class TFMSecurityManager {
 
             KeyStore.SecretKeyEntry recoveredEntry = (KeyStore.SecretKeyEntry)keyStore.getEntry(str, protectionParameter);
             byte[] bytes = recoveredEntry.getSecretKey().getEncoded();
-            return new String(bytes);
+            String recovered = new String(bytes);
+            Log.i(TAG, String.format("getSecretFromKeyInKeyStore [%s] = [%s]", str, recovered));
+            return recovered;
 
         } catch (KeyStoreException e) {
             e.printStackTrace();
@@ -930,20 +797,15 @@ public class TFMSecurityManager {
         this.privateKey = privateKey;
     }
 
-    public PrivateKeyEntry getPke() { return pke; }
-
-    public void setPke(PrivateKeyEntry pke) { this.pke = pke; }
-
     public TrustManagerFactory getTmf() {
         return tmf;
     }
 
-    public Map<String, String> getSimKeys() {
+    private Map<String, String> getSimKeys() {
         return simKeys;
     }
 
-
-    public int getServerStatus() {
+    private int getServerStatus() {
         return serverStatus;
     }
 
@@ -951,8 +813,24 @@ public class TFMSecurityManager {
         this.serverStatus = serverStatus;
     }
 
-
     public boolean isServerOnLine() {
         return getServerStatus() == Constants.SERVER_ACTIVE;
     }
+
+    private int getUserLogged() {
+        return userLogged;
+    }
+
+    private void setUserLogged(int userLogged) {
+        this.userLogged = userLogged;
+    }
+
+    public boolean isUserLogged() {
+        return getUserLogged() == Constants.USER_IS_LOGGED;
+    }
+
+    public String getEmailUserLogged(){
+        return (getSecretFromKeyInKeyStore(Constants.USER_LOGGED) == null ? "No user logged" : getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
+    }
+
 }

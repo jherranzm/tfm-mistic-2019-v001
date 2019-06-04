@@ -1,15 +1,18 @@
 package edu.uoc.mistic.tfm.jherranzm.ui.activities;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.json.JSONObject;
@@ -34,6 +37,10 @@ public class LogInActivity
     // Context
     private static WeakReference<Context> sContextReference;
 
+    private ConstraintLayout constraintLayout;
+    private ProgressBar progressBar;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -49,11 +56,20 @@ public class LogInActivity
     }
 
     private void initView() {
+
+        constraintLayout = findViewById(R.id.loginScreenLayout);
+        progressBar = findViewById(R.id.progressBarLogin);
+
+        progressBar.setVisibility(View.INVISIBLE);
+        constraintLayout.setVisibility(View.VISIBLE);
+
+
         final EditText username = findViewById(R.id.editTextUserName);
         final EditText password = findViewById(R.id.editTextPassword);
 
         Button login = findViewById(R.id.buttonLogin);
         Button cancel = findViewById(R.id.buttonCancel);
+
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,11 +78,20 @@ public class LogInActivity
                 boolean formValid = false;
 
                 if(username.getText().toString().equals("")){
+                    alertShow(getString(R.string.username_not_null));
                     Toast.makeText(sContextReference.get(),
-                            "Username must not be null or void",Toast.LENGTH_LONG).show();
+                            getString(R.string.username_not_null),Toast.LENGTH_LONG).show();
+
+                }else if( !android.util.Patterns.EMAIL_ADDRESS.matcher(username.getText().toString()).matches() ) {
+                    alertShow(getString(R.string.username_must_be_a_valid_email));
+                    Toast.makeText(sContextReference.get(),
+                            getString(R.string.username_must_be_a_valid_email), Toast.LENGTH_LONG).show();
+
                 }else if(password.getText().toString().equals("")) {
+                    alertShow(getString(R.string.password_must_not_be_null_or_void));
                     Toast.makeText(sContextReference.get(),
-                            "Password must not be null or void", Toast.LENGTH_LONG).show();
+                            getString(R.string.password_must_not_be_null_or_void), Toast.LENGTH_LONG).show();
+
                 }else{
                     formValid = true;
                 }
@@ -74,10 +99,11 @@ public class LogInActivity
                 if(formValid){
                     Map<String, String> params = new HashMap<>();
                     params.put("op", "login");
-                    //params.put("username", username.getText().toString());
-                    //params.put("pass", password.getText().toString());
 
                     try {
+                        constraintLayout.setVisibility(View.GONE);
+                        progressBar.setVisibility(View.VISIBLE);
+
                         PostLoginTask getData = new PostLoginTask(params);
 
                         String res = getData.execute(Constants.URL_LOGIN,
@@ -100,11 +126,13 @@ public class LogInActivity
                             // Save Received Certificate in KeyStore
                             // Save PrivateKey in KeyStore
 
+
                             tfmSecurityManager.setCertificatePrivateKeyAndSymmetricKeysForUserLogged(
                                     username.getText().toString(),
                                     password.getText().toString(),
                                     username.getText().toString()
                             );
+
                         }else{
                             errorDialog(
                                     "User NOT logged in system!",
@@ -112,6 +140,8 @@ public class LogInActivity
                                     "OK");
                         }
 
+                        progressBar.setVisibility(View.GONE);
+                        constraintLayout.setVisibility(View.VISIBLE);
 
                     } catch (Exception e) {
                         Toast.makeText(sContextReference.get(),
@@ -181,4 +211,22 @@ public class LogInActivity
 
         builderSingle.show();
     }
+
+    private  void alertShow(
+            String message ) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Log.i(TAG, "alertShow : You clicked on OK!");
+                    }
+                })
+                .setTitle("Alert!")
+                .setMessage(message)
+                .setIcon(R.drawable.ic_error);
+
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
 }

@@ -88,9 +88,6 @@ public class CsrHelper {
      *
      * @param keyPair, private and public key
      * @param cn, common name
-     * @return PKCS10CertificationRequest
-     * @throws IOException
-
      */
     public static PKCS10CertificationRequest generateCSR(KeyPair keyPair, String cn) throws IOException{
         String principal = String.format(CN_PATTERN, cn);

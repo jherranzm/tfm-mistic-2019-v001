@@ -42,6 +42,14 @@
     <string name="invoiceNumber">invoiceNumber</string>
     <string name="serverOnline">Server Online</string>
     <string name="uploadInvoiceData">Upload Invoice to Server</string>
+    <string name="username_not_null">Username must not be null or void</string>
+    <string name="username_must_be_a_valid_email">Username must be a valid email</string>
+    <string name="password_must_not_be_null_or_void">Password must not be null or void</string>
+    <string name="password_must_be_at_least_12_chars">Password must be at least 12 chars long</string>
+    <string name="password_conditions">Password must contain at least one digit, one uppercase letter, one lowercase letter and one special char.</string>
+    <string name="repeat_password_must_not_be_null_or_void">Repeat password must not be null or void</string>
+    <string name="password_are_not_equal">Passwords are NOT equal</string>
+    <string name="logOut">Log Out</string>
 
 
 </resources>

@@ -23,16 +23,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/totalsByProvider"
-            style="?android:attr/buttonBarButtonStyle"/>
+            android:text="@string/totalsByProvider" />
 
         <Button
             android:id="@+id/button2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/getAllByProviderAndYear"
-            style="?android:attr/buttonBarButtonStyle" />
+            android:text="@string/getAllByProviderAndYear" />
 
     </LinearLayout>
 

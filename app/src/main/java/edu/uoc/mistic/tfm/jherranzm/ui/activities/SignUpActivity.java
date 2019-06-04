@@ -62,27 +62,37 @@ public class SignUpActivity extends AppCompatActivity {
                 boolean formValid = false;
 
                 if(username.getText().toString().equals("")){
+                    alertShow(getString(R.string.username_not_null));
                     Toast.makeText(sContextReference.get(),
                             "Username must not be null or void",Toast.LENGTH_LONG).show();
                 }else if( !android.util.Patterns.EMAIL_ADDRESS.matcher(username.getText().toString()).matches() ) {
+
+                    alertShow(getString(R.string.username_must_be_a_valid_email));
                     Toast.makeText(sContextReference.get(),
                             "Username must be a valid email", Toast.LENGTH_LONG).show();
 
                 }else if(password.getText().toString().equals("")) {
+                    alertShow(getString(R.string.password_must_not_be_null_or_void));
                     Toast.makeText(sContextReference.get(),
                             "Password must not be null or void", Toast.LENGTH_LONG).show();
+
                 }else if(password.getText().toString().length() < 12) {
+                    alertShow(getString(R.string.password_must_be_at_least_12_chars));
                     Toast.makeText(sContextReference.get(),
                             "Password must be at least 12 chars long", Toast.LENGTH_LONG).show();
 
                 }else if( !pattern.matcher(password.getText().toString()).matches() ) {
+                    alertShow(getString(R.string.password_conditions));
                     Toast.makeText(sContextReference.get(),
                             "Password must contain at least one digit, one uppercase letter, one lowercase letter and one special char.", Toast.LENGTH_LONG).show();
 
                 }else if(passwordAgain.getText().toString().equals("")) {
+                    alertShow(getString(R.string.repeat_password_must_not_be_null_or_void));
                     Toast.makeText(sContextReference.get(),
                             "Repeat password must not be null or void", Toast.LENGTH_LONG).show();
+
                 }else if(!passwordAgain.getText().toString().equals(password.getText().toString())) {
+                    alertShow(getString(R.string.password_are_not_equal));
                     Toast.makeText(sContextReference.get(),
                             "Passwords are NOT equal", Toast.LENGTH_LONG).show();
                 }else{
@@ -204,7 +214,7 @@ public class SignUpActivity extends AppCompatActivity {
                 })
                 .setTitle("Alert!")
                 .setMessage(message)
-                .setIcon(R.drawable.ic_launcher_background);
+                .setIcon(R.drawable.ic_error);
 
         AlertDialog alert = builder.create();
         alert.show();

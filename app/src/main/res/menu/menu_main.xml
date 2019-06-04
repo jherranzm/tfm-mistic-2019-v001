@@ -1,55 +1,62 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.example.apptestvalidationandroid44.edu.uoc.mistic.tfm.jherranzm.MainActivity">
+    tools:context="edu.uoc.mistic.tfm.jherranzm.MainActivity">
 
-    <item
-        android:id="@+id/action_sign_up"
-        android:orderInCategory="100"
-        android:title="@string/singUp"
+    <group android:id="@+id/grp1">
+        <item
+            android:id="@+id/action_sign_up"
+            android:orderInCategory="100"
+            android:title="@string/singUp"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_log_in"
+            android:orderInCategory="100"
+            android:title="@string/logIn"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/action_log_out"
+            android:orderInCategory="100"
+            android:title="@string/logOut"
+            app:showAsAction="never" />
+    </group>
+
+    <group android:id="@+id/grp2">
+        <item
+            android:id="@+id/action_uploaded_invoices"
+            android:orderInCategory="100"
+            android:title="@string/showUploadedInvoices"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_received_invoices"
+            android:orderInCategory="100"
+            android:title="@string/showLocalInvoices"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_local_invoices"
+            android:orderInCategory="100"
+            android:title="@string/showInvoices"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_totals_by_provider"
+            android:orderInCategory="100"
+            android:title="@string/getAllByProvider"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_totals_by_provider_and_year"
+            android:orderInCategory="100"
+            android:title="@string/getAllByProviderAndYear"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_delete_all_local_invoices"
+            android:orderInCategory="100"
+            android:title="@string/deleteAllInvoices"
         app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_log_in"
-        android:orderInCategory="100"
-        android:title="@string/logIn"
-        app:showAsAction="never" />
-
-
-
-    <item
-        android:id="@+id/action_uploaded_invoices"
-        android:orderInCategory="100"
-        android:title="@string/showUploadedInvoices"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_received_invoices"
-        android:orderInCategory="100"
-        android:title="@string/showLocalInvoices"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_local_invoices"
-        android:orderInCategory="100"
-        android:title="@string/showInvoices"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_totals_by_provider"
-        android:orderInCategory="100"
-        android:title="@string/getAllByProvider"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_totals_by_provider_and_year"
-        android:orderInCategory="100"
-        android:title="@string/getAllByProviderAndYear"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_delete_all_local_invoices"
-        android:orderInCategory="100"
-        android:title="@string/deleteAllInvoices"
-        app:showAsAction="never" />
+    </group>
 </menu>

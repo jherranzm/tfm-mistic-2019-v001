@@ -5,7 +5,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -78,25 +77,4 @@ public class UtilDocument {
         }
     }
 
-    public static byte[] documentToByte(Document document)
-    {
-//        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//        org.apache.xml.security.utils.XMLUtils.outputDOM(document, baos, true);
-//        return baos.toByteArray();
-
-        byte [] ret = {};
-        try {
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            DOMSource source = new DOMSource(document);
-            ByteArrayOutputStream bos=new ByteArrayOutputStream();
-            StreamResult result=new StreamResult(bos);
-            transformer.transform(source, result);
-            return bos.toByteArray();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return ret;
-    }
 }

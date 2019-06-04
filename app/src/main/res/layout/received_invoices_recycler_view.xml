@@ -10,7 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:text="@string/numInvoiceFilesInSystem"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:textAlignment="center"/>
 
     <ProgressBar
         android:id="@+id/progressBar"

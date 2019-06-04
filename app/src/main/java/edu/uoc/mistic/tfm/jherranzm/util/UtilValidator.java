@@ -24,37 +24,6 @@ public class UtilValidator {
 
     private static final String TAG = UtilValidator.class.getSimpleName();
 
-    /**
-     *
-     * @param certificate
-     * @param doc
-     * @return
-     * @throws Exception
-     */
-    public static boolean isValid(X509Certificate certificate, Document doc) throws Exception {
-        NodeList nl = doc.getElementsByTagNameNS(Constants.SignatureSpecNS, "Signature");
-        if (nl.getLength() == 0) {
-            throw new Exception("No XML Digital Signature Found, document is discarded");
-        }
-
-        Element sigElement = (Element) nl.item(0);
-        XMLSignature signature = new XMLSignature(sigElement, "");
-
-
-        Log.i(TAG, "Begin Find the Signature Element");
-        // Find the Signature Element
-        XPath xpath = getXPath();
-        fixIds(doc, xpath);
-
-        return signature.checkSignatureValue(certificate);
-    }
-
-    /**
-     *
-     * @param doc
-     * @return
-     * @throws Exception
-     */
     private static boolean isValid(Document doc) throws Exception {
         NodeList nl = doc.getElementsByTagNameNS(Constants.SignatureSpecNS, "Signature");
         if (nl.getLength() == 0) {
@@ -69,9 +38,7 @@ public class UtilValidator {
         // Find the Signature Element
         XPath xpath = getXPath();
 
-        /**
-         * http://apache-xml-project.6118.n7.nabble.com/MissingResourceFailureException-td42081.html
-         */
+        // http://apache-xml-project.6118.n7.nabble.com/MissingResourceFailureException-td42081.html
         fixIds(doc, xpath);
 
         KeyInfo ki = signature.getKeyInfo();
@@ -97,10 +64,6 @@ public class UtilValidator {
         }
     }
 
-    /**
-     *
-     * @return
-     */
     private static XPath getXPath() {
         XPathFactory xpf = XPathFactory.newInstance();
         XPath xpath = xpf.newXPath();
@@ -124,16 +87,8 @@ public class UtilValidator {
         return xpath;
     }
 
-    /**
-     *
-     * @param doc
-     * @param xpath
-     * @throws XPathExpressionException
-     */
     private static void fixIds(Document doc, XPath xpath) throws XPathExpressionException {
-        /**
-         * http://apache-xml-project.6118.n7.nabble.com/MissingResourceFailureException-td42081.html
-         */
+        // http://apache-xml-project.6118.n7.nabble.com/MissingResourceFailureException-td42081.html
         String expression2 = "//*[@Id]";
         NodeList allIds = (NodeList) xpath.evaluate(expression2, doc, XPathConstants.NODESET);
         Log.i(TAG, "allIds.getLength..." + allIds.getLength());

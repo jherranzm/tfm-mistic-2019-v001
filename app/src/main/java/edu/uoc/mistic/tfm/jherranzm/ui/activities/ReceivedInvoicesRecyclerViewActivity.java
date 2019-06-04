@@ -42,6 +42,7 @@ import edu.uoc.mistic.tfm.jherranzm.crypto.EnvelopedSignature;
 import edu.uoc.mistic.tfm.jherranzm.crypto.SymmetricEncryptor;
 import edu.uoc.mistic.tfm.jherranzm.model.FileDataObject;
 import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataService;
+import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.GetFileDataObjectByFilenameAndUserTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.GetFileDataObjectByFilenameTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.InsertFileDataObjectTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.filedataobjecttasks.UpdateFileDataObjectTask;
@@ -81,6 +82,8 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.received_invoices_recycler_view);
 
+        tfmSecurityManager = TFMSecurityManager.getInstance();
+
         sContextReference = new WeakReference<Context>(this);
 
         initView();
@@ -108,7 +111,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 new DividerItemDecoration(getApplicationContext(), LinearLayoutManager.VERTICAL);
         mRecyclerView.addItemDecoration(itemDecoration);
 
-        tfmSecurityManager = TFMSecurityManager.getInstance();
+
         spinner.setVisibility(View.GONE);
     }
 
@@ -144,13 +147,6 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
         Toast.makeText(sContextReference.get(), "Loading signed file...", Toast.LENGTH_SHORT).show();
         InputStream isSignedInvoice = new FileInputStream(file);
-
-        byte[] baInvoiceSigned = IOUtils.toByteArray(isSignedInvoice);
-//        Toast.makeText(sContextReference.get(),
-//                String.format("Info: file signed long : [%d]", baInvoiceSigned.length),
-//                Toast.LENGTH_SHORT).show();
-
-        isSignedInvoice = new FileInputStream(file);
         return UtilDocument.getDocument(isSignedInvoice);
     }
 
@@ -454,12 +450,13 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
         for (File f : list) {
             Log.i(TAG, f.getName());
-            FileDataObject obj = new FileDataObject(f.getName(), "pepe");
-            //signedInvoices.add(obj);
+            Log.i(TAG, tfmSecurityManager.getEmailUserLogged());
+            FileDataObject obj = new FileDataObject(f.getName(), tfmSecurityManager.getEmailUserLogged());
 
             try {
-                GetFileDataObjectByFilenameTask getFileDataObjectByFilenameTask = new GetFileDataObjectByFilenameTask(this);
-                FileDataObject existing = getFileDataObjectByFilenameTask.execute(f.getName()).get();
+                // Is the file already in local database
+                GetFileDataObjectByFilenameAndUserTask getFileDataObjectByFilenameTask = new GetFileDataObjectByFilenameAndUserTask(this);
+                FileDataObject existing = getFileDataObjectByFilenameTask.execute(f.getName(), tfmSecurityManager.getEmailUserLogged()).get();
 
                 if(existing == null){
                     InsertFileDataObjectTask insertFileDataObjectTask = new InsertFileDataObjectTask(this, obj);

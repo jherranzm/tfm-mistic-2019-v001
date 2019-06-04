@@ -33,5 +33,11 @@ public interface FileDataObjectDao {
 
     @Query("SELECT * FROM FileDataObject WHERE user = :theUser")
     List<FileDataObject> findByUser(String theUser);
+
+    @Query("DELETE FROM FileDataObject")
+    void deleteAll();
+
+    @Query("SELECT * FROM FileDataObject WHERE fileName = :theFilename and user = :theUser LIMIT 1")
+    FileDataObject findByFilenameAndUser(String theFilename, String theUser);
 }
 

@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.Log;
@@ -30,14 +31,12 @@ import org.spongycastle.cert.jcajce.JcaX509CertificateHolder;
 import java.lang.ref.WeakReference;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
-import java.util.List;
 
 import edu.uoc.mistic.tfm.jherranzm.R;
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
-import edu.uoc.mistic.tfm.jherranzm.model.TotalByProviderByYearVO;
+import edu.uoc.mistic.tfm.jherranzm.services.FileDataObjectService;
 import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataService;
 import edu.uoc.mistic.tfm.jherranzm.services.ServerInfoService;
-import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.GetTotalsByProviderByYearTask;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 
 
@@ -56,6 +55,11 @@ public class MainActivity
     private Handler mHandler;
 
     private CheckedTextView isServerOnLine;
+
+    // Widgets
+    Button goToSignUp;
+    Button goToLogIn;
+    Button goToShowUploadedInvoices;
 
 
 
@@ -96,13 +100,14 @@ public class MainActivity
     private void initView() {
 
         // Button invoices backed up in server
-        Button goToShowUploadedInvoices = findViewById(R.id.buttonGoToShowUploadedInvoice);
+        goToShowUploadedInvoices = findViewById(R.id.buttonGoToShowUploadedInvoice);
         Drawable iconUploadCloud = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_upload_cloud );
         if(iconUploadCloud != null){
             iconUploadCloud.setBounds(0, 0, iconUploadCloud.getMinimumWidth(),
                     iconUploadCloud.getMinimumHeight());
             goToShowUploadedInvoices.setCompoundDrawables(iconUploadCloud, null, null, null);
         }
+        goToShowUploadedInvoices.setEnabled(tfmSecurityManager.isUserLogged() && tfmSecurityManager.isServerOnLine());
 
         // Button invoice files downloaded in device (in th SDCard)
         Button goToShowLocalInvoices = findViewById(R.id.buttonShowLocalInvoices);
@@ -121,28 +126,34 @@ public class MainActivity
                     iconLocalInvoice.getMinimumHeight());
             goToLocalInvoices.setCompoundDrawables(iconLocalInvoice, null, null, null);
         }
+        goToLocalInvoices.setEnabled(tfmSecurityManager.isUserLogged());
 
         // Button sign up button
-        Button goToSignUp = findViewById(R.id.buttonGoToSignUp);
+        goToSignUp = findViewById(R.id.buttonGoToSignUp);
         Drawable iconSignUp = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_sign_up);
         if (iconSignUp != null) {
             iconSignUp.setBounds(0, 0, iconSignUp.getMinimumWidth(),
                     iconSignUp.getMinimumHeight());
             goToSignUp.setCompoundDrawables(iconSignUp, null, null, null);
         }
+        goToSignUp.setEnabled(tfmSecurityManager.isServerOnLine());
+        goToSignUp.setVisibility(View.VISIBLE);
+        if(tfmSecurityManager.isUserLogged()){
+            goToSignUp.setVisibility(View.GONE);
+        }
 
-        Button goToLogIn = findViewById(R.id.buttonGoToLogin);
+        goToLogIn = findViewById(R.id.buttonGoToLogin);
         Drawable iconLogIn = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_log_in);
         if (iconLogIn != null) {
             iconLogIn.setBounds(0, 0, iconLogIn.getMinimumWidth(),
                     iconLogIn.getMinimumHeight());
             goToLogIn.setCompoundDrawables(iconLogIn, null, null, null);
         }
-
-
-        Button goToShowInfoByProviderAndYear = findViewById(R.id.buttonShowInfoByProviderByYear);
-
-        Button goToDeleteAllInvoices = findViewById(R.id.buttonDeleteAllInvoices);
+        goToLogIn.setEnabled(tfmSecurityManager.isServerOnLine());
+        goToLogIn.setVisibility(View.VISIBLE);
+        if(tfmSecurityManager.isUserLogged()){
+            goToLogIn.setVisibility(View.GONE);
+        }
 
         // Is serverOnline
         isServerOnLine = findViewById(R.id.checkedServerOnline);
@@ -153,9 +164,9 @@ public class MainActivity
         // Show who is logged
         TextView textViewUserLogged = findViewById(R.id.textViewUserLogged);
 
-        String commonName = "Default User";
+        String commonName = "No user logged";
 
-        if (tfmSecurityManager.getCertificate() != null) {
+        if (tfmSecurityManager.isUserLogged() && tfmSecurityManager.getCertificate() != null) {
             try {
                 X500Name x500name = new JcaX509CertificateHolder(tfmSecurityManager.getCertificate()).getSubject();
                 RDN cn = x500name.getRDNs(BCStyle.CN)[0];
@@ -190,31 +201,6 @@ public class MainActivity
             }
         });
 
-        goToDeleteAllInvoices.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                InvoiceDataService.deleteAllInvoiceData(MainActivity.this);
-            }
-        });
-
-        goToShowInfoByProviderAndYear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-
-                    GetTotalsByProviderByYearTask getTotalsByProviderTask = new GetTotalsByProviderByYearTask(MainActivity.this);
-                    List<TotalByProviderByYearVO> totals = getTotalsByProviderTask.execute().get();
-
-                    for(TotalByProviderByYearVO totalByProviderByYearVO : totals){
-                        Log.i(TAG, totalByProviderByYearVO.toString());
-                    }
-                } catch (Exception e) {
-                    Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
-                    e.printStackTrace();
-                }
-            }
-        });
-
         goToSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -238,6 +224,7 @@ public class MainActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuCompat.setGroupDividerEnabled(menu, true);
         return true;
     }
 
@@ -271,6 +258,25 @@ public class MainActivity
                 intent = new Intent(sContextReference.get(), TotalsByProviderRecyclerViewActivity.class);
                 startActivity(intent);
                 break;
+            case R.id.action_delete_all_local_invoices:
+                Toast.makeText(sContextReference.get(), item.getTitle(), Toast.LENGTH_SHORT).show();
+                InvoiceDataService.deleteAllInvoiceData(MainActivity.this);
+                FileDataObjectService.deleteAllFileDataObject(MainActivity.this);
+                break;
+            case R.id.action_log_out:
+                Toast.makeText(sContextReference.get(), item.getTitle(), Toast.LENGTH_SHORT).show();
+                tfmSecurityManager.logOut();
+                recreate();
+                break;
+            case R.id.action_log_in:
+                Toast.makeText(sContextReference.get(), item.getTitle(), Toast.LENGTH_SHORT).show();
+                intent = new Intent(sContextReference.get(), LogInActivity.class);
+                startActivity(intent);
+            case R.id.action_sign_up:
+                Toast.makeText(sContextReference.get(), item.getTitle(), Toast.LENGTH_SHORT).show();
+                intent = new Intent(sContextReference.get(), SignUpActivity.class);
+                startActivity(intent);
+                break;
         }
 
 
@@ -292,13 +298,18 @@ public class MainActivity
                 isServerOnLine.setText((tfmSecurityManager.isServerOnLine() ? "Server Online" : "Server offline"));
                 isServerOnLine.setBackgroundColor((tfmSecurityManager.isServerOnLine() ? Color.GREEN : Color.RED));
 
+                goToSignUp.setEnabled(tfmSecurityManager.isServerOnLine());
+                goToLogIn.setEnabled(tfmSecurityManager.isServerOnLine());
+                goToShowUploadedInvoices.setEnabled(tfmSecurityManager.isUserLogged() && tfmSecurityManager.isServerOnLine());
+                recreate();
+
             }catch (Exception e){
                 Log.e(TAG, "Error trying to locate server");
             } finally {
                 // 100% guarantee that this always happens, even if
                 // your update method throws an exception
                 // 5 seconds by default, can be changed later
-                int mInterval = 5000;
+                int mInterval = 10000;
                 mHandler.postDelayed(mStatusChecker, mInterval);
             }
         }
