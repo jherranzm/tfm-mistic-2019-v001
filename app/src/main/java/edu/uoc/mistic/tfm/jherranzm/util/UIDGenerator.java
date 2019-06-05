@@ -1,7 +1,5 @@
 package edu.uoc.mistic.tfm.jherranzm.util;
 
-import android.util.Base64;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -25,8 +23,10 @@ public class UIDGenerator {
                 sb.append(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getIssueDate());
 
 
-                byte[] key = md.digest(sb.toString().getBytes(StandardCharsets.UTF_8));
-                return Base64.encodeToString(key, Base64.NO_WRAP);
+                md.reset();
+                //byte[] key = md.digest(sb.toString().getBytes(StandardCharsets.UTF_8));
+                //return Base64.encodeToString(key, Base64.NO_WRAP);
+                return bin2hex(md.digest(sb.toString().getBytes(StandardCharsets.UTF_8)));
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             } catch (Exception e) {
@@ -34,5 +34,12 @@ public class UIDGenerator {
             }
 
             return null;
+    }
+
+    private static String bin2hex(byte[] data) {
+        StringBuilder hex = new StringBuilder(data.length * 2);
+        for (byte b : data)
+            hex.append(String.format("%02x", b & 0xFF));
+        return hex.toString();
     }
 }

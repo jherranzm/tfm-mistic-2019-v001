@@ -31,6 +31,7 @@ public class InvoiceService {
 
             List<InvoiceData> _localInvoices = InvoiceDataService.getInvoiceDataFromDatabase(activity, user);
             for(InvoiceData invoiceData : _localInvoices){
+                Log.i(TAG, String.format("localInvoice  : %s", invoiceData.getBatchIdentifier()));
                 localInvoices.put(invoiceData.getBatchIdentifier(), invoiceData);
             }
 
@@ -44,6 +45,7 @@ public class InvoiceService {
                     Log.i(TAG, "localInvoices : NOT found ID ->" + remoteInvoice.getUid());
                     remoteInvoice.setInLocalDatabase(false);
                 }
+                Log.i(TAG, String.format("remoteInvoice  : %s", remoteInvoice.toString()));
                 invoices.add(remoteInvoice);
             }
 

@@ -46,6 +46,7 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        Log.i(TAG, "initView...");
         RecyclerView mRecyclerView;
         RecyclerView.LayoutManager mLayoutManager;
 
@@ -70,7 +71,27 @@ public class InvoiceDataRecyclerViewActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        invoices = InvoiceDataService.getInvoiceDataFromDatabase(this, tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
+
+        Button sync = findViewById(R.id.buttonSync);
+        Drawable iconSync = AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_refresh );
+        if (iconSync != null) {
+            iconSync.setBounds(0, 0, iconSync.getMinimumWidth(),
+                    iconSync.getMinimumHeight());
+            sync.setCompoundDrawables(iconSync, null, null, null);
+        }
+
+        sync.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // TODO : sync local database and remote database
+                InvoiceDataService invoiceDataService = InvoiceDataService.getInstance(InvoiceDataRecyclerViewActivity.this);
+                invoiceDataService.syncLocalAndRemote(tfmSecurityManager.getEmailUserLogged());
+                Log.i(TAG, "recreate...");
+                recreate();
+            }
+        });
+
+        invoices = InvoiceDataService.getInvoiceDataFromDatabase(this, tfmSecurityManager.getEmailUserLogged());
         mAdapter = new InvoiceDataRecyclerViewAdapter(this, invoices);
         TextView textViewNumberItems = findViewById(R.id.textViewNumInvoiceFilesInSystem);
         textViewNumberItems.setText(String.format("Number of Invoices Processed in System %d", invoices.size()));

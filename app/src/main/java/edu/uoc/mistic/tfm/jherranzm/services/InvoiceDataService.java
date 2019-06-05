@@ -3,6 +3,9 @@ package edu.uoc.mistic.tfm.jherranzm.services;
 import android.app.Activity;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +22,8 @@ import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.GetAllInvoiceDataByUs
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.GetByBatchIdentifierInvoiceDataTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.GetTotalsByProviderTask;
 import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.InsertInvoiceDataTask;
+import edu.uoc.mistic.tfm.jherranzm.tasks.invoicedatatasks.UpdateInvoiceDataTask;
+import edu.uoc.mistic.tfm.jherranzm.tasks.invoicetasks.GetInvoiceByIdTask;
 import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
 import es.facturae.facturae.v3.facturae.Facturae;
 
@@ -104,6 +109,19 @@ public class InvoiceDataService {
 
     }
 
+    public static void updateInvoiceData(Activity activity, InvoiceData invoiceData) {
+
+        try {
+
+            UpdateInvoiceDataTask updateInvoiceDataTask = new UpdateInvoiceDataTask(activity, invoiceData);
+            updateInvoiceDataTask.execute().get();
+
+        } catch (Exception e) {
+            Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+    }
+
     public static void deleteInvoiceData(Activity activity, InvoiceData invoiceData) {
 
         try {
@@ -144,7 +162,7 @@ public class InvoiceDataService {
         GetByBatchIdentifierInvoiceDataTask getByBatchIdentifierInvoiceDataTask = new GetByBatchIdentifierInvoiceDataTask(mActivityRef.get());
         List<InvoiceData> alreadySaved = getByBatchIdentifierInvoiceDataTask.execute(
                 invoiceData.getBatchIdentifier(),
-                tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED)
+                tfmSecurityManager.getEmailUserLogged()
         ).get();
 
         if(alreadySaved.size()>0){
@@ -182,6 +200,47 @@ public class InvoiceDataService {
         invoiceData.setStartDate(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getInvoicingPeriod().getStartDate());
         invoiceData.setEndDate(facturae.getInvoices().getInvoiceList().get(0).getInvoiceIssueData().getInvoicingPeriod().getStartDate());
         return invoiceData;
+    }
+
+    public void syncLocalAndRemote(String user){
+        localInvoices.clear();
+
+        // localInvoices is already populate
+        getInvoiceDataFromDatabase(mActivityRef.get(), user);
+
+        for(String uid : localInvoices.keySet()){
+            InvoiceData invoiceData = localInvoices.get(uid);
+            invoiceData.setBackedUp(false);
+            try {
+                String url = Constants.URL_FACTURAS + "/" + uid;
+                GetInvoiceByIdTask getInvoiceByIdTask = new GetInvoiceByIdTask();
+
+                String res = getInvoiceByIdTask.execute(url).get();
+                Log.i(TAG, String.format("Received from server : %s", res));
+                JSONObject jsonInvoice = new JSONObject(res);
+
+                if(jsonInvoice.has("uid")){
+                    Log.i(TAG, String.format("Received from server [uid]: %s", jsonInvoice.get("uid")));
+                    if(jsonInvoice.get("uid").equals(uid)){
+                        invoiceData.setBackedUp(true);
+                    }else{
+                        updateInvoiceData(mActivityRef.get(), invoiceData);
+                    }
+
+                }
+                updateInvoiceData(mActivityRef.get(), invoiceData);
+
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            //localInvoices.put(uid, invoiceData);
+        }
+        getInvoiceDataFromDatabase(mActivityRef.get(), user);
+
     }
 
 

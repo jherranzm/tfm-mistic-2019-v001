@@ -277,6 +277,12 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
                 tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TAX_IDENTIFICATION_NUMBER)
         );
 
+        // corporateName
+        String corporateNameEncrypted = simEnc.encrypt(
+                facturae.getParties().getSellerParty().getLegalEntity().getCorporateName(),
+                tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.CORPORATE_NAME)
+        );
+
         // invoiceNumber
         String invoiceNumberEncrypted = simEnc.encrypt(
                 facturae.getInvoices().getInvoiceList().get(0).getInvoiceHeader().getInvoiceNumber(),
@@ -323,6 +329,7 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
         params.put("uidfactura", (UIDInvoiceHash == null ? "---" : UIDInvoiceHash));
         params.put("tax_identification_number", taxIdentificationNumberEncrypted);
         params.put("invoice_number", invoiceNumberEncrypted);
+        params.put("corporate_name", corporateNameEncrypted);
 
         params.put("total", totalEncrypted);
         params.put("total_tax_outputs", totalTaxOutputsEncrypted);

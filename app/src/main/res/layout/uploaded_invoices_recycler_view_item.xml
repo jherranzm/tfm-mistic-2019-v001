@@ -22,16 +22,6 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/textViewTaxItentificationNumber"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="4dp"
-                    android:paddingLeft="@dimen/activity_horizontal_margin"
-                    android:paddingTop="5dp"
-                    android:text="Large Text"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
-
-                <TextView
                     android:id="@+id/textViewInvoiceNumber"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -42,22 +32,28 @@
                     android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
-                    android:id="@+id/textViewIssueDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="4dp"
-                    android:paddingLeft="@dimen/activity_horizontal_margin"
-                    android:paddingBottom="5dp"
-                    android:text="TextView"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                <CheckedTextView
-                    android:id="@+id/checkedTextView"
+                    android:id="@+id/textViewTaxItentificationNumber"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
-                    android:text="In Local Database"
-                    android:textAlignment="center" />
+                    android:paddingLeft="@dimen/activity_horizontal_margin"
+                    android:paddingTop="5dp"
+                    android:text="Large Text"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <TextView
+                    android:id="@+id/textViewCorporateName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="CorporateName"
+                    android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+                <Button
+                    android:id="@+id/buttonLocalDatabase"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="In Local Database" />
 
             </LinearLayout>
 
@@ -86,8 +82,20 @@
                     android:paddingLeft="@dimen/activity_horizontal_margin"
                     android:paddingBottom="5dp"
                     android:text="TextView"
+                    android:textAlignment="textEnd"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/textViewIssueDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:paddingLeft="@dimen/activity_horizontal_margin"
+                    android:paddingBottom="5dp"
+                    android:text="TextView"
+                    android:textAlignment="textEnd"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
         </LinearLayout>

@@ -107,7 +107,10 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
                         Log.i(TAG, " Clicked on Item " + invoices.get(position).toString());
 
                         downloadInvoiceFromServerDialog("Download invoice from server?",
-                                String.format("Do you want to download invoice %d from server and process it?", position),
+                                String.format("Do you want to download invoice %s of provider %s from server and process it?",
+                                        invoices.get(position).getInvoiceNumber(),
+                                        invoices.get(position).getCorporateName()
+                                ),
                         "cancel",
                         "ok",
                         position);
@@ -117,7 +120,9 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
     private void downloadInvoice(int position) {
         try{
-            String url = Constants.URL_FACTURAS + "/" + (position+1);
+
+            //String url = Constants.URL_FACTURAS + "/" + (position+1);
+            String url = Constants.URL_FACTURAS + "/" + invoices.get(position).getUid();
             GetInvoiceByIdTask getInvoiceByIdTask = new GetInvoiceByIdTask();
 
             String res = getInvoiceByIdTask.execute(url).get();

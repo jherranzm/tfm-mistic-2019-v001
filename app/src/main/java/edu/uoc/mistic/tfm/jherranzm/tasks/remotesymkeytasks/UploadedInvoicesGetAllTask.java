@@ -122,6 +122,7 @@ public class UploadedInvoicesGetAllTask extends AsyncTask<String, Void, List<Inv
                 // Get the current factura (json object) data
                 String uid = factura.getString("uid");
                 String taxIdentificationNumber = factura.getString("taxIdentificationNumber");
+                String corporateName = factura.getString("corporateName");
                 String invoiceNumber = factura.getString("invoiceNumber");
                 String issueDate = factura.getString("issueDate");
 
@@ -148,6 +149,11 @@ public class UploadedInvoicesGetAllTask extends AsyncTask<String, Void, List<Inv
                         taxIdentificationNumber,
                         tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.TAX_IDENTIFICATION_NUMBER)
                 );
+
+                String corporateNameDecrypted = simDec.decrypt(
+                        corporateName,
+                        tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.CORPORATE_NAME)
+                );
                 String invoiceNumberDecrypted = simDec.decrypt(
                         invoiceNumber,
                         tfmSecurityManager.getSecretFromKeyInKeyStore(Constants.INVOICE_NUMBER)
@@ -168,7 +174,7 @@ public class UploadedInvoicesGetAllTask extends AsyncTask<String, Void, List<Inv
 
                 Invoice invoice = new Invoice(uid
                         , taxIdentificationNumberDecrypted
-                        , ""
+                        , corporateNameDecrypted
                         , invoiceNumberDecrypted
                         , Double.parseDouble(invoiceTotalDecrypted)// invoiceTotal
                         , Double.parseDouble(totalTaxOutputsDecrypted)// totalTaxOutputs

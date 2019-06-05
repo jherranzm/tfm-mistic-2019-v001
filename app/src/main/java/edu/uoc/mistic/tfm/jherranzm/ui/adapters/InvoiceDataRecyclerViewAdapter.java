@@ -159,6 +159,7 @@ public class InvoiceDataRecyclerViewAdapter
 
                                                 mDataset.remove(position);
                                                 notifyItemRemoved(position);
+                                                mActivityRef.get().recreate();
                                                 // TODO: refresh info of number of invoices in system.
                                             }
                                         });

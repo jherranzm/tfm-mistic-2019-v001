@@ -50,6 +50,7 @@
     <string name="repeat_password_must_not_be_null_or_void">Repeat password must not be null or void</string>
     <string name="password_are_not_equal">Passwords are NOT equal</string>
     <string name="logOut">Log Out</string>
+    <string name="synchronize">Synchronize</string>
 
 
 </resources>

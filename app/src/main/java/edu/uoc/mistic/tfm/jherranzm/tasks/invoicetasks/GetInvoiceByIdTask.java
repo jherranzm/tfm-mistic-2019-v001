@@ -47,9 +47,13 @@ public class GetInvoiceByIdTask extends AsyncTask<String, Void, String> {
                 server_response = readStream(urlConnection.getInputStream());
                 Log.i(TAG, String.format("Respuesta servidor: %s", server_response));
                 return server_response;
+            }else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND){
+                server_response = readStream(urlConnection.getInputStream());
+                Log.i(TAG, String.format("Respuesta servidor: %s", server_response));
+                return server_response;
             }
 
-            return null;
+            //return null;
 
         }catch (Exception e) {
             Log.e(TAG,e.getClass().getCanonicalName() + ": " + e.getLocalizedMessage());
