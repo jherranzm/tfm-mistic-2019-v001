@@ -10,7 +10,11 @@
         android:id="@+id/textViewNumUploadedInvoices"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:text="@string/numUploadedInvoices" />
+        android:layout_margin="5dp"
+        android:padding="5dp"
+        android:text="@string/numUploadedInvoices"
+        android:textAlignment="center"
+        android:textSize="18sp" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/uploaded_invoices_recycler_view"

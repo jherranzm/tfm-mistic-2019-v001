@@ -36,17 +36,18 @@ public class InvoiceService {
 
             for (Invoice remoteInvoice : remoteInvoices){
 
-                Log.i(TAG, "remoteInvoice  : " + remoteInvoice.toString());
+                Log.i(TAG, String.format("remoteInvoice  : %s", remoteInvoice.toString()));
 
                 if(localInvoices.containsKey(remoteInvoice.getUid())){
                     remoteInvoice.setInLocalDatabase(true);
                 }else{
                     Log.i(TAG, "localInvoices : NOT found ID ->" + remoteInvoice.getUid());
+                    remoteInvoice.setInLocalDatabase(false);
                 }
                 invoices.add(remoteInvoice);
             }
 
-            Log.i(TAG, "uploadedInvoicesGetAllTask : " + invoices.size());
+            Log.i(TAG, String.format("uploadedInvoicesGetAllTask : %d", invoices.size()));
 
         } catch (ExecutionException e) {
             e.printStackTrace();

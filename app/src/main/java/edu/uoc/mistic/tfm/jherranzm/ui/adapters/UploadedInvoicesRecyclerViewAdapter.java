@@ -1,5 +1,6 @@
 package edu.uoc.mistic.tfm.jherranzm.ui.adapters;
 
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -85,6 +86,7 @@ public class UploadedInvoicesRecyclerViewAdapter extends RecyclerView
                 Locale.forLanguageTag("es-ES"),
                 "Date: %s", DATE_FORMAT.format(mDataset.get(position).getIssueDate())));
         holder.checkedTextView.setText((mDataset.get(position).isInLocalDatabase()) ? "In Local Database" : "NOT in Local Database" );
+        holder.checkedTextView.setBackgroundColor((mDataset.get(position).isInLocalDatabase()) ? Color.GREEN : Color.parseColor("#F7941E") );
     }
 
     public void addItem(Invoice dataObj, int index) {
