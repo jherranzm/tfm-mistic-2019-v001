@@ -7,6 +7,7 @@ import android.arch.persistence.room.TypeConverters;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.StringJoiner;
 
 @Entity
 public class InvoiceData implements Serializable {
@@ -57,6 +58,8 @@ public class InvoiceData implements Serializable {
     @ColumnInfo(name = "isBackedUp")
     private boolean isBackedUp;
 
+    @ColumnInfo(name = "signedInvoiceFile")
+    private String signedInvoiceFile;
 
     public int getId() {
         return id;
@@ -170,24 +173,32 @@ public class InvoiceData implements Serializable {
         isBackedUp = backedUp;
     }
 
+    public String getSignedInvoiceFile() {
+        return signedInvoiceFile;
+    }
+
+    public void setSignedInvoiceFile(String signedInvoiceFile) {
+        this.signedInvoiceFile = signedInvoiceFile;
+    }
+
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("InvoiceData{");
-        sb.append("id=").append(id);
-        sb.append(", user='").append(user).append('\'');
-        sb.append(", batchIdentifier='").append(batchIdentifier).append('\'');
-        sb.append(", totalAmount=").append(totalAmount);
-        sb.append(", taxIdentificationNumber='").append(taxIdentificationNumber).append('\'');
-        sb.append(", corporateName='").append(corporateName).append('\'');
-        sb.append(", invoiceNumber='").append(invoiceNumber).append('\'');
-        sb.append(", issueDate=").append(issueDate);
-        sb.append(", startDate=").append(startDate);
-        sb.append(", endDate=").append(endDate);
-        sb.append(", taxBase=").append(taxBase);
-        sb.append(", taxAmount=").append(taxAmount);
-        sb.append(", totalGrossAmount=").append(totalGrossAmount);
-        sb.append(", isBackedUp=").append(isBackedUp);
-        sb.append('}');
-        return sb.toString();
+        return new StringJoiner(", ", InvoiceData.class.getSimpleName() + "[", "]")
+                .add("id=" + id)
+                .add("user='" + user + "'")
+                .add("batchIdentifier='" + batchIdentifier + "'")
+                .add("totalAmount=" + totalAmount)
+                .add("taxIdentificationNumber='" + taxIdentificationNumber + "'")
+                .add("corporateName='" + corporateName + "'")
+                .add("invoiceNumber='" + invoiceNumber + "'")
+                .add("issueDate=" + issueDate)
+                .add("startDate=" + startDate)
+                .add("endDate=" + endDate)
+                .add("taxBase=" + taxBase)
+                .add("taxAmount=" + taxAmount)
+                .add("totalGrossAmount=" + totalGrossAmount)
+                .add("isBackedUp=" + isBackedUp)
+                .add("signedInvoiceFile='" + signedInvoiceFile + "'")
+                .toString();
     }
 }

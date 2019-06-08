@@ -168,6 +168,14 @@ public class InvoiceDataRecyclerViewAdapter
                                 break;
 
                             case R.id.uploadInvoiceDataOption:
+
+                                // TODO : InvoiceData add field signedInvoiceFile
+
+                                //boolean invoiceBackedUp = false;
+                                //if (tfmSecurityManager.isServerOnLine()) {
+                                //    invoiceBackedUp = encryptAndUploadInvoice(position, facturae, UIDInvoiceHash);
+                                //}
+
                                 break;
                         }
                         return false;

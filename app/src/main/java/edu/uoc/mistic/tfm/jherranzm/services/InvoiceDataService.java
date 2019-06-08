@@ -109,7 +109,7 @@ public class InvoiceDataService {
 
     }
 
-    public static void updateInvoiceData(Activity activity, InvoiceData invoiceData) {
+    private static void updateInvoiceData(Activity activity, InvoiceData invoiceData) {
 
         try {
 
@@ -150,6 +150,7 @@ public class InvoiceDataService {
     public void saveInvoiceDataInLocalDatabase(
             Facturae facturae,
             String UIDFacturaHash,
+            String signedInvoiceFile,
             boolean invoiceBackedUp)
             throws
             java.util.concurrent.ExecutionException,
@@ -158,6 +159,7 @@ public class InvoiceDataService {
         InvoiceData invoiceData = getInvoiceData(facturae, UIDFacturaHash);
         invoiceData.setUser(tfmSecurityManager.getUserLoggedDataFromKeyStore(Constants.USER_LOGGED));
         invoiceData.setBackedUp(invoiceBackedUp);
+        invoiceData.setSignedInvoiceFile(signedInvoiceFile);
 
         GetByBatchIdentifierInvoiceDataTask getByBatchIdentifierInvoiceDataTask = new GetByBatchIdentifierInvoiceDataTask(mActivityRef.get());
         List<InvoiceData> alreadySaved = getByBatchIdentifierInvoiceDataTask.execute(
@@ -210,32 +212,35 @@ public class InvoiceDataService {
 
         for(String uid : localInvoices.keySet()){
             InvoiceData invoiceData = localInvoices.get(uid);
-            invoiceData.setBackedUp(false);
-            try {
-                String url = Constants.URL_FACTURAS + "/" + uid;
-                GetInvoiceByIdTask getInvoiceByIdTask = new GetInvoiceByIdTask();
 
-                String res = getInvoiceByIdTask.execute(url).get();
-                Log.i(TAG, String.format("Received from server : %s", res));
-                JSONObject jsonInvoice = new JSONObject(res);
+            if (invoiceData != null) {
+                try {
+                    invoiceData.setBackedUp(false);
+                    String url = Constants.URL_FACTURAS + "/" + uid;
+                    GetInvoiceByIdTask getInvoiceByIdTask = new GetInvoiceByIdTask();
 
-                if(jsonInvoice.has("uid")){
-                    Log.i(TAG, String.format("Received from server [uid]: %s", jsonInvoice.get("uid")));
-                    if(jsonInvoice.get("uid").equals(uid)){
-                        invoiceData.setBackedUp(true);
-                    }else{
-                        updateInvoiceData(mActivityRef.get(), invoiceData);
+                    String res = getInvoiceByIdTask.execute(url).get();
+                    Log.i(TAG, String.format("Received from server : %s", res));
+                    JSONObject jsonInvoice = new JSONObject(res);
+
+                    if(jsonInvoice.has("uid")){
+                        Log.i(TAG, String.format("Received from server [uid]: %s", jsonInvoice.get("uid")));
+                        if(jsonInvoice.get("uid").equals(uid)){
+                            invoiceData.setBackedUp(true);
+                        }else{
+                            updateInvoiceData(mActivityRef.get(), invoiceData);
+                        }
+
                     }
+                    updateInvoiceData(mActivityRef.get(), invoiceData);
 
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-                updateInvoiceData(mActivityRef.get(), invoiceData);
-
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
             //localInvoices.put(uid, invoiceData);
         }

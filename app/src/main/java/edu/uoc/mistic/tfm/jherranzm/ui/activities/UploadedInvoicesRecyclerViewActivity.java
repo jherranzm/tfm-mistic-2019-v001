@@ -165,7 +165,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
             // Show basic info of the invoice downloaded
             showInfoOfDownloadedInvoice(document);
 
-            includeDownloadInvoiceInLocalDatabaseDialog(document);
+            includeDownloadInvoiceInLocalDatabaseDialog(document, signedInvoiceDecrypted);
 
             String root_sd = Environment.getExternalStorageDirectory().toString();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmSS", Locale.getDefault());
@@ -267,7 +267,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
         builderSingle.show();
     }
 
-    private void includeDownloadInvoiceInLocalDatabaseDialog(final Document document){
+    private void includeDownloadInvoiceInLocalDatabaseDialog(final Document document, final String signedInvoiceDecrypted){
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         // TODO : Change icon
@@ -294,7 +294,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
                             Facturae facturae = UtilFacturae.getFacturaeFromFactura(UtilDocument.documentToString(document));
                             String UIDInvoiceHash = UIDGenerator.generate(facturae);
                             InvoiceDataService invoiceDataService = InvoiceDataService.getInstance(UploadedInvoicesRecyclerViewActivity.this);
-                            invoiceDataService.saveInvoiceDataInLocalDatabase(facturae, UIDInvoiceHash, true);
+                            invoiceDataService.saveInvoiceDataInLocalDatabase(facturae, UIDInvoiceHash, signedInvoiceDecrypted, true);
                         } catch (ExecutionException e) {
                             e.printStackTrace();
                         } catch (InterruptedException e) {

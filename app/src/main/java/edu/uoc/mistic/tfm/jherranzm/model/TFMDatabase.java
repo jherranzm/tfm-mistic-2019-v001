@@ -8,7 +8,7 @@ import edu.uoc.mistic.tfm.jherranzm.dao.FileDataObjectDao;
 import edu.uoc.mistic.tfm.jherranzm.dao.InvoiceDataDao;
 import edu.uoc.mistic.tfm.jherranzm.dao.LocalSymKeyDao;
 
-@Database(entities = {LocalSymKey.class, InvoiceData.class, FileDataObject.class}, version = 7, exportSchema = false)
+@Database(entities = {LocalSymKey.class, InvoiceData.class, FileDataObject.class}, version = 8, exportSchema = false)
 @TypeConverters({DateTypeConverter.class})
 public abstract class TFMDatabase extends RoomDatabase {
     public abstract LocalSymKeyDao localSymKeyDao();
