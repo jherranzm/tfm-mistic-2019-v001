@@ -51,7 +51,6 @@ import javax.net.ssl.TrustManagerFactory;
 import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricDecryptor;
 import edu.uoc.mistic.tfm.jherranzm.crypto.AsymmetricEncryptor;
-import edu.uoc.mistic.tfm.jherranzm.crypto.SymmetricEncryptor;
 import edu.uoc.mistic.tfm.jherranzm.model.LocalSymKey;
 import edu.uoc.mistic.tfm.jherranzm.services.LocalSymKeyService;
 import edu.uoc.mistic.tfm.jherranzm.services.RemoteSymKeyService;
@@ -189,9 +188,6 @@ public class TFMSecurityManager {
 
                 saveKeyStoreToFileSystem();
                 saveKeyStoreToSDCard();
-                if(getServerStatus() == Constants.SERVER_ACTIVE) {
-                    saveKeyStoreToServer();
-                }
             }
 
             loadKeyStoreFromSDCard();
@@ -215,64 +211,6 @@ public class TFMSecurityManager {
     }
 
 
-    private void saveKeyStoreToServer() {
-
-        try {
-
-            // Read KeyStore to String
-            InputStream isKeyStoreFile = new FileInputStream(keyStoreFile);
-
-            // Encrypt with the user's password
-            byte[] baIsKeyStoreFile = IOUtils.toByteArray(isKeyStoreFile);
-
-            RandomStringGenerator rsg = new RandomStringGenerator();
-
-            // IV and Symmetric Key
-            String iv = rsg.getRandomString(16);
-            Log.i(TAG, String.format("iv     : [%s]", iv));
-
-            String simKey = getKeyToEncryptTheKeyStore();
-            Log.i(TAG, String.format("simKey : [%s]", simKey));
-
-            SymmetricEncryptor simEnc = new SymmetricEncryptor();
-            simEnc.setIv(iv);
-            simEnc.setKey(simKey);
-
-            String keyStoreFileEncrypted   = simEnc.encrypt(baIsKeyStoreFile);
-            Log.i(TAG,keyStoreFileEncrypted);
-
-            Map<String, String> params = new HashMap<>();
-            params.put("op", "store");
-            params.put("iv", iv);
-            params.put("enc", keyStoreFileEncrypted);
-
-            PostDataAuthenticatedToUrlTask getData = new PostDataAuthenticatedToUrlTask(params);
-
-            String res = getData.execute(Constants.URL_KEYSTORE).get();
-            Log.i(TAG, String.format("Response from server : %s", res));
-
-
-
-        } catch (Exception e) {
-            Log.e(TAG,String.format("ERROR : %s: %s", e.getClass().getCanonicalName(), e.getLocalizedMessage()));
-        }
-
-
-        // Convert to Base64
-
-        // Push to server
-
-        // Retrieve server response
-    }
-
-    private String getKeyToEncryptTheKeyStore() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getSecretFromKeyInKeyStore(Constants.USER_PASS));
-        sb.reverse();
-        sb.append("M3st3C!Tr3b4llF3n4lD3M4st3r");
-        sb.substring(0,15);
-        return sb.substring(0,15);
-    }
 
     private void loadKeyStoreFromSDCard() {
 
@@ -337,9 +275,6 @@ public class TFMSecurityManager {
 
         saveKeyStoreToFileSystem();
         saveKeyStoreToSDCard();
-        if(getServerStatus() == Constants.SERVER_ACTIVE) {
-            saveKeyStoreToServer();
-        }
     }
 
     /**
@@ -833,4 +768,7 @@ public class TFMSecurityManager {
         return (getSecretFromKeyInKeyStore(Constants.USER_LOGGED) == null ? "No user logged" : getSecretFromKeyInKeyStore(Constants.USER_LOGGED));
     }
 
+    public File getKeyStoreFile() {
+        return keyStoreFile;
+    }
 }

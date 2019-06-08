@@ -49,4 +49,7 @@ public class Constants {
     public static final String USER_PASS = "userPass";
     public static final String USER_CORRECTLY_REGISTERED_IN_SYSTEM = "User correctly registered in system";
     public static final String USER_ALREADY_REGISTERED_IN_SYSTEM = "email already registered in system";
+    public static final String INFO_INVOICE_CORRECTLY_BACKED_UP_IN_SERVER = "Remote backup. INFO: Invoice  %s correctly backed up!";
+    public static final String ALERT_INVOICE_ALREADY_IN_SERVER = "Remote backup. ALERT: Invoice  %s already backed up in system!";
+    public static final String ALERT_INVOICE_SIGNATURE_NOT_VALID = "ALERT: Invoice signature NOT valid!";
 }

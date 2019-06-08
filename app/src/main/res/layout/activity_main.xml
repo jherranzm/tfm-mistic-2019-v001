@@ -104,7 +104,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.224" />
 
-    <CheckedTextView
+    <TextView
         android:id="@+id/checkedServerOnline"
         android:layout_width="match_parent"
         android:layout_height="30dp"

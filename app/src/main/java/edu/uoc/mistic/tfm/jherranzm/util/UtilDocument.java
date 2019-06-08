@@ -1,5 +1,6 @@
 package edu.uoc.mistic.tfm.jherranzm.util;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.xml.security.utils.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -75,6 +76,10 @@ public class UtilDocument {
         } catch (Exception ex) {
             throw new RuntimeException("Error converting to String", ex);
         }
+    }
+
+    public static Document documentFromString(String xmlStr) {
+        return getDocument(IOUtils.toInputStream(xmlStr));
     }
 
 }

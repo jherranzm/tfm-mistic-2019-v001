@@ -14,9 +14,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <!-- SplashActivity -->
-        <activity
-            android:name=".ui.activities.SplashActivity">
+        <activity android:name=".ui.activities.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -92,12 +92,21 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <!-- ChartActivity -->
+        </activity> <!-- ChartActivity -->
         <activity
             android:name=".ui.activities.ChartActivity"
             android:label="@string/app_name"
             android:parentActivityName=".ui.activities.TotalsByProviderRecyclerViewActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ui.activities.BackUpKeyStoreManual"
+            android:label="@string/app_name"
+            android:parentActivityName=".ui.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

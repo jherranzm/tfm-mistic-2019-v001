@@ -1,23 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    tools:context="edu.uoc.mistic.tfm.jherranzm.ui.activities.BackUpKeyStoreManual"
     android:orientation="vertical">
 
+
+    <TextView
+        android:id="@+id/infoBackUpKeyStore"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_weight="1"
+        android:text="TextView"
+        android:textAlignment="center"
+        android:textSize="30sp" />
+
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/bidiBackUpKeyStore"
         android:layout_width="match_parent"
         android:layout_height="317dp"
         android:drawable="@mipmap/ic_launcher"
         android:orientation="vertical" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/infoPLeaseCopyThisImage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="TextView"
-        android:textAlignment="center"
-        android:textSize="30sp" />
+        android:textAlignment="center" />
+
 
 </LinearLayout>

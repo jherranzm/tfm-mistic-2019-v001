@@ -14,15 +14,30 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import org.json.JSONObject;
+import org.w3c.dom.Document;
+
 import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import edu.uoc.mistic.tfm.jherranzm.R;
+import edu.uoc.mistic.tfm.jherranzm.config.Constants;
 import edu.uoc.mistic.tfm.jherranzm.model.InvoiceData;
 import edu.uoc.mistic.tfm.jherranzm.services.InvoiceDataService;
+import edu.uoc.mistic.tfm.jherranzm.tasks.posttasks.PostDataAuthenticatedToUrlTask;
+import edu.uoc.mistic.tfm.jherranzm.util.TFMSecurityManager;
+import edu.uoc.mistic.tfm.jherranzm.util.UIDGenerator;
+import edu.uoc.mistic.tfm.jherranzm.util.UtilDocument;
+import edu.uoc.mistic.tfm.jherranzm.util.UtilEncryptInvoice;
+import edu.uoc.mistic.tfm.jherranzm.util.UtilFacturae;
+import edu.uoc.mistic.tfm.jherranzm.vo.EncryptedInvoice;
+import es.facturae.facturae.v3.facturae.Facturae;
 
 public class InvoiceDataRecyclerViewAdapter
         extends RecyclerView.Adapter<InvoiceDataRecyclerViewAdapter.DataObjectHolder> {
@@ -34,6 +49,10 @@ public class InvoiceDataRecyclerViewAdapter
     private final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.00");
 
     private final WeakReference<Activity> mActivityRef;
+
+    // Security
+    private TFMSecurityManager tfmSecurityManager;
+
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
@@ -75,6 +94,7 @@ public class InvoiceDataRecyclerViewAdapter
     public InvoiceDataRecyclerViewAdapter(Activity activity, List<InvoiceData> myDataset) {
         mActivityRef = new WeakReference<>(activity);
         mDataset = myDataset;
+        tfmSecurityManager = TFMSecurityManager.getInstance();
     }
 
     @Override
@@ -171,10 +191,41 @@ public class InvoiceDataRecyclerViewAdapter
 
                                 // TODO : InvoiceData add field signedInvoiceFile
 
+                                InvoiceData invoiceData = mDataset.get(position);
+
+                                Log.i(TAG, String.format("invoiceData : [%s]", invoiceData.toString()));
+
+                                String signedInvoiceFile = invoiceData.getSignedInvoiceFile();
+                                Log.i(TAG, String.format("signedInvoiceFile : [%s]", signedInvoiceFile));
+
+                                Document doc = UtilDocument.documentFromString(signedInvoiceFile);
+
+                                Log.i(TAG, String.format("doc.getNodeName() : [%s]", doc.getDocumentElement()));
+
+                                Document document = UtilDocument.removeSignature(doc);
+
+                                Log.i(TAG, String.format("document.getNodeName() : [%s]", document.getDocumentElement()));
+
+                                Facturae facturae = UtilFacturae.getFacturaeFromFactura(UtilDocument.documentToString(document));
+
+                                Log.i(TAG, String.format("facturae : [%s]", facturae.getParties().getSellerParty().getLegalEntity().getCorporateName()));
+
+                                String UIDInvoiceHash = UIDGenerator.generate(facturae);
+                                Log.i(TAG, String.format("UIDInvoiceHash : [%s]", UIDInvoiceHash));
+
+
+                                boolean invoiceBackedUp = false;
+                                if (tfmSecurityManager.isServerOnLine()) {
+                                    invoiceBackedUp = encryptAndUploadInvoice(signedInvoiceFile, facturae, UIDInvoiceHash);
+                                }
+
                                 //boolean invoiceBackedUp = false;
                                 //if (tfmSecurityManager.isServerOnLine()) {
                                 //    invoiceBackedUp = encryptAndUploadInvoice(position, facturae, UIDInvoiceHash);
                                 //}
+
+                                mDataset.get(position).setBackedUp(invoiceBackedUp);
+                                mActivityRef.get().recreate();
 
                                 break;
                         }
@@ -186,6 +237,101 @@ public class InvoiceDataRecyclerViewAdapter
 
             }
         });
+    }
+
+    private boolean encryptAndUploadInvoice(
+            String signedInvoiceFile,
+            Facturae facturae,
+            String uidInvoiceHash) {
+
+        boolean invoiceBackedUp = false;
+
+        try {
+            UtilEncryptInvoice utilEncryptInvoice = new UtilEncryptInvoice();
+            EncryptedInvoice encryptedInvoice = utilEncryptInvoice.getEncryptedInvoice(signedInvoiceFile, facturae);
+
+
+            // Prepare data to upload to server
+            Map<String, String> params = new HashMap<>();
+            params.put("uidfactura", (uidInvoiceHash == null ? "---" : uidInvoiceHash));
+            params.put("tax_identification_number", encryptedInvoice.getTaxIdentificationNumberEncrypted());
+            params.put("invoice_number", encryptedInvoice.getInvoiceNumberEncrypted());
+            params.put("corporate_name", encryptedInvoice.getCorporateNameEncrypted());
+
+            params.put("total", encryptedInvoice.getTotalEncrypted());
+            params.put("total_tax_outputs", encryptedInvoice.getTotalTaxOutputsEncrypted());
+            params.put("total_gross_amount", encryptedInvoice.getTotalGrossAmountEncrypted());
+
+            params.put("issue_data", encryptedInvoice.getDataEncrypted());
+            params.put("file", encryptedInvoice.getSignedInvoiceEncrypted());
+            params.put("iv", encryptedInvoice.getIvStringEnc());
+            params.put("key", encryptedInvoice.getSimKeyStringEnc());
+
+            PostDataAuthenticatedToUrlTask getData = new PostDataAuthenticatedToUrlTask(params);
+
+            String res = getData.execute(Constants.URL_FACTURAS).get();
+            Log.i(TAG, String.format("Response from server : %s", res));
+
+            JSONObject receivedInvoice = new JSONObject(res);
+            String id = receivedInvoice.getString("id");
+
+            String message = "";
+
+            if (getData.getResponseCode() == HttpURLConnection.HTTP_OK){
+
+                infoShow(String.format(Constants.INFO_INVOICE_CORRECTLY_BACKED_UP_IN_SERVER, id));
+                invoiceBackedUp = true;
+
+            }else if (getData.getResponseCode() == HttpURLConnection.HTTP_CONFLICT){
+
+                message += Constants.CR_LF + String.format(Constants.ALERT_INVOICE_ALREADY_IN_SERVER, id);
+                alertShow(message);
+                invoiceBackedUp = true;
+
+            }else if (getData.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR){
+
+                message += Constants.CR_LF + "ERROR: Server error.";
+                alertShow(message);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return invoiceBackedUp;
+
+    }
+
+    private void infoShow(String message) {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(mActivityRef.get());
+        builder
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Log.i(TAG, "alertShow : You clicked on OK!");
+                    }
+                })
+                .setTitle("Info")
+                .setMessage(message)
+                .setIcon(R.drawable.ic_launcher_background);
+        android.app.AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    private  void alertShow(
+            String message ) {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(mActivityRef.get());
+        builder
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Log.i(TAG, "alertShow : You clicked on OK!");
+                    }
+                })
+                .setTitle("Alert!")
+                .setMessage(message)
+                .setIcon(R.drawable.ic_launcher_background);
+
+        android.app.AlertDialog alert = builder.create();
+        alert.show();
     }
 
     public void addItem(InvoiceData dataObj, int index) {
@@ -206,4 +352,6 @@ public class InvoiceDataRecyclerViewAdapter
     public interface InvoiceDataClickListener {
         void onItemClick(int position, View v);
     }
+
+
 }

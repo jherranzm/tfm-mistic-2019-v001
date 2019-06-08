@@ -57,10 +57,6 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
     // Constants
     private static final String TAG = ReceivedInvoicesRecyclerViewActivity.class.getSimpleName();
 
-    private static final String INFO_INVOICE_CORRECTLY_BACKED_UP_IN_SERVER = "Remote backup. INFO: Invoice  %s correctly backed up!";
-    private static final String ALERT_INVOICE_ALREADY_IN_SERVER = "Remote backup. ALERT: Invoice  %s already backed up in system!";
-    private static final String ALERT_INVOICE_SIGNATURE_NOT_VALID = "ALERT: Invoice signature NOT valid!";
-
     // Widgets
     private RecyclerView.Adapter mAdapter;
 
@@ -186,8 +182,8 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
             if(!valid){
                 //Toast.makeText(mContext, "ERROR : La firma NO es válida!", Toast.LENGTH_LONG).show();
-                Log.i(TAG, ALERT_INVOICE_SIGNATURE_NOT_VALID);
-                alertShow(ALERT_INVOICE_SIGNATURE_NOT_VALID);
+                Log.i(TAG, Constants.ALERT_INVOICE_SIGNATURE_NOT_VALID);
+                alertShow(Constants.ALERT_INVOICE_SIGNATURE_NOT_VALID);
             }else{
                 Log.i(TAG, String.format("Valid signed document! [%d] ...", position));
                 Toast.makeText(sContextReference.get(), "Valid signed document!", Toast.LENGTH_SHORT).show();
@@ -297,12 +293,12 @@ public class ReceivedInvoicesRecyclerViewActivity extends AppCompatActivity {
 
         if (getData.getResponseCode() == HttpURLConnection.HTTP_OK){
 
-            infoShow(String.format(INFO_INVOICE_CORRECTLY_BACKED_UP_IN_SERVER, id));
+            infoShow(String.format(Constants.INFO_INVOICE_CORRECTLY_BACKED_UP_IN_SERVER, id));
             invoiceBackedUp = true;
 
         }else if (getData.getResponseCode() == HttpURLConnection.HTTP_CONFLICT){
 
-            message += Constants.CR_LF + String.format(ALERT_INVOICE_ALREADY_IN_SERVER, id);
+            message += Constants.CR_LF + String.format(Constants.ALERT_INVOICE_ALREADY_IN_SERVER, id);
             alertShow(message);
             invoiceBackedUp = true;
 

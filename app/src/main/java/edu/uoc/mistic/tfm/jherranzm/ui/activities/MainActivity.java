@@ -18,7 +18,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckedTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,7 +53,7 @@ public class MainActivity
 
     private Handler mHandler;
 
-    CheckedTextView isServerOnLine;
+    TextView isServerOnLine;
 
     // Widgets
     Button goToSignUp;
@@ -157,7 +156,7 @@ public class MainActivity
 
         // Is serverOnline
         isServerOnLine = findViewById(R.id.checkedServerOnline);
-        isServerOnLine.setChecked(tfmSecurityManager.isServerOnLine());
+        //isServerOnLine.setChecked(tfmSecurityManager.isServerOnLine());
         isServerOnLine.setText((tfmSecurityManager.isServerOnLine() ? "Server Online" : "Server offline"));
         isServerOnLine.setBackgroundColor((tfmSecurityManager.isServerOnLine() ? Color.GREEN : Color.RED));
 
@@ -277,6 +276,11 @@ public class MainActivity
                 intent = new Intent(sContextReference.get(), SignUpActivity.class);
                 startActivity(intent);
                 break;
+            case R.id.backUpKeyStoreManual:
+                Toast.makeText(sContextReference.get(), item.getTitle(), Toast.LENGTH_SHORT).show();
+                intent = new Intent(sContextReference.get(), BackUpKeyStoreManual.class);
+                startActivity(intent);
+                break;
         }
 
 
@@ -295,7 +299,7 @@ public class MainActivity
                     tfmSecurityManager.setServerStatus(Constants.SERVER_INACTIVE);
                 }
                 Log.i(TAG, isServerOnLine == null ? "isServerOnLine es Nulo!" : "isServerOnLine NO es nulo...");
-                isServerOnLine.setChecked(tfmSecurityManager.isServerOnLine());
+                //isServerOnLine.setChecked(tfmSecurityManager.isServerOnLine());
                 isServerOnLine.setText((tfmSecurityManager.isServerOnLine() ? "Server Online" : "Server offline"));
                 isServerOnLine.setBackgroundColor((tfmSecurityManager.isServerOnLine() ? Color.GREEN : Color.RED));
 
@@ -308,7 +312,9 @@ public class MainActivity
                 Log.e(TAG, "Error trying to locate server");
                 Log.e(TAG, "ERROR : " + e.getClass().getCanonicalName() + " : "+ e.getLocalizedMessage() + " : " + e.getMessage());
             } finally {
-                int mInterval = 10000;
+
+                int mInterval = 15000;
+                Log.e(TAG, "Delay of "  + mInterval);
                 mHandler.postDelayed(mStatusChecker, mInterval);
             }
         }
@@ -322,7 +328,7 @@ public class MainActivity
         mHandler.removeCallbacks(mStatusChecker);
     }
 
-    static {
+     static {
         Security.insertProviderAt(new org.spongycastle.jce.provider.BouncyCastleProvider(), 1);
         // Works correctly with apache.santuario v1.5.8
         org.apache.xml.security.Init.init();

@@ -51,6 +51,7 @@
     <string name="password_are_not_equal">Passwords are NOT equal</string>
     <string name="logOut">Log Out</string>
     <string name="synchronize">Synchronize</string>
+    <string name="backUpKeyStoreManual">Backup KeyStore Manual</string>
 
 
 </resources>
