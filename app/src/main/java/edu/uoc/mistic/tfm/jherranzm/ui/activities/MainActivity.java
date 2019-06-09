@@ -252,11 +252,6 @@ public class MainActivity
                 intent = new Intent(sContextReference.get(), InvoiceDataRecyclerViewActivity.class);
                 startActivity(intent);
                 break;
-            case R.id.action_totals_by_provider:
-                Toast.makeText(sContextReference.get(), item.getTitle(), Toast.LENGTH_SHORT).show();
-                intent = new Intent(sContextReference.get(), TotalsByProviderRecyclerViewActivity.class);
-                startActivity(intent);
-                break;
             case R.id.action_delete_all_local_invoices:
                 Toast.makeText(sContextReference.get(), item.getTitle(), Toast.LENGTH_SHORT).show();
                 InvoiceDataService.deleteAllInvoiceData(MainActivity.this);
@@ -287,6 +282,25 @@ public class MainActivity
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public boolean onPrepareOptionsMenu (Menu menu) {
+        if (tfmSecurityManager.getServerStatus() == Constants.SERVER_INACTIVE) {
+            menu.findItem(R.id.backUpKeyStoreManual).setEnabled(false);
+            menu.findItem(R.id.action_uploaded_invoices).setEnabled(false);
+            menu.findItem(R.id.action_sign_up).setEnabled(false);
+            menu.findItem(R.id.action_log_in).setEnabled(false);
+            menu.findItem(R.id.action_log_out).setEnabled(false);
+        }else{
+            menu.findItem(R.id.backUpKeyStoreManual).setEnabled(true);
+            menu.findItem(R.id.action_uploaded_invoices).setEnabled(true);
+            menu.findItem(R.id.action_sign_up).setEnabled(true);
+            menu.findItem(R.id.action_log_in).setEnabled(true);
+            menu.findItem(R.id.action_log_out).setEnabled(true);
+        }
+        menu.findItem(R.id.action_delete_all_local_invoices).setVisible(false);
+        return true;
+    }
+
     Runnable mStatusChecker = new Runnable() {
         @Override
         public void run() {
@@ -298,22 +312,14 @@ public class MainActivity
                 }else{
                     tfmSecurityManager.setServerStatus(Constants.SERVER_INACTIVE);
                 }
-                Log.i(TAG, isServerOnLine == null ? "isServerOnLine es Nulo!" : "isServerOnLine NO es nulo...");
-                //isServerOnLine.setChecked(tfmSecurityManager.isServerOnLine());
-                isServerOnLine.setText((tfmSecurityManager.isServerOnLine() ? "Server Online" : "Server offline"));
-                isServerOnLine.setBackgroundColor((tfmSecurityManager.isServerOnLine() ? Color.GREEN : Color.RED));
-
-                goToSignUp.setEnabled(tfmSecurityManager.isServerOnLine());
-                goToLogIn.setEnabled(tfmSecurityManager.isServerOnLine());
-                goToShowUploadedInvoices.setEnabled(tfmSecurityManager.isUserLogged() && tfmSecurityManager.isServerOnLine());
-                recreate();
+                initView();
 
             }catch (Exception e){
                 Log.e(TAG, "Error trying to locate server");
                 Log.e(TAG, "ERROR : " + e.getClass().getCanonicalName() + " : "+ e.getLocalizedMessage() + " : " + e.getMessage());
             } finally {
 
-                int mInterval = 15000;
+                int mInterval = 50000;
                 Log.e(TAG, "Delay of "  + mInterval);
                 mHandler.postDelayed(mStatusChecker, mInterval);
             }

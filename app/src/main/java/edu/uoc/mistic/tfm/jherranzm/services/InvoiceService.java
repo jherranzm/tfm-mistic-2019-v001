@@ -24,28 +24,35 @@ public class InvoiceService {
 
         List<Invoice> invoices = new ArrayList<>();
         try {
-            UploadedInvoicesGetAllTask uploadedInvoicesGetAllTask = new UploadedInvoicesGetAllTask();
 
-            // retrieve data from server
-            List<Invoice> remoteInvoices = uploadedInvoicesGetAllTask.execute(Constants.URL_FACTURAS).get();
+            localInvoices.clear();
 
-            List<InvoiceData> _localInvoices = InvoiceDataService.getInvoiceDataFromDatabase(activity, user);
-            for(InvoiceData invoiceData : _localInvoices){
-                Log.i(TAG, String.format("localInvoice  : %s", invoiceData.getBatchIdentifier()));
-                localInvoices.put(invoiceData.getBatchIdentifier(), invoiceData);
+            List<InvoiceData> _localInvoices = InvoiceDataService.getInvoiceDataListFromDatabase(activity, user);
+            for(InvoiceData localInvoiceData : _localInvoices){
+                Log.i(TAG, String.format("localInvoice  : %s", localInvoiceData.getBatchIdentifier()));
+                localInvoices.put(localInvoiceData.getBatchIdentifier(), localInvoiceData);
             }
 
-            for (Invoice remoteInvoice : remoteInvoices){
 
-                Log.i(TAG, String.format("remoteInvoice  : %s", remoteInvoice.toString()));
+            // retrieve data from server
+            UploadedInvoicesGetAllTask uploadedInvoicesGetAllTask = new UploadedInvoicesGetAllTask();
+            List<Invoice> remoteInvoices = uploadedInvoicesGetAllTask.execute(Constants.URL_FACTURAS).get();
+
+            for (Invoice remoteInvoice : remoteInvoices){
+                Log.i(TAG, String.format("remoteInvoice.isInLocalDatabase()  : %b", remoteInvoice.isInLocalDatabase()));
+                remoteInvoice.setInLocalDatabase(false);
+                Log.i(TAG, String.format("remoteInvoice  : %s", remoteInvoice.getUid()));
+                Log.i(TAG, String.format("remoteInvoice.isInLocalDatabase()  : %b", remoteInvoice.isInLocalDatabase()));
 
                 if(localInvoices.containsKey(remoteInvoice.getUid())){
+                    Log.i(TAG, String.format("localInvoices  : %d - %s",
+                            localInvoices.get(remoteInvoice.getUid()).getId(),
+                            localInvoices.get(remoteInvoice.getUid()).getBatchIdentifier()
+                            )
+                    );
                     remoteInvoice.setInLocalDatabase(true);
-                }else{
-                    Log.i(TAG, "localInvoices : NOT found ID ->" + remoteInvoice.getUid());
-                    remoteInvoice.setInLocalDatabase(false);
                 }
-                Log.i(TAG, String.format("remoteInvoice  : %s", remoteInvoice.toString()));
+                Log.i(TAG, String.format("remoteInvoice  : %b", remoteInvoice.isInLocalDatabase()));
                 invoices.add(remoteInvoice);
             }
 

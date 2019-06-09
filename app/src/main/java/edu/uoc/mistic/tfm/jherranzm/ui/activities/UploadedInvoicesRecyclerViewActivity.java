@@ -233,7 +233,7 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
             final int position){
 
         final android.support.v7.app.AlertDialog.Builder builderSingle = new android.support.v7.app.AlertDialog.Builder(this);
-        builderSingle.setIcon(R.mipmap.ic_launcher_round);
+        builderSingle.setIcon(R.drawable.ic_warning_icon);
         builderSingle.setTitle(title);
         builderSingle.setMessage(message);
 
@@ -295,6 +295,9 @@ public class UploadedInvoicesRecyclerViewActivity extends AppCompatActivity {
                             String UIDInvoiceHash = UIDGenerator.generate(facturae);
                             InvoiceDataService invoiceDataService = InvoiceDataService.getInstance(UploadedInvoicesRecyclerViewActivity.this);
                             invoiceDataService.saveInvoiceDataInLocalDatabase(facturae, UIDInvoiceHash, signedInvoiceDecrypted, true);
+
+                            initView();
+
                         } catch (ExecutionException e) {
                             e.printStackTrace();
                         } catch (InterruptedException e) {

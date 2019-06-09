@@ -103,8 +103,8 @@ public class BackUpKeyStoreManual extends AppCompatActivity {
 
                     TextView textView = findViewById(R.id.infoPLeaseCopyThisImage);
                     textView.setText("Please, save this image. " +
-                            "With it you'll be able to recover your encripted KeyStore from server. " +
-                            "Besides the file you'll need two keys that are informed in this image.");
+                            "With it you'll be able to recover your encrypted KeyStore from server. " +
+                            "Besides the KeySTore file you'll need two keys that are informed in this image.");
 
                 }else{
                     Log.e(TAG, String.format("ERROR : Response server is not what is expected!", ""));

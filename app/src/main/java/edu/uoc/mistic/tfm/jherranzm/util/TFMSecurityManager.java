@@ -740,7 +740,7 @@ public class TFMSecurityManager {
         return simKeys;
     }
 
-    private int getServerStatus() {
+    public int getServerStatus() {
         return serverStatus;
     }
 

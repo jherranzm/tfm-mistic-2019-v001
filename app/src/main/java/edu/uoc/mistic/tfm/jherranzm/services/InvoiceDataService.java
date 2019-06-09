@@ -3,9 +3,12 @@ package edu.uoc.mistic.tfm.jherranzm.services;
 import android.app.Activity;
 import android.util.Log;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,18 +67,19 @@ public class InvoiceDataService {
 
     public static List<InvoiceData> getInvoiceDataFromDatabase(Activity activity, String user){
 
-        List<InvoiceData>  invoiceDataList = new ArrayList<>();
+        List<InvoiceData>  invoiceDataListInLocalDatabase = new ArrayList<>();
         try {
             GetAllInvoiceDataByUserTask getAllInvoiceDataTask = new GetAllInvoiceDataByUserTask(activity, user);
 
-            invoiceDataList = getAllInvoiceDataTask.execute().get();
+            invoiceDataListInLocalDatabase = getAllInvoiceDataTask.execute().get();
             localInvoices.clear();
 
-            for(InvoiceData invoiceData : invoiceDataList){
+            for(InvoiceData invoiceData : invoiceDataListInLocalDatabase){
+                Log.i(TAG, "GetAllInvoiceDataTask : " + invoiceData.getBatchIdentifier());
                 localInvoices.put(invoiceData.getBatchIdentifier(), invoiceData);
             }
 
-            Log.i(TAG, "GetAllInvoiceDataTask : " + invoiceDataList.size());
+            Log.i(TAG, "GetAllInvoiceDataTask : " + invoiceDataListInLocalDatabase.size());
 
         } catch (ExecutionException e) {
             Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
@@ -85,7 +89,24 @@ public class InvoiceDataService {
             e.printStackTrace();
         }
 
-        return invoiceDataList;
+        return invoiceDataListInLocalDatabase;
+
+    }
+    public static List<InvoiceData> getInvoiceDataListFromDatabase(Activity activity, String user){
+
+        List<InvoiceData>  invoiceDataListInLocalDatabase = new ArrayList<>();
+        try {
+            GetAllInvoiceDataByUserTask getAllInvoiceDataTask = new GetAllInvoiceDataByUserTask(activity, user);
+            invoiceDataListInLocalDatabase = getAllInvoiceDataTask.execute().get();
+        } catch (ExecutionException e) {
+            Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            Log.i(TAG, e.getClass().getCanonicalName() + " : " + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+        Log.i(TAG, String.format("getInvoiceDataListFromDatabase : %d - %s", invoiceDataListInLocalDatabase.size(), user));
+        return invoiceDataListInLocalDatabase;
 
     }
 
@@ -221,17 +242,20 @@ public class InvoiceDataService {
 
                     String res = getInvoiceByIdTask.execute(url).get();
                     Log.i(TAG, String.format("Received from server : %s", res));
-                    JSONObject jsonInvoice = new JSONObject(res);
 
-                    if(jsonInvoice.has("uid")){
-                        Log.i(TAG, String.format("Received from server [uid]: %s", jsonInvoice.get("uid")));
-                        if(jsonInvoice.get("uid").equals(uid)){
-                            invoiceData.setBackedUp(true);
-                        }else{
-                            updateInvoiceData(mActivityRef.get(), invoiceData);
+                    if(res != null && isJSONValid(res)) {
+                        JSONObject jsonResponse = new JSONObject(res);
+                        Log.i(TAG, String.format("isJSONValid : %b", isJSONValid(res)));
+                        if (jsonResponse.has("uid")) {
+                            Log.i(TAG, String.format("Received from server [uid]: %s", jsonResponse.get("uid")));
+                            if(jsonResponse.get("uid").equals(uid)){
+                                invoiceData.setBackedUp(true);
+                            }else{
+                                updateInvoiceData(mActivityRef.get(), invoiceData);
+                            }
                         }
-
                     }
+
                     updateInvoiceData(mActivityRef.get(), invoiceData);
 
                 } catch (ExecutionException e) {
@@ -246,6 +270,16 @@ public class InvoiceDataService {
         }
         getInvoiceDataFromDatabase(mActivityRef.get(), user);
 
+    }
+
+    private boolean isJSONValid(String jsonInString ) {
+        try {
+            final ObjectMapper mapper = new ObjectMapper();
+            mapper.readTree(jsonInString);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
 
